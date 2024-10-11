@@ -1,4 +1,4 @@
-name: sam release code
+name: docker image upload
 
 on:
   workflow_call:

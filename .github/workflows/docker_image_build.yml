@@ -1,4 +1,4 @@
-name: sam package code
+name: docker image build
 
 on:
   workflow_call:
