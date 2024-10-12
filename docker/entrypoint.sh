@@ -12,7 +12,9 @@ sed -i -n '/nodejs/p'  /home/cdkuser/workspace/.tool-versions
 cd /home/cdkuser/workspace/ || exit
 
 asdf install
-reshim nodejs
+asdf reshim nodejs
+
+ls -lart
 
 export REQUIRE_APPROVAL=never
 if [ "${SHOW_DIFF}" = "true" ]
@@ -25,6 +27,5 @@ then
     npx cdk deploy \
 		--app "npx ts-node --prefer-ts-exts ${CDK_APP_PATH}" \
         --all \
-        --ci true \
-        --require-approval never
+        --ci true
 fi
