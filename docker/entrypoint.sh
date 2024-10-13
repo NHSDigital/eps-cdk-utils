@@ -14,10 +14,6 @@ cd /home/cdkuser/workspace/ || exit
 asdf install
 asdf reshim nodejs
 
-ls -lart
-ls -lart node_modules/.bin
-ls -lart node_modules/aws-cdk/bin
-
 export REQUIRE_APPROVAL=never
 if [ "${SHOW_DIFF}" = "true" ]
 then
