@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 if [ -z "${CDK_APP_PATH}" ]; then
     echo "CDK_APP_PATH is unset or set to the empty string"
