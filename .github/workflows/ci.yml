@@ -148,7 +148,7 @@ jobs:
       AWS_ENVIRONMENT: dev
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
-      TAG_LATEST: "true"
+      TAG_LATEST: true
     secrets:
       CDK_PUSH_IMAGE_ROLE: ${{ secrets.DEV_CDK_PUSH_IMAGE_ROLE }}
 
@@ -165,7 +165,7 @@ jobs:
         AWS_ENVIRONMENT: qa
         VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
         COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
-        TAG_LATEST: "true"
+        TAG_LATEST: true
     secrets:
         CDK_PUSH_IMAGE_ROLE: ${{ secrets.QA_CDK_PUSH_IMAGE_ROLE }}
   
@@ -182,7 +182,7 @@ jobs:
         AWS_ENVIRONMENT: ref
         VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
         COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
-        TAG_LATEST: "true"
+        TAG_LATEST: true
     secrets:
         CDK_PUSH_IMAGE_ROLE: ${{ secrets.REF_CDK_PUSH_IMAGE_ROLE }}
   
@@ -199,7 +199,7 @@ jobs:
         AWS_ENVIRONMENT: int
         VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
         COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
-        TAG_LATEST: "true"
+        TAG_LATEST: true
     secrets:
         CDK_PUSH_IMAGE_ROLE: ${{ secrets.INT_CDK_PUSH_IMAGE_ROLE }}
   
@@ -216,6 +216,6 @@ jobs:
         AWS_ENVIRONMENT: prod
         VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
         COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
-        TAG_LATEST: "true"
+        TAG_LATEST: true
     secrets:
         CDK_PUSH_IMAGE_ROLE: ${{ secrets.PROD_CDK_PUSH_IMAGE_ROLE }}
