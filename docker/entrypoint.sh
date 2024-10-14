@@ -23,7 +23,6 @@ cd /home/cdkuser/workspace/ || exit
 asdf install
 asdf reshim nodejs
 
-export REQUIRE_APPROVAL=never
 if [ "${SHOW_DIFF}" = "true" ]
 then
     echo "Running diff"
