@@ -3,7 +3,11 @@ set -e
 
 VERSION=$(cat version.txt)
 
+echo "**************************************"
 echo "RUNNING CDK_UTILS VERSION ${VERSION}"
+echo "**************************************"
+echo
+echo
 
 if [ -z "${CDK_APP_PATH}" ]; then
     echo "CDK_APP_PATH is unset or set to the empty string"
