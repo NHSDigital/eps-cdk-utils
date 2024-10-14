@@ -1,0 +1,26 @@
+[project]
+python = "^3.12"
+
+[tool.poetry]
+name = "eps-cdk-uitl"
+version = "0.0.1-alpha"
+description = "EPS CDK Utils"
+license = "MIT"
+authors = [
+    "EPS Team"
+]
+readme = "README.md"
+repository = "https://github.com/NHSDigital/eps-cdk-util"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pre-commit = "^3.5.0"
+
+[tool.poetry.dev-dependencies]
+pip-licenses = "^4.5.1"
+
+[tool.poetry.scripts]
+
+[build-system]
+requires = ["poetry>=1.8"]
+build-backend = "poetry.masonry.api"

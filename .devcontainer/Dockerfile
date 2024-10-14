@@ -11,6 +11,37 @@ RUN apt-get update \
     libreadline-dev libsqlite3-dev wget llvm libncurses5-dev libncursesw5-dev \
     xz-utils tk-dev liblzma-dev netcat libyaml-dev
 
+    # install aws stuff
+RUN wget -O /tmp/awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" && \
+    unzip /tmp/awscliv2.zip -d /tmp/aws-cli && \
+    /tmp/aws-cli/aws/install && \
+    rm tmp/awscliv2.zip && \
+    rm -rf /tmp/aws-cli
+
 USER vscode
 
+# Install ASDF
+RUN git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.14.1; \
+    echo '. $HOME/.asdf/asdf.sh' >> ~/.bashrc; \
+    echo '. $HOME/.asdf/completions/asdf.bash' >> ~/.bashrc;
+
+ENV PATH="$PATH:/home/vscode/.asdf/bin/:/workspaces/eps-cdk-utils/node_modules/.bin"
+
+# Install ASDF plugins
+RUN asdf plugin add python; \
+    asdf plugin add poetry https://github.com/asdf-community/asdf-poetry.git; \
+    asdf plugin add shellcheck https://github.com/luizm/asdf-shellcheck.git; \
+    asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git; \
+    asdf plugin add direnv; \
+    asdf plugin add actionlint;
+
 WORKDIR /workspaces/eps-workflow-quality-checks
+
+ADD .tool-versions /workspaces/eps-cdk-utils/.tool-versions
+ADD .tool-versions /home/vscode/.tool-versions
+
+RUN asdf install; \
+    asdf reshim python; \
+    asdf reshim poetry; \
+    asdf reshim nodejs; \
+    asdf direnv setup --shell bash --version 2.32.2;
