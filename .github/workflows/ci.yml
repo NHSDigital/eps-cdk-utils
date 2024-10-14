@@ -128,7 +128,7 @@ jobs:
     needs: [tag_release, quality_checks, get_commit_id]
     uses: ./.github/workflows/docker_image_build.yml
     with:
-      VERSION_NUMBER: PR-${{ needs.tag_release.outputs.issue_number }}
+      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
 
   release_dev:

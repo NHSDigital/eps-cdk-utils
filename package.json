@@ -4,7 +4,8 @@
     "description": "![Build](https://github.com/NHSDigital/eps-cdk-utils/workflows/Build/badge.svg?branch=main)",
     "scripts": {
       "test": "echo \"Error: no test specified\" && exit 1",
-      "check-licenses": "node_modules/.bin/license-checker --failOn GPL --failOn LGPL"
+      "check-licenses": "node_modules/.bin/license-checker --failOn GPL --failOn LGPL",
+      "lint": "echo \"Error: no linting specified\""
     },
     "repository": {
       "type": "git",
