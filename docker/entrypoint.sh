@@ -23,7 +23,6 @@ cd /home/cdkuser/workspace/ || exit
 asdf install
 asdf reshim nodejs
 
-export REQUIRE_APPROVAL=never
 if [ "${SHOW_DIFF}" = "true" ]
 then
     echo "Running diff"
@@ -36,6 +35,6 @@ then
     npx cdk deploy \
 		--app "npx ts-node --prefer-ts-exts ${CDK_APP_PATH}" \
         --all \
-        --require_approval=never \
+        --require-approval=never \
         --ci true
 fi
