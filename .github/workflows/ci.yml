@@ -125,7 +125,7 @@ jobs:
             It was initialized by [${{ github.event.sender.login }}](${{ github.event.sender.html_url }})
 
   package_code:
-    needs: tag_release
+    needs: [tag_release, quality_checks, get_commit_id]
     uses: ./.github/workflows/docker_image_build.yml
     with:
       VERSION_NUMBER: PR-${{ needs.tag_release.outputs.issue_number }}
