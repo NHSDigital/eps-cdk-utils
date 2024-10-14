@@ -1,4 +1,7 @@
 FROM ubuntu:24.04
+
+ENV VERSION=${VERSION}
+
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y upgrade
@@ -32,5 +35,7 @@ RUN asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
 
 # copy files needed for deployment
 COPY --chown=cdkuser docker/entrypoint.sh /home/cdkuser/
+
+RUN "echo ${VERSION}" > /home/cdkuser/version.txt
 
 ENTRYPOINT ["/home/cdkuser/entrypoint.sh"]
