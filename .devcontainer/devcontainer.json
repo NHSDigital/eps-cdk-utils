@@ -1,0 +1,41 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
+{
+    "name": "Ubuntu",
+    // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+    "build": {
+      "dockerfile": "Dockerfile",
+      "context": "..",
+      "args": {}
+    },
+    "mounts": [
+      "source=${env:HOME}${env:USERPROFILE}/.aws,target=/home/vscode/.aws,type=bind",
+      "source=${env:HOME}${env:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind",
+      "source=${env:HOME}${env:USERPROFILE}/.gnupg,target=/home/vscode/.gnupg,type=bind",
+      "source=${env:HOME}${env:USERPROFILE}/.npmrc,target=/home/vscode/.npmrc,type=bind"
+    ],
+    "features": {
+      "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+        "version": "latest",
+        "moby": "true",
+        "installDockerBuildx": "true"
+      }
+    },
+    "containerUser": "vscode",
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "AmazonWebServices.aws-toolkit-vscode",
+          "redhat.vscode-yaml",
+          "eamodio.gitlens",
+          "github.vscode-pull-request-github",
+          "streetsidesoftware.code-spell-checker",
+          "timonwong.shellcheck",
+          "github.vscode-github-actions"
+        ],
+        "settings": {
+          "cSpell.words": ["fhir", "Formik", "pino", "serialisation"]
+        }
+      }
+    }
+  }

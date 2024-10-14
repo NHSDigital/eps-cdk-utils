@@ -1,0 +1,83 @@
+name: build_pr
+
+on:
+  pull_request:
+    branches: [main]
+
+env:
+  BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+
+jobs:
+  pr_title_format_check:
+    uses: ./.github/workflows/pr_title_check.yml
+
+  # quality_checks:
+  #   uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v2
+  #   with:
+  #     node_version: '20'
+  #   secrets:
+  #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  
+  quality_checks:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      packages: read
+    steps:
+      - name: Dummy step
+        run: |
+          echo "Disabled quality checks for now"
+
+  get_issue_number:
+    runs-on: ubuntu-latest
+    outputs:
+      issue_number: ${{steps.get_issue_number.outputs.result}}
+
+    steps:
+      - uses: actions/github-script@v7
+        name: get issue number
+        id: get_issue_number
+        with:
+          script: |
+            if (context.issue.number) {
+              // Return issue number if present
+              return context.issue.number;
+            } else {
+              // Otherwise return issue number from commit
+              return (
+                await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                  commit_sha: context.sha,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                })
+              ).data[0].number;
+            }
+          result-encoding: string
+
+  get_commit_id:
+    runs-on: ubuntu-latest
+    outputs:
+      commit_id: ${{ steps.commit_id.outputs.commit_id }}
+    steps:
+      - name: Get Commit ID
+        id: commit_id
+        run: |
+          echo "commit_id=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+
+  package_code:
+    needs: [get_issue_number, quality_checks, get_commit_id]
+    uses: ./.github/workflows/docker_image_build.yml
+    with:
+      VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
+      COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
+
+  release_code:
+    needs: [get_issue_number, package_code, get_commit_id]
+    uses: ./.github/workflows/docker_image_upload.yml
+    with:
+      AWS_ENVIRONMENT: dev
+      VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
+      COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
+    secrets:
+      CDK_PUSH_IMAGE_ROLE: ${{ secrets.DEV_CDK_PUSH_IMAGE_ROLE }}
