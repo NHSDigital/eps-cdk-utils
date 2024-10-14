@@ -12,6 +12,9 @@ on:
       AWS_ENVIRONMENT:
         required: true
         type: string
+      TAG_LATEST:
+        required: true
+        type: boolean
     secrets:
       CDK_PUSH_IMAGE_ROLE:
         required: true
@@ -65,6 +68,12 @@ jobs:
           docker tag "cdk-utils-build:${{ inputs.VERSION_NUMBER }}" "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:${{ inputs.VERSION_NUMBER }}"
           docker push "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:${{ inputs.VERSION_NUMBER }}"
 
+      - name: Push cdk-utils-build to Amazon ECR
+        if: ${{ inputs.TAG_LATEST == 'true' }}
+        run: |
+          docker tag "cdk-utils-build:${{ inputs.VERSION_NUMBER }}" "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:latest"
+          docker push "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:latest"
+    
       - name: Check cdk-utils-build scan results
         env:
           REPOSITORY_NAME: cdk-utils-build-repo
