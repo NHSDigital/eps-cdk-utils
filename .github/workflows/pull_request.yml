@@ -12,7 +12,7 @@ jobs:
     uses: ./.github/workflows/pr_title_check.yml
 
   quality_checks:
-    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v2
+    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@main
     with:
       node_version: '20'
     secrets:
