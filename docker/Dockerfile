@@ -31,6 +31,7 @@ ENV PATH="$PATH:/home/cdkuser/.asdf/bin/:/home/cdkuser/node_modules/.bin"
 
 # Install ASDF plugins
 RUN asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+RUN asdf install nodejs 20.18.0
 
 
 # copy files needed for deployment
