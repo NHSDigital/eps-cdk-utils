@@ -14,7 +14,7 @@ repository = "https://github.com/NHSDigital/eps-cdk-util"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-pre-commit = "^4.0.1"
+pre-commit = "^4.1.0"
 
 [tool.poetry.dev-dependencies]
 pip-licenses = "^5.0.0"
