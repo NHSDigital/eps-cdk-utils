@@ -35,7 +35,6 @@ RUN asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
 RUN asdf install nodejs 20.19.1
 RUN asdf install nodejs 23.9.0
 RUN asdf install nodejs 20.19.0
-RUN asdf install nodejs 22.12.0
 
 # copy files needed for deployment
 COPY --chown=cdkuser docker/entrypoint.sh /home/cdkuser/
