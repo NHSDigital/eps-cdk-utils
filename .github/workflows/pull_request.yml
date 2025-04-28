@@ -48,6 +48,11 @@ jobs:
       commit_id: ${{ steps.commit_id.outputs.commit_id }}
       sha_short: ${{ steps.commit_id.outputs.sha_short }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+
       - name: Get Commit ID
         id: commit_id
         run: |

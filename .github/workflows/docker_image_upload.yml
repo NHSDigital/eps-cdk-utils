@@ -80,7 +80,7 @@ jobs:
       - name: Check cdk-utils-build scan results
         env:
           REPOSITORY_NAME: cdk-utils-build-repo
-          IMAGE_TAG: ${{ inputs.VERSION_NUMBER }}
+          IMAGE_TAG: ${{ inputs.DOCKER_IMAGE_TAG }}
         working-directory: .github/scripts
         run: |
           ./check_ecr_image_scan_results.sh
