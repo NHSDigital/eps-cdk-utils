@@ -15,6 +15,9 @@ on:
       TAG_LATEST:
         required: true
         type: boolean
+      DOCKER_IMAGE_TAG:
+        required: true
+        type: string
     secrets:
       CDK_PUSH_IMAGE_ROLE:
         required: true
