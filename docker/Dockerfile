@@ -32,11 +32,13 @@ ENV PATH="$PATH:/home/cdkuser/.asdf/bin/:/home/cdkuser/node_modules/.bin"
 # Install ASDF plugins
 RUN asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
 # install some common node versions that are used in builds to speed things up
-RUN asdf install nodejs 20.19.1
-RUN asdf install nodejs 23.9.0
-RUN asdf install nodejs 20.17.0
-RUN asdf install nodejs 20.19.0
-RUN asdf install nodejs 22.12.0
+RUN asdf install nodejs 20.19.1; \
+    asdf install nodejs 23.9.0
+# update npm
+RUN export ASDF_DIR=/home/cdkuser/.asdf && \
+    . /home/cdkuser/.asdf/asdf.sh && \
+    asdf shell nodejs 20.19.1 && \
+    cd ~/.asdf/installs/nodejs/20.19.1/lib && npm update npm
 
 # copy files needed for deployment
 COPY --chown=cdkuser docker/entrypoint.sh /home/cdkuser/

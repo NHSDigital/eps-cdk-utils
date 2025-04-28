@@ -15,6 +15,9 @@ on:
       TAG_LATEST:
         required: true
         type: boolean
+      DOCKER_IMAGE_TAG:
+        required: true
+        type: string
     secrets:
       CDK_PUSH_IMAGE_ROLE:
         required: true
@@ -65,8 +68,8 @@ jobs:
 
       - name: Push tagged version cdk-utils-build to Amazon ECR
         run: |
-          docker tag "cdk-utils-build:${{ inputs.VERSION_NUMBER }}" "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:${{ inputs.VERSION_NUMBER }}"
-          docker push "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:${{ inputs.VERSION_NUMBER }}"
+          docker tag "cdk-utils-build:${{ inputs.VERSION_NUMBER }}" "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:${{ inputs.DOCKER_IMAGE_TAG }}"
+          docker push "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:${{ inputs.DOCKER_IMAGE_TAG }}"
 
       - name: Push latest cdk-utils-build to Amazon ECR
         if: ${{ inputs.TAG_LATEST == true }}
@@ -77,7 +80,7 @@ jobs:
       - name: Check cdk-utils-build scan results
         env:
           REPOSITORY_NAME: cdk-utils-build-repo
-          IMAGE_TAG: ${{ inputs.VERSION_NUMBER }}
+          IMAGE_TAG: ${{ inputs.DOCKER_IMAGE_TAG }}
         working-directory: .github/scripts
         run: |
           ./check_ecr_image_scan_results.sh

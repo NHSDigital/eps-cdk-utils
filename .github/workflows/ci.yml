@@ -136,6 +136,7 @@ jobs:
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
       TAG_LATEST: true
+      DOCKER_IMAGE_TAG: ${{needs.tag_release.outputs.version_tag}}
     secrets:
       CDK_PUSH_IMAGE_ROLE: ${{ secrets.DEV_CDK_PUSH_IMAGE_ROLE }}
 
@@ -153,6 +154,7 @@ jobs:
         VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
         COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
         TAG_LATEST: true
+        DOCKER_IMAGE_TAG: ${{needs.tag_release.outputs.version_tag}}
     secrets:
         CDK_PUSH_IMAGE_ROLE: ${{ secrets.QA_CDK_PUSH_IMAGE_ROLE }}
   
@@ -170,6 +172,7 @@ jobs:
         VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
         COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
         TAG_LATEST: true
+        DOCKER_IMAGE_TAG: ${{needs.tag_release.outputs.version_tag}}
     secrets:
         CDK_PUSH_IMAGE_ROLE: ${{ secrets.REF_CDK_PUSH_IMAGE_ROLE }}
   
@@ -187,6 +190,7 @@ jobs:
         VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
         COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
         TAG_LATEST: true
+        DOCKER_IMAGE_TAG: ${{needs.tag_release.outputs.version_tag}}
     secrets:
         CDK_PUSH_IMAGE_ROLE: ${{ secrets.INT_CDK_PUSH_IMAGE_ROLE }}
   
@@ -204,5 +208,6 @@ jobs:
         VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
         COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
         TAG_LATEST: true
+        DOCKER_IMAGE_TAG: ${{needs.tag_release.outputs.version_tag}}
     secrets:
         CDK_PUSH_IMAGE_ROLE: ${{ secrets.PROD_CDK_PUSH_IMAGE_ROLE }}
