@@ -34,7 +34,6 @@ RUN asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
 # install some common node versions that are used in builds to speed things up
 RUN asdf install nodejs 20.19.1
 RUN asdf install nodejs 23.9.0
-RUN asdf install nodejs 20.17.0
 RUN asdf install nodejs 20.19.0
 RUN asdf install nodejs 22.12.0
 
