@@ -78,14 +78,14 @@ jobs:
     secrets:
       CDK_PUSH_IMAGE_ROLE: ${{ secrets.DEV_CDK_PUSH_IMAGE_ROLE }}
 
-  release_regression:
+  release_recovery:
     needs: [get_issue_number, package_code, get_commit_id]
     uses: ./.github/workflows/docker_image_upload.yml
     with:
-      AWS_ENVIRONMENT: regression
+      AWS_ENVIRONMENT: recovery
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
       TAG_LATEST: true
       DOCKER_IMAGE_TAG: PR-${{ needs.get_issue_number.outputs.issue_number }}-${{ needs.get_commit_id.outputs.sha_short }}
     secrets:
-      CDK_PUSH_IMAGE_ROLE: ${{ secrets.REGRESSION_CDK_PUSH_IMAGE_ROLE }}
+      CDK_PUSH_IMAGE_ROLE: ${{ secrets.RECOVERY_CDK_PUSH_IMAGE_ROLE }}
