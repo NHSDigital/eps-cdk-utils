@@ -18,7 +18,7 @@
       "@semantic-release/changelog": "^6.0.3",
       "@semantic-release/release-notes-generator": "^14.1.0",
       "@types/node": "^24.5.2",
-      "@typescript-eslint/eslint-plugin": "^8.44.0",
+      "@typescript-eslint/eslint-plugin": "^8.44.1",
       "@typescript-eslint/parser": "^8.44.0",
       "conventional-changelog-eslint": "^6.0.0",
       "eslint": "^9.36.0",
@@ -27,7 +27,7 @@
       "jest-junit": "^16.0.0",
       "license-checker": "^25.0.1",
       "semantic-release": "^24.2.8",
-      "ts-jest": "^29.4.3",
+      "ts-jest": "^29.4.4",
       "ts-node": "^10.9.2",
       "typescript": "^5.9.2"
     },
