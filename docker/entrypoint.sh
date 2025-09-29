@@ -26,7 +26,7 @@ asdf reshim nodejs
 if [ "${SHOW_DIFF}" = "true" ]
 then
     echo "Running diff"
-    npx cdk diff \
+    npx cdk diff -v \
 		--app "npx ts-node --prefer-ts-exts ${CDK_APP_PATH}"
 fi
 if [ "${DEPLOY_CODE}" = "true" ]
