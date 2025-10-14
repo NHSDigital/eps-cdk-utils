@@ -90,7 +90,8 @@
 			"dbaeumer.vscode-eslint",
 			"redhat.vscode-xml",
 			"timonwong.shellcheck",
-			"mkhl.direnv"
+			"mkhl.direnv",
+			"vitest.explorer"
 		]
 	}
 }

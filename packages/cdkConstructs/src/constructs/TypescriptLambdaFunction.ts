@@ -18,10 +18,10 @@ import {
 import {NodejsFunction, NodejsFunctionProps} from "aws-cdk-lib/aws-lambda-nodejs"
 import {CfnLogGroup, CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
 import {Construct} from "constructs"
-import {join, resolve} from "path"
+import {join} from "path"
 import {NagSuppressions} from "cdk-nag"
 
-export interface LambdaFunctionProps {
+export interface TypescriptLambdaFunctionProps {
   /**
    * Name of the Lambda function.
    *
@@ -67,11 +67,15 @@ export interface LambdaFunctionProps {
    * Optional list of Lambda layers to attach to the function.
    */
   readonly layers?: Array<ILayerVersion>
+  /**
+   * The base directory for resolving the package base path and entry point.
+   * Should point to the monorepo root.
+   */
+  readonly baseDir: string
 }
 
 const insightsLayerArn = "arn:aws:lambda:eu-west-2:580247275435:layer:LambdaInsightsExtension:60"
-const baseDir = resolve(__dirname, "../../..")
-const getDefaultLambdaOptions = (packageBasePath: string):NodejsFunctionProps => {
+const getDefaultLambdaOptions = (packageBasePath: string, baseDir: string):NodejsFunctionProps => {
   return {
     runtime: Runtime.NODEJS_22_X,
     projectRoot: baseDir,
@@ -83,12 +87,13 @@ const getDefaultLambdaOptions = (packageBasePath: string):NodejsFunctionProps =>
       minify: true,
       sourceMap: true,
       tsconfig: join(baseDir, packageBasePath, "tsconfig.json"),
-      target: "es2022"
+      target: "es2022",
+      preCompilation: true
     }
   }
 }
 
-export class LambdaFunction extends Construct {
+export class TypescriptLambdaFunction extends Construct {
   /**
      * The managed policy that allows execution of the Lambda function.
      */
@@ -98,7 +103,7 @@ export class LambdaFunction extends Construct {
      */
   public readonly function: NodejsFunction
 
-  public constructor(scope: Construct, id: string, props: LambdaFunctionProps){
+  public constructor(scope: Construct, id: string, props: TypescriptLambdaFunctionProps){
     super(scope, id)
 
     // Destructure with defaults
@@ -112,7 +117,8 @@ export class LambdaFunction extends Construct {
       logLevel = "INFO", // Default log level
       version,
       commitId,
-      layers = [] // Default to empty array
+      layers = [], // Default to empty array
+      baseDir
     } = props
 
     // Imports
@@ -196,7 +202,7 @@ export class LambdaFunction extends Construct {
     })
 
     const lambdaFunction = new NodejsFunction(this, functionName, {
-      ...getDefaultLambdaOptions(packageBasePath),
+      ...getDefaultLambdaOptions(packageBasePath, baseDir),
       functionName: `${functionName}`,
       entry: join(baseDir, packageBasePath, entryPoint),
       role,
