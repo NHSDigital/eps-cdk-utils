@@ -31,6 +31,7 @@ lint: lint-node lint-githubactions lint-githubaction-scripts
 
 clean:
 	rm -rf packages/cdkConstructs/lib
+	rm -rf packages/cdkConstructs/coverage
 	rm -f packages/cdkConstructs/NHSDigital-eps-cdk-constructs-1.0.0.tgz
 
 deep-clean: clean
