@@ -31,6 +31,7 @@ lint: lint-node lint-githubactions lint-githubaction-scripts
 
 clean:
 	rm -rf packages/cdkConstructs/lib
+	rm -f packages/cdkConstructs/NHSDigital-eps-cdk-constructs-1.0.0.tgz
 
 deep-clean: clean
 	rm -rf .venv
@@ -53,3 +54,8 @@ aws-login:
 
 test:
 	npm run test --workspace packages/cdkConstructs
+
+package:
+	npm run build --workspace packages/cdkConstructs
+	mkdir -p lib/
+	npm pack --workspace packages/cdkConstructs --pack-destination lib/
