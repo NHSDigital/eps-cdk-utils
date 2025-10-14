@@ -103,35 +103,6 @@ const getDefaultLambdaOptions = (
 /**
  * A construct that creates a TypeScript-based AWS Lambda function with all necessary AWS resources.
  *
- * This construct creates:
- * - A Lambda function with TypeScript bundling
- * - CloudWatch log group with KMS encryption
- * - Managed IAM policy for writing logs
- * - IAM role for execution with necessary permissions
- * - Subscription filter on logs so they are forwarded to splunk
- * - Managed IAM policy for invoking the Lambda function
- *
- * It also
- * - attaches the Lambda Insights layer for monitoring.
- * - adds cfnGuard suppressions for common issues.
- * - adds cdk-nag suppressions for common issues.
- *
- * @example
- * ```typescript
- * const lambdaFunction = new TypescriptLambdaFunction(this, 'MyFunction', {
- *   functionName: 'my-lambda',
- *   packageBasePath: 'packages/my-lambda',
- *   entryPoint: 'src/handler.ts',
- *   environmentVariables: {
- *     TABLE_NAME: 'my-table'
- *   },
- *   logRetentionInDays: 30,
- *   logLevel: 'INFO',
- *   version: '1.0.0',
- *   commitId: 'abc123',
- *   baseDir: '/path/to/monorepo'
- * });
- * ```
  */
 export class TypescriptLambdaFunction extends Construct {
   /**
@@ -167,6 +138,34 @@ export class TypescriptLambdaFunction extends Construct {
   /**
    * Creates a new TypescriptLambdaFunction construct.
    *
+   * This construct creates:
+   * - A Lambda function with TypeScript bundling
+   * - CloudWatch log group with KMS encryption
+   * - Managed IAM policy for writing logs
+   * - IAM role for execution with necessary permissions
+   * - Subscription filter on logs so they are forwarded to splunk
+   * - Managed IAM policy for invoking the Lambda function
+   *
+   * It also
+   * - attaches the Lambda Insights layer for monitoring.
+   * - adds cfnGuard suppressions for common issues.
+   * - adds cdk-nag suppressions for common issues.
+   *
+   * @example
+   * ```typescript
+   * const lambdaFunction = new TypescriptLambdaFunction(this, 'MyFunction', {
+   *   functionName: 'my-lambda',
+   *   packageBasePath: 'packages/my-lambda',
+   *   entryPoint: 'src/handler.ts',
+   *   environmentVariables: {
+   *     TABLE_NAME: 'my-table'
+   *   },
+   *   logRetentionInDays: 30,
+   *   logLevel: 'INFO',
+   *   version: '1.0.0',
+   *   commitId: 'abc123',
+   *   baseDir: '/path/to/monorepo'
+   * });
    * @param scope - The scope in which to define this construct
    * @param id - The scoped construct ID. Must be unique amongst siblings in the same scope
    * @param props - Configuration properties for the Lambda function
