@@ -248,7 +248,7 @@ describe("functionConstruct works correctly with additional layers", () => {
     template = Template.fromStack(stack)
   })
 
-  test("it has the correct policies in the role", () => {
+  test("it has the correct layers added", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
       Handler: "index.handler",
       Runtime: "nodejs22.x",
@@ -260,6 +260,42 @@ describe("functionConstruct works correctly with additional layers", () => {
         "arn:aws:lambda:eu-west-2:580247275435:layer:LambdaInsightsExtension:60",
         "arn:aws:lambda:eu-west-2:133256977650:layer:AWS-Parameters-and-Secrets-Lambda-Extension:20"
       ]
+    })
+  })
+})
+
+describe("functionConstruct works correctly with custom timeout", () => {
+  let stack: Stack
+  let app: App
+  let template: assertions.Template
+
+  beforeAll(() => {
+    app = new App()
+    stack = new Stack(app, "lambdaConstructStack")
+    new TypescriptLambdaFunction(stack, "dummyFunction", {
+      functionName: "testLambda",
+      packageBasePath: "packages/cdkConstructs",
+      entryPoint: "tests/src/dummyLambda.ts",
+      environmentVariables: {},
+      logRetentionInDays: 30,
+      logLevel: "DEBUG",
+      version: "1.0.0",
+      layers: [],
+      commitId: "abcd1234",
+      baseDir: resolve(__dirname, "../../.."),
+      timeoutInSeconds: 120
+    })
+    template = Template.fromStack(stack)
+  })
+
+  test("it has the correct timeout", () => {
+    template.hasResourceProperties("AWS::Lambda::Function", {
+      Handler: "index.handler",
+      Runtime: "nodejs22.x",
+      FunctionName: "testLambda",
+      MemorySize: 256,
+      Architectures: ["x86_64"],
+      Timeout: 120
     })
   })
 })

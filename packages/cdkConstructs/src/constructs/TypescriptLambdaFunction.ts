@@ -108,7 +108,11 @@ const getDefaultLambdaOptions = (
  * - CloudWatch log group with KMS encryption
  * - IAM role for execution with necessary permissions
  * - Subscription filter on logs so they are forwarded to splunk
- * - Lambda Insights layer for monitoring
+ *
+ * It also
+ * - attaches the Lambda Insights layer for monitoring.
+ * - adds cfnGuard suppressions for common issues.
+ * - adds cdk-nag suppressions for common issues.
  *
  * @example
  * ```typescript
