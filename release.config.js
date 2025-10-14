@@ -70,12 +70,23 @@ module.exports = {
       }
     ],
     [
+      "@semantic-release/npm",
+      {
+        pkgRoot: "packages/cdkConstructs",
+        tarballDir: "packages/cdkConstructs"
+      }
+    ],
+    [
       "@semantic-release/github",
       {
         assets: [
           {
             path: "CHANGELOG.md",
             label: "CHANGELOG.md"
+          },
+          {
+            path: "packages/cdkConstructs/*.tgz",
+            label: "npm package"
           }
         ],
         successComment: false,

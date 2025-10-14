@@ -93,10 +93,12 @@ jobs:
           echo "VERSION_TAG=${VERSION_TAG}" >> "$GITHUB_ENV"
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: tag release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npx semantic-release
 
@@ -141,73 +143,49 @@ jobs:
       CDK_PUSH_IMAGE_ROLE: ${{ secrets.DEV_CDK_PUSH_IMAGE_ROLE }}
 
   release_qa:
-    needs:
-      [
-        tag_release,
-        release_dev,
-        package_code,
-        get_commit_id,
-      ]
+    needs: [tag_release, release_dev, package_code, get_commit_id]
     uses: ./.github/workflows/docker_image_upload.yml
     with:
-        AWS_ENVIRONMENT: qa
-        VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
-        COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
-        TAG_LATEST: true
-        DOCKER_IMAGE_TAG: ${{needs.tag_release.outputs.version_tag}}
+      AWS_ENVIRONMENT: qa
+      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
+      TAG_LATEST: true
+      DOCKER_IMAGE_TAG: ${{needs.tag_release.outputs.version_tag}}
     secrets:
-        CDK_PUSH_IMAGE_ROLE: ${{ secrets.QA_CDK_PUSH_IMAGE_ROLE }}
-  
+      CDK_PUSH_IMAGE_ROLE: ${{ secrets.QA_CDK_PUSH_IMAGE_ROLE }}
+
   release_ref:
-    needs:
-      [
-        tag_release,
-        release_dev,
-        package_code,
-        get_commit_id,
-      ]
+    needs: [tag_release, release_dev, package_code, get_commit_id]
     uses: ./.github/workflows/docker_image_upload.yml
     with:
-        AWS_ENVIRONMENT: ref
-        VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
-        COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
-        TAG_LATEST: true
-        DOCKER_IMAGE_TAG: ${{needs.tag_release.outputs.version_tag}}
+      AWS_ENVIRONMENT: ref
+      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
+      TAG_LATEST: true
+      DOCKER_IMAGE_TAG: ${{needs.tag_release.outputs.version_tag}}
     secrets:
-        CDK_PUSH_IMAGE_ROLE: ${{ secrets.REF_CDK_PUSH_IMAGE_ROLE }}
-  
+      CDK_PUSH_IMAGE_ROLE: ${{ secrets.REF_CDK_PUSH_IMAGE_ROLE }}
+
   release_int:
-    needs:
-      [
-        tag_release,
-        release_qa,
-        package_code,
-        get_commit_id,
-      ]
+    needs: [tag_release, release_qa, package_code, get_commit_id]
     uses: ./.github/workflows/docker_image_upload.yml
     with:
-        AWS_ENVIRONMENT: int
-        VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
-        COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
-        TAG_LATEST: true
-        DOCKER_IMAGE_TAG: ${{needs.tag_release.outputs.version_tag}}
+      AWS_ENVIRONMENT: int
+      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
+      TAG_LATEST: true
+      DOCKER_IMAGE_TAG: ${{needs.tag_release.outputs.version_tag}}
     secrets:
-        CDK_PUSH_IMAGE_ROLE: ${{ secrets.INT_CDK_PUSH_IMAGE_ROLE }}
-  
+      CDK_PUSH_IMAGE_ROLE: ${{ secrets.INT_CDK_PUSH_IMAGE_ROLE }}
+
   release_prod:
-    needs:
-      [
-        tag_release,
-        release_int,
-        package_code,
-        get_commit_id,
-      ]
+    needs: [tag_release, release_int, package_code, get_commit_id]
     uses: ./.github/workflows/docker_image_upload.yml
     with:
-        AWS_ENVIRONMENT: prod
-        VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
-        COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
-        TAG_LATEST: true
-        DOCKER_IMAGE_TAG: ${{needs.tag_release.outputs.version_tag}}
+      AWS_ENVIRONMENT: prod
+      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
+      TAG_LATEST: true
+      DOCKER_IMAGE_TAG: ${{needs.tag_release.outputs.version_tag}}
     secrets:
-        CDK_PUSH_IMAGE_ROLE: ${{ secrets.PROD_CDK_PUSH_IMAGE_ROLE }}
+      CDK_PUSH_IMAGE_ROLE: ${{ secrets.PROD_CDK_PUSH_IMAGE_ROLE }}
