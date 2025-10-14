@@ -106,8 +106,7 @@ describe("functionConstruct works correctly", () => {
       },
       "ManagedPolicyArns": Match.arrayWith([
         {"Fn::ImportValue": "lambda-resources:LambdaInsightsLogGroupPolicy"},
-        {"Fn::ImportValue": "account-resources:CloudwatchEncryptionKMSPolicyArn"},
-        {"Fn::ImportValue": "account-resources:LambdaDecryptSecretsKMSPolicy"}
+        {"Fn::ImportValue": "account-resources:CloudwatchEncryptionKMSPolicyArn"}
       ])
     })
   })
@@ -214,7 +213,6 @@ describe("functionConstruct works correctly with additional policies", () => {
       "ManagedPolicyArns": Match.arrayWith([
         {"Fn::ImportValue": "lambda-resources:LambdaInsightsLogGroupPolicy"},
         {"Fn::ImportValue": "account-resources:CloudwatchEncryptionKMSPolicyArn"},
-        {"Fn::ImportValue": "account-resources:LambdaDecryptSecretsKMSPolicy"},
         {Ref: testPolicyResource.Ref}
       ])
     })

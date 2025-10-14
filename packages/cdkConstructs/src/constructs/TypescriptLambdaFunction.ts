@@ -106,8 +106,10 @@ const getDefaultLambdaOptions = (
  * This construct creates:
  * - A Lambda function with TypeScript bundling
  * - CloudWatch log group with KMS encryption
+ * - Managed IAM policy for writing logs
  * - IAM role for execution with necessary permissions
  * - Subscription filter on logs so they are forwarded to splunk
+ * - Managed IAM policy for invoking the Lambda function
  *
  * It also
  * - attaches the Lambda Insights layer for monitoring.
