@@ -1,1 +1,0 @@
-{"version":3,"file":"dummyLambda.js","sourceRoot":"","sources":["dummyLambda.ts"],"names":[],"mappings":"AAAA,MAAM,CAAC,MAAM,OAAO,GAAG,KAAK,IAAI,EAAE;IAChC,OAAM;AACR,CAAC,CAAA","sourcesContent":["export const handler = async () => {\n  return\n}\n"]}
