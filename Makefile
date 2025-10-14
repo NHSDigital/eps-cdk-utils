@@ -19,6 +19,7 @@ install-hooks: install-python
 
 lint-node:
 	npm run lint
+	npm run lint --workspace packages/cdkConstructs
 
 lint-githubactions:
 	actionlint
@@ -29,6 +30,7 @@ lint-githubaction-scripts:
 lint: lint-node lint-githubactions lint-githubaction-scripts
 
 clean:
+	rm -rf packages/cdkConstructs/lib
 
 deep-clean: clean
 	rm -rf .venv
@@ -38,6 +40,7 @@ check-licenses: check-licenses-node check-licenses-python
 
 check-licenses-node:
 	npm run check-licenses
+	npm run check-licenses --workspace packages/cdkConstructs
 
 check-licenses-python:
 	scripts/check_python_licenses.sh
