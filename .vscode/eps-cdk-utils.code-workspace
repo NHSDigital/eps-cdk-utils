@@ -3,9 +3,16 @@
 		{
 			"name": "eps-cdk-utils",
 			"path": ".."
+		},
+		{
+			"name": "cdkConstructs",
+			"path": "../packages/cdkConstructs"
 		}
 	],
 	"settings": {
+		"files.exclude": {
+		"packages/": true,
+		},
         "cSpell.words": [
 			"apigw",
 			"ASID",
@@ -65,17 +72,25 @@
 			"package-lock.json",
 			"node_modules",
 			".vscode"
-		]
+		],
+		"eslint.useFlatConfig": true,
+		"eslint.format.enable": true
 	},
 	"extensions": {
 		"recommendations": [
+			"AmazonWebServices.aws-toolkit-vscode",
 			"eamodio.gitlens",
 			"github.vscode-pull-request-github",
 			"redhat.vscode-yaml",
 			"streetsidesoftware.code-spell-checker",
 			"timonwong.shellcheck",
 			"mkhl.direnv",
-			"tamasfe.even-better-toml"
+			"tamasfe.even-better-toml",
+			"christian-kohler.npm-intellisense",
+			"dbaeumer.vscode-eslint",
+			"redhat.vscode-xml",
+			"timonwong.shellcheck",
+			"mkhl.direnv"
 		]
 	}
 }

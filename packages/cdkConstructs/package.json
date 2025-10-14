@@ -1,0 +1,42 @@
+{
+    "name": "@NHSDigital/eps-cdk-constructs",
+    "version": "1.0.0",
+    "description": "Common AWS CDK Constructs for NHS Digital EPS Projects",
+    "scripts": {
+        "build": "tsc",
+        "clean": "rm -rf lib",
+        "prepublishOnly": "npm run clean && npm run build",
+        "lint": "eslint  --max-warnings 0 --fix --config ./eslint.config.mjs .",
+        "test": "POWERTOOLS_DEV=true NODE_OPTIONS=--experimental-vm-modules jest --no-cache --coverage",
+        "check-licenses": "license-checker --failOn GPL --failOn LGPL"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NHSDigital/eps-cdk-utils.git"
+    },
+    "keywords": [],
+    "author": "NHSDigital",
+    "license": "MIT",
+    "private": false,
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com",
+        "access": "public"
+    },
+    "type": "module",
+    "dependencies": {
+        "aws-cdk": "^2.1030.0",
+        "aws-cdk-lib": "^2.219.0",
+        "cdk-nag": "^2.37.52",
+        "constructs": "^10.4.2",
+        "source-map-support": "^0.5.21"
+    },
+    "bugs": {
+        "url": "https://github.com/NHSDigital/eps-cdk-utils/issues"
+    },
+    "homepage": "https://github.com/NHSDigital/eps-cdk-utils#readme",
+    "files": [
+        "lib"
+    ],
+    "main": "lib/src/index.js",
+    "types": "lib/src/index.d.ts"
+}
