@@ -23,12 +23,17 @@ import {NagSuppressions} from "cdk-nag"
 
 export interface TypescriptLambdaFunctionProps {
   /**
-   * Name of the Lambda function.
+   * Name of the lambda function. The log group name is also based on this name.
    *
    */
   readonly functionName: string
   /**
-   * The relative path to the base of the package where the Lambda function code is located.
+   * The base directory for resolving the package base path and entry point.
+   * Should point to the monorepo root.
+   */
+  readonly baseDir: string
+  /**
+   * The relative path from baseDir to the base folder where the lambda function code is located.
    *
    */
   readonly packageBasePath: string
@@ -38,11 +43,11 @@ export interface TypescriptLambdaFunctionProps {
    */
   readonly entryPoint: string
   /**
-   * A map of environment variables to set for the Lambda function.
+   * A map of environment variables to set for the lambda function.
    */
   readonly environmentVariables: {[key: string]: string}
   /**
-   * Optional additional IAM policies to attach to the Lambda function.
+   * Optional additional IAM policies to attach to role the lambda executes as.
    */
   readonly additionalPolicies?: Array<IManagedPolicy>
   /**
@@ -51,7 +56,7 @@ export interface TypescriptLambdaFunctionProps {
    */
   readonly logRetentionInDays: number
   /**
-   * The log level for the Lambda function.
+   * The log level for the lambda function.
    * @default "INFO"
    */
   readonly logLevel: string,
@@ -68,19 +73,22 @@ export interface TypescriptLambdaFunctionProps {
    */
   readonly layers?: Array<ILayerVersion>
   /**
-   * The base directory for resolving the package base path and entry point.
-   * Should point to the monorepo root.
+   * Optional timeout in seconds for the Lambda function.
+   * @default 50 seconds
    */
-  readonly baseDir: string
+  readonly timeoutInSeconds?: number
 }
 
 const insightsLayerArn = "arn:aws:lambda:eu-west-2:580247275435:layer:LambdaInsightsExtension:60"
-const getDefaultLambdaOptions = (packageBasePath: string, baseDir: string):NodejsFunctionProps => {
+const getDefaultLambdaOptions = (
+  packageBasePath: string,
+  baseDir: string,
+  timeoutInSeconds: number):NodejsFunctionProps => {
   return {
     runtime: Runtime.NODEJS_22_X,
     projectRoot: baseDir,
     memorySize: 256,
-    timeout: Duration.seconds(50),
+    timeout: Duration.seconds(timeoutInSeconds),
     architecture: Architecture.X86_64,
     handler: "handler",
     bundling: {
@@ -92,16 +100,71 @@ const getDefaultLambdaOptions = (packageBasePath: string, baseDir: string):Nodej
   }
 }
 
+/**
+ * A construct that creates a TypeScript-based AWS Lambda function with all necessary AWS resources.
+ *
+ * This construct creates:
+ * - A Lambda function with TypeScript bundling
+ * - CloudWatch log group with KMS encryption
+ * - IAM role for execution with necessary permissions
+ * - Subscription filter on logs so they are forwarded to splunk
+ * - Lambda Insights layer for monitoring
+ *
+ * @example
+ * ```typescript
+ * const lambdaFunction = new TypescriptLambdaFunction(this, 'MyFunction', {
+ *   functionName: 'my-lambda',
+ *   packageBasePath: 'packages/my-lambda',
+ *   entryPoint: 'src/handler.ts',
+ *   environmentVariables: {
+ *     TABLE_NAME: 'my-table'
+ *   },
+ *   logRetentionInDays: 30,
+ *   logLevel: 'INFO',
+ *   version: '1.0.0',
+ *   commitId: 'abc123',
+ *   baseDir: '/path/to/monorepo'
+ * });
+ * ```
+ */
 export class TypescriptLambdaFunction extends Construct {
   /**
-     * The managed policy that allows execution of the Lambda function.
-     */
+   * The managed policy that allows execution of the Lambda function.
+   *
+   * Use this policy to grant other AWS resources permission to invoke this Lambda function.
+   *
+   * @example
+   * ```typescript
+   * // Grant API Gateway permission to invoke the Lambda
+   * apiGatewayRole.addManagedPolicy(lambdaConstruct.executionPolicy);
+   * ```
+   */
   public readonly executionPolicy: ManagedPolicy
+
   /**
-     * The Lambda function instance.
-     */
+   * The Lambda function instance.
+   *
+   * Provides access to the underlying AWS Lambda function for additional configuration
+   * or to reference its ARN, name, or other properties.
+   *
+   * @example
+   * ```typescript
+   * // Get the function ARN
+   * const functionArn = lambdaConstruct.function.functionArn;
+   *
+   * // Add additional environment variables
+   * lambdaConstruct.function.addEnvironment('NEW_VAR', 'value');
+   * ```
+   */
   public readonly function: NodejsFunction
 
+  /**
+   * Creates a new TypescriptLambdaFunction construct.
+   *
+   * @param scope - The scope in which to define this construct
+   * @param id - The scoped construct ID. Must be unique amongst siblings in the same scope
+   * @param props - Configuration properties for the Lambda function
+   */
   public constructor(scope: Construct, id: string, props: TypescriptLambdaFunctionProps){
     super(scope, id)
 
@@ -117,7 +180,8 @@ export class TypescriptLambdaFunction extends Construct {
       version,
       commitId,
       layers = [], // Default to empty array
-      baseDir
+      baseDir,
+      timeoutInSeconds = 50
     } = props
 
     // Imports
@@ -135,9 +199,6 @@ export class TypescriptLambdaFunction extends Construct {
 
     const cloudwatchEncryptionKMSPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "cloudwatchEncryptionKMSPolicyArn", Fn.importValue("account-resources:CloudwatchEncryptionKMSPolicyArn"))
-
-    const lambdaDecryptSecretsKMSPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "lambdaDecryptSecretsKMSPolicy", Fn.importValue("account-resources:LambdaDecryptSecretsKMSPolicy"))
 
     const insightsLambdaLayer = LayerVersion.fromLayerVersionArn(
       this, "LayerFromArn", insightsLayerArn)
@@ -195,13 +256,12 @@ export class TypescriptLambdaFunction extends Construct {
         putLogsManagedPolicy,
         lambdaInsightsLogGroupPolicy,
         cloudwatchEncryptionKMSPolicy,
-        lambdaDecryptSecretsKMSPolicy,
         ...(additionalPolicies)
       ]
     })
 
     const lambdaFunction = new NodejsFunction(this, functionName, {
-      ...getDefaultLambdaOptions(packageBasePath, baseDir),
+      ...getDefaultLambdaOptions(packageBasePath, baseDir, timeoutInSeconds),
       functionName: `${functionName}`,
       entry: join(baseDir, packageBasePath, entryPoint),
       role,
