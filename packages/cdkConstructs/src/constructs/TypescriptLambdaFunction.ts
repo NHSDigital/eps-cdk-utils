@@ -87,8 +87,7 @@ const getDefaultLambdaOptions = (packageBasePath: string, baseDir: string):Nodej
       minify: true,
       sourceMap: true,
       tsconfig: join(baseDir, packageBasePath, "tsconfig.json"),
-      target: "es2022",
-      preCompilation: true
+      target: "es2022"
     }
   }
 }
