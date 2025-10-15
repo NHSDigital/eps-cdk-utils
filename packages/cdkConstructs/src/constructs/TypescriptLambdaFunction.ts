@@ -31,9 +31,9 @@ export interface TypescriptLambdaFunctionProps {
    * The base directory for resolving the package base path and entry point.
    * Should point to the monorepo root.
    */
-  readonly baseDir: string
+  readonly projectBaseDir: string
   /**
-   * The relative path from baseDir to the base folder where the lambda function code is located.
+   * The relative path from projectBaseDir to the base folder where the lambda function code is located.
    *
    */
   readonly packageBasePath: string
@@ -82,11 +82,11 @@ export interface TypescriptLambdaFunctionProps {
 const insightsLayerArn = "arn:aws:lambda:eu-west-2:580247275435:layer:LambdaInsightsExtension:60"
 const getDefaultLambdaOptions = (
   packageBasePath: string,
-  baseDir: string,
+  projectBaseDir: string,
   timeoutInSeconds: number):NodejsFunctionProps => {
   return {
     runtime: Runtime.NODEJS_22_X,
-    projectRoot: baseDir,
+    projectRoot: projectBaseDir,
     memorySize: 256,
     timeout: Duration.seconds(timeoutInSeconds),
     architecture: Architecture.X86_64,
@@ -94,7 +94,7 @@ const getDefaultLambdaOptions = (
     bundling: {
       minify: true,
       sourceMap: true,
-      tsconfig: join(baseDir, packageBasePath, "tsconfig.json"),
+      tsconfig: join(projectBaseDir, packageBasePath, "tsconfig.json"),
       target: "es2022"
     }
   }
@@ -185,7 +185,7 @@ export class TypescriptLambdaFunction extends Construct {
       version,
       commitId,
       layers = [], // Default to empty array
-      baseDir,
+      projectBaseDir,
       timeoutInSeconds = 50
     } = props
 
@@ -266,9 +266,9 @@ export class TypescriptLambdaFunction extends Construct {
     })
 
     const lambdaFunction = new NodejsFunction(this, functionName, {
-      ...getDefaultLambdaOptions(packageBasePath, baseDir, timeoutInSeconds),
+      ...getDefaultLambdaOptions(packageBasePath, projectBaseDir, timeoutInSeconds),
       functionName: `${functionName}`,
-      entry: join(baseDir, packageBasePath, entryPoint),
+      entry: join(projectBaseDir, packageBasePath, entryPoint),
       role,
       environment: {
         ...environmentVariables,
