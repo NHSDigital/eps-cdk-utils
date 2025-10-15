@@ -53,7 +53,7 @@ aws-configure:
 aws-login:
 	aws sso login --sso-session sso-session
 
-test:
+test: clean
 	npm run test --workspace packages/cdkConstructs
 
 package:
