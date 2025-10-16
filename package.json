@@ -11,6 +11,9 @@
     "type": "git",
     "url": "https://github.com/NHSDigital/eps-cdk-utils"
   },
+  "workspaces": [
+    "packages/cdkConstructs"
+  ],
   "keywords": [],
   "author": "NHS Digital",
   "license": "MIT",
