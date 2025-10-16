@@ -11,9 +11,6 @@
     "type": "git",
     "url": "https://github.com/NHSDigital/eps-cdk-utils"
   },
-  "workspaces": [
-    "packages/cdkConstructs"
-  ],
   "keywords": [],
   "author": "NHS Digital",
   "license": "MIT",
@@ -29,13 +26,13 @@
     "eslint": "^9.37.0",
     "eslint-plugin-import-newlines": "^1.4.0",
     "license-checker": "^25.0.1",
-    "semantic-release": "^24.2.9",
+    "semantic-release": "^25.0.0",
     "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "esbuild": "^0.25.10"
+    "esbuild": "^0.25.11"
   }
 }
