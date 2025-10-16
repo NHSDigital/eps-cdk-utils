@@ -69,6 +69,10 @@ jobs:
         run: |
           make install-node
 
+      - name: Package library
+        run: |
+          make package
+
       - name: Set VERSION_TAG env var to be short git SHA and get next tag version
         id: output_version_tag
         run: |
