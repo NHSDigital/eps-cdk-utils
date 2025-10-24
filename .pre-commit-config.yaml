@@ -41,5 +41,14 @@ repos:
         types_or: [sh, shell]
         pass_filenames: false
 
+      - id: lint-cdkConstructs
+        name: Lint cdkConstructs
+        entry: npm
+        args: ["run", "--prefix=packages/cdkConstructs", "lint"]
+        language: system
+        files: ^packages\/cdkConstructs
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
 fail_fast: true
 default_stages: [pre-commit]

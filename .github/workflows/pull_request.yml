@@ -78,15 +78,19 @@ jobs:
           echo "commit_id=${{ github.sha }}" >> "$GITHUB_OUTPUT"
           echo "sha_short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
-  package_code:
+  package_docker_image:
     needs: [get_issue_number, quality_checks, get_commit_id]
     uses: ./.github/workflows/docker_image_build.yml
     with:
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
 
-  release_code:
-    needs: [get_issue_number, package_code, get_commit_id]
+  package_npm_code:
+    needs: [get_issue_number, quality_checks, get_commit_id]
+    uses: ./.github/workflows/package_npm_code.yml
+
+  release_docker_image:
+    needs: [get_issue_number, package_docker_image, get_commit_id]
     uses: ./.github/workflows/docker_image_upload.yml
     with:
       AWS_ENVIRONMENT: dev
