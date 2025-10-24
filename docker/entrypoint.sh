@@ -14,9 +14,6 @@ if [[ -z "${CDK_APP_PATH}" ]]; then
     exit 1
 fi
 
-# shellcheck source=/dev/null
-source /home/cdkuser/.asdf/asdf.sh
-
 sed -i -n '/nodejs/p'  /home/cdkuser/workspace/.tool-versions
 cd /home/cdkuser/workspace/ || exit
 
