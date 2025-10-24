@@ -25,9 +25,11 @@ jobs:
 
       - name: Build cdk-utils-build Docker image
         id: build-cdk-utils-build-image
+        env:
+          VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
         run: |
-          docker build -t "cdk-utils-build:${{ inputs.VERSION_NUMBER }}" -f docker/Dockerfile --build-arg VERSION=${{ inputs.VERSION_NUMBER }} .
-          docker save "cdk-utils-build:${{ inputs.VERSION_NUMBER }}" -o cdk-utils-build.img
+          docker build -t "cdk-utils-build:${VERSION_NUMBER}" -f docker/Dockerfile --build-arg VERSION="${VERSION_NUMBER}" .
+          docker save "cdk-utils-build:${VERSION_NUMBER}" -o cdk-utils-build.img
 
       - uses: actions/upload-artifact@00943011d9042930efac3dcd3a170e4273319bc8
         name: Upload docker images
