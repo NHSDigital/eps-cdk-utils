@@ -1,44 +1,51 @@
 FROM ubuntu:24.04
 
+ARG TARGETARCH
+ENV TARGETARCH=${TARGETARCH}
+
+ARG ASDF_VERSION
+COPY .tool-versions.asdf /tmp/.tool-versions.asdf
+
 ARG VERSION
 
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y upgrade
-
-RUN export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y upgrade \
     && apt-get -y install --no-install-recommends ca-certificates curl git jq make unzip wget \
     && apt-get clean
 
 # install aws stuff
-ADD https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip /tmp/awscliv2.zip
-RUN unzip /tmp/awscliv2.zip -d /tmp/aws-cli && \
+# Download correct AWS CLI for arch
+RUN if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" == "aarch64" ]; then \
+      wget -O /tmp/awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip"; \
+    else \
+      wget -O /tmp/awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"; \
+    fi && \
+    unzip /tmp/awscliv2.zip -d /tmp/aws-cli && \
     /tmp/aws-cli/aws/install && \
-    rm tmp/awscliv2.zip && \
-    rm -rf /tmp/aws-cli
+    rm /tmp/awscliv2.zip && rm -rf /tmp/aws-cli
+
+# Install ASDF
+RUN ASDF_VERSION=$(awk '!/^#/ && NF {print $1; exit}' /tmp/.tool-versions.asdf) && \
+    if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "aarch64" ]; then \
+        wget -O /tmp/asdf.tar.gz https://github.com/asdf-vm/asdf/releases/download/v${ASDF_VERSION}/asdf-v${ASDF_VERSION}-linux-arm64.tar.gz; \
+    else \
+        wget -O /tmp/asdf.tar.gz https://github.com/asdf-vm/asdf/releases/download/v${ASDF_VERSION}/asdf-v${ASDF_VERSION}-linux-amd64.tar.gz; \
+    fi && \
+    tar -xvzf /tmp/asdf.tar.gz && \
+    mv asdf /usr/bin
 
 RUN useradd -ms /bin/bash cdkuser
 RUN chown -R cdkuser /home/cdkuser
 WORKDIR /home/cdkuser
 USER cdkuser
-# Install ASDF
-RUN git clone https://github.com/asdf-vm/asdf.git /home/cdkuser/.asdf --branch v0.14.1; \
-    echo '. /home/cdkuser/.asdf/asdf.sh' >> ~/.bashrc; \
-    echo '. /home/cdkuser/.asdf/completions/asdf.bash' >> ~/.bashrc; \
-    echo 'PATH="$PATH:/home/cdkuser/.asdf/bin/"' >> ~/.bashrc;
 
-ENV PATH="$PATH:/home/cdkuser/.asdf/bin/:/home/cdkuser/node_modules/.bin"
+ENV PATH="$PATH:/home/cdkuser/.asdf/shims/:/home/cdkuser/node_modules/.bin"
 
 # Install ASDF plugins
 RUN asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
 # install some common node versions that are used in builds to speed things up
-RUN asdf install nodejs 20.19.1; \
-    asdf install nodejs 23.9.0
-# update npm
-RUN export ASDF_DIR=/home/cdkuser/.asdf && \
-    . /home/cdkuser/.asdf/asdf.sh && \
-    asdf shell nodejs 20.19.1 && \
-    cd ~/.asdf/installs/nodejs/20.19.1/lib && npm update npm
+RUN asdf install nodejs 22.20.0; 
 
 # copy files needed for deployment
 COPY --chown=cdkuser docker/entrypoint.sh /home/cdkuser/

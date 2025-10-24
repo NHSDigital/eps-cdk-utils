@@ -19,17 +19,19 @@ jobs:
       packages: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
           ref: ${{ env.BRANCH_NAME }}
 
       - name: Build cdk-utils-build Docker image
         id: build-cdk-utils-build-image
+        env:
+          VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
         run: |
-          docker build -t "cdk-utils-build:${{ inputs.VERSION_NUMBER }}" -f docker/Dockerfile --build-arg VERSION=${{ inputs.VERSION_NUMBER }} .
-          docker save "cdk-utils-build:${{ inputs.VERSION_NUMBER }}" -o cdk-utils-build.img   
+          docker build -t "cdk-utils-build:${VERSION_NUMBER}" -f docker/Dockerfile --build-arg VERSION="${VERSION_NUMBER}" .
+          docker save "cdk-utils-build:${VERSION_NUMBER}" -o cdk-utils-build.img
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         name: Upload docker images
         with:
           name: docker_artifact
