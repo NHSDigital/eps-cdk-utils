@@ -1,6 +1,5 @@
 FROM mcr.microsoft.com/devcontainers/base:ubuntu
 
-
 ARG TARGETARCH
 ENV TARGETARCH=${TARGETARCH}
 
