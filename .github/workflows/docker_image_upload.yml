@@ -21,7 +21,7 @@ on:
     secrets:
       CDK_PUSH_IMAGE_ROLE:
         required: true
-  
+
 jobs:
   upload_docker_image:
     runs-on: ubuntu-22.04
@@ -60,23 +60,28 @@ jobs:
       - name: Retrieve AWS Account ID
         id: retrieve-account-id
         run: echo "ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)" >> "$GITHUB_ENV"
-       
+
       - name: Login to Amazon ECR
         id: login-ecr
         run: |
           aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin ${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com
 
       - name: Push tagged version cdk-utils-build to Amazon ECR
+        env:
+          VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+          DOCKER_IMAGE_TAG: ${{ inputs.DOCKER_IMAGE_TAG }}
         run: |
-          docker tag "cdk-utils-build:${{ inputs.VERSION_NUMBER }}" "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:${{ inputs.DOCKER_IMAGE_TAG }}"
-          docker push "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:${{ inputs.DOCKER_IMAGE_TAG }}"
+          docker tag "cdk-utils-build:${VERSION_NUMBER}" "${ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:${DOCKER_IMAGE_TAG}"
+          docker push "${ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:${DOCKER_IMAGE_TAG}"
 
       - name: Push latest cdk-utils-build to Amazon ECR
         if: ${{ inputs.TAG_LATEST == true }}
+        env:
+          VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
         run: |
-          docker tag "cdk-utils-build:${{ inputs.VERSION_NUMBER }}" "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:latest"
-          docker push "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:latest"
-    
+          docker tag "cdk-utils-build:${VERSION_NUMBER}" "${ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:latest"
+          docker push "${ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:latest"
+
       - name: Check cdk-utils-build scan results
         env:
           REPOSITORY_NAME: cdk-utils-build-repo
