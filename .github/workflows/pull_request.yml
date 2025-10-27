@@ -107,7 +107,7 @@ jobs:
     with:
       dry_run: false
       asdfVersion: ${{ needs.get_asdf_version.outputs.asdf_version }}
-      branch_name: main
+      branch_name: cdk_construct
       publish_package: true
       tag_format: ${{ needs.get_asdf_version.outputs.tag_format }}
       pkg_root: packages/cdkConstructs
