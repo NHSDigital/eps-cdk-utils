@@ -103,12 +103,11 @@ jobs:
 
   tag_release:
     needs: [get_commit_id, get_asdf_version]
-    uses: NHSDigital/eps-workflow-semantic-release/.github/workflows/tag-release.yml@publish_different_path
+    uses: NHSDigital/eps-workflow-semantic-release/.github/workflows/tag-release.yml@7c0d0e06afc120ec47372b479aa147ff9b453bca
     with:
       dry_run: false
       asdfVersion: ${{ needs.get_asdf_version.outputs.asdf_version }}
       branch_name: cdk_construct
       publish_package: true
       tag_format: ${{ needs.get_asdf_version.outputs.tag_format }}
-      pkg_root: packages/cdkConstructs
     secrets: inherit
