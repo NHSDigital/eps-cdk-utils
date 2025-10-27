@@ -92,7 +92,7 @@ jobs:
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
 
   package_npm_code:
-    needs: [get_issue_number, quality_checks, get_commit_id]
+    needs: [quality_checks, get_commit_id]
     uses: ./.github/workflows/package_npm_code.yml
 
   release_docker_image:

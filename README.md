@@ -9,6 +9,13 @@ This repository contains a docker image used to deploy CDK to our environments a
 - `scripts/` Utilities helpful to developers of this specification
 - `.github/` Contains GitHub workflows that are used for building and deploying from pull requests and releases
 
+## Releases
+A release of this code happens automatically every Wednesday, but can also be triggered manually by running the release workflow.   
+The release workflow does the following
+ - creates a new tagged version
+ - creates a new version of the cdk construct library and publishes it to github
+ - pushes the cdk-utils docker image to dev and all other environments (subject to manual release approval in github actions)
+
 ## CDK Constructs
 
 This contains common CDK constructs used in EPS projects.
