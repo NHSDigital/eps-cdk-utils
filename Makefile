@@ -56,7 +56,9 @@ aws-login:
 test: clean
 	npm run test --workspace packages/cdkConstructs
 
-package:
-	npm run build --workspace packages/cdkConstructs
+package: build
 	mkdir -p lib/
 	npm pack --workspace packages/cdkConstructs --pack-destination lib/
+
+build:
+	npm run build --workspace packages/cdkConstructs
