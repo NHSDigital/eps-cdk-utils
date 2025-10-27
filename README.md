@@ -40,21 +40,15 @@ See [https://code.visualstudio.com/docs/devcontainers/containers](https://code.v
 
 All commits must be made using [signed commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
 
-### Setup
 
-If you want to test a new construct, add it to `packages/cdkConstructs`.
+### Testing changes to construct library
+To test changes to the construct library, you need to package the library and install it on the project you want to test it on.
 
-### Testing New Constructs
+Either 
+ - run `make package` from this project and copy the .tgz file from lib folder to the project you want to test in
+ - create a pull request and from the pull request workflow run, download nhsdigital-eps-cdk-constructs-1.0.0.tgz to the project you want to test in
 
-Run the following to produce a distributable tarball:
-
-```bash
-make package
-```
-
-This will produce a tarball file in the `lib` folder.
-
-Copy this to the project you want to use it in and use the following to install it:
+ In the project you want to test in, run the following
 
 ```bash
 npm install --save NHSDigital-eps-cdk-constructs-1.0.0.tgz --workspace packages/cdk/

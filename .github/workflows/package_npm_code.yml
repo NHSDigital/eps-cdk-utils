@@ -63,6 +63,6 @@ jobs:
             - uses: actions/upload-artifact@v4
               name: Upload packaged code
               with:
-                  name: NHSDigital-eps-cdk-constructs
+                  name: nhsdigital-eps-cdk-constructs-1.0.0.tgz
                   path: |
-                      lib/NHSDigital-eps-cdk-constructs-1.0.0.tgz
+                      lib/nhsdigital-eps-cdk-constructs-1.0.0.tgz
