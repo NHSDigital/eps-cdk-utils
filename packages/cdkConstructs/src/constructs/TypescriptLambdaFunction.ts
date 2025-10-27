@@ -18,7 +18,7 @@ import {
 import {NodejsFunction, NodejsFunctionProps} from "aws-cdk-lib/aws-lambda-nodejs"
 import {CfnLogGroup, CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
 import {Construct} from "constructs"
-import {join} from "path"
+import {join} from "node:path"
 import {NagSuppressions} from "cdk-nag"
 
 export interface TypescriptLambdaFunctionProps {
@@ -211,7 +211,7 @@ export class TypescriptLambdaFunction extends Construct {
     // Resources
     const logGroup = new LogGroup(this, "LambdaLogGroup", {
       encryptionKey: cloudWatchLogsKmsKey,
-      logGroupName: `/aws/lambda/${functionName!}`,
+      logGroupName: `/aws/lambda/${functionName}`,
       retention: logRetentionInDays,
       removalPolicy: RemovalPolicy.DESTROY
     })

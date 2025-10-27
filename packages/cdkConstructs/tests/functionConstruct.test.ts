@@ -11,7 +11,7 @@ import {
 } from "vitest"
 
 import {TypescriptLambdaFunction} from "../src/constructs/TypescriptLambdaFunction"
-import {resolve} from "path"
+import {resolve} from "node:path"
 
 describe("functionConstruct works correctly", () => {
   let stack: Stack
