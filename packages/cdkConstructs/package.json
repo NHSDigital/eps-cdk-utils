@@ -1,5 +1,5 @@
 {
-    "name": "@NHSDigital/eps-cdk-constructs",
+    "name": "@nhsdigital/eps-cdk-constructs",
     "version": "1.0.0",
     "description": "Common AWS CDK Constructs for NHS Digital EPS Projects",
     "scripts": {
