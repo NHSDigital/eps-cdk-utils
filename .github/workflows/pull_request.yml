@@ -102,7 +102,7 @@ jobs:
       CDK_PUSH_IMAGE_ROLE: ${{ secrets.DEV_CDK_PUSH_IMAGE_ROLE }}
 
   tag_release:
-    needs: [quality_checks, get_commit_id, get_asdf_version]
+    needs: [get_commit_id, get_asdf_version]
     uses: NHSDigital/eps-workflow-semantic-release/.github/workflows/tag-release.yml@publish_different_path
     with:
       dry_run: false
