@@ -47,7 +47,7 @@
   },
   "type": "module",
   "files": [
-    "packages/cdkConstructs/lib"
+    "packages/cdkConstructs/lib/src"
   ],
   "main": "packages/cdkConstructs/lib/src/index.js",
   "types": "packages/cdkConstructs/lib/src/index.d.ts"

@@ -18,10 +18,6 @@
     "author": "NHSDigital",
     "license": "MIT",
     "private": false,
-    "publishConfig": {
-        "registry": "https://npm.pkg.github.com",
-        "access": "public"
-    },
     "type": "module",
     "dependencies": {
         "aws-cdk": "^2.1030.0",
