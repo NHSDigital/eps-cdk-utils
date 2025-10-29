@@ -19,7 +19,7 @@
   "author": "NHS Digital",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^24.9.1",
+    "@types/node": "^24.9.2",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.1",
     "@vitest/coverage-v8": "^4.0.4",
