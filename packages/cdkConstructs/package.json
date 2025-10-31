@@ -20,7 +20,7 @@
     "private": false,
     "type": "module",
     "dependencies": {
-        "aws-cdk": "^2.1030.0",
+        "aws-cdk": "^2.1031.1",
         "aws-cdk-lib": "^2.219.0",
         "cdk-nag": "^2.37.52",
         "constructs": "^10.4.2"
