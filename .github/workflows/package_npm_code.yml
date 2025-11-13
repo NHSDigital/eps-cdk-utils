@@ -60,7 +60,7 @@ jobs:
               run: |
                   make package
 
-            - uses: actions/upload-artifact@v4
+            - uses: actions/upload-artifact@v5
               name: Upload packaged code
               with:
                   name: nhsdigital-eps-cdk-constructs-1.0.0.tgz
