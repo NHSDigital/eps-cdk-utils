@@ -15,7 +15,7 @@ RUN apt-get update \
     jq apt-transport-https ca-certificates gnupg-agent \
     software-properties-common bash-completion python3-pip make libbz2-dev \
     libreadline-dev libsqlite3-dev wget llvm libncurses5-dev libncursesw5-dev \
-    xz-utils tk-dev liblzma-dev netcat libyaml-dev
+    xz-utils tk-dev liblzma-dev libyaml-dev
 
 
 # Download correct AWS CLI for arch
