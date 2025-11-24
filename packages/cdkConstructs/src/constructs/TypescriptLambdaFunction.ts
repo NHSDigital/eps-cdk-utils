@@ -80,7 +80,7 @@ export interface TypescriptLambdaFunctionProps {
 
   /**
    * Optional runtime for the Lambda function.
-   * @default Runtime.NODEJS_22_X
+   * @default Runtime.NODEJS_24_X
    */
   readonly runtime?: Runtime
 }
