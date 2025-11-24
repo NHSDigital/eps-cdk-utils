@@ -45,7 +45,7 @@ export interface TypescriptLambdaFunctionProps {
   /**
    * A map of environment variables to set for the lambda function.
    */
-  readonly environmentVariables: {[key: string]: string}
+  readonly environmentVariables: { [key: string]: string }
   /**
    * Optional additional IAM policies to attach to role the lambda executes as.
    */
@@ -77,15 +77,23 @@ export interface TypescriptLambdaFunctionProps {
    * @default 50 seconds
    */
   readonly timeoutInSeconds?: number
+
+  /**
+   * Optional runtime for the Lambda function.
+   * @default Runtime.NODEJS_24_X
+   */
+  readonly runtime?: Runtime
 }
 
 const insightsLayerArn = "arn:aws:lambda:eu-west-2:580247275435:layer:LambdaInsightsExtension:60"
 const getDefaultLambdaOptions = (
   packageBasePath: string,
   projectBaseDir: string,
-  timeoutInSeconds: number):NodejsFunctionProps => {
+  timeoutInSeconds: number,
+  runtime: Runtime
+): NodejsFunctionProps => {
   return {
-    runtime: Runtime.NODEJS_22_X,
+    runtime: runtime,
     projectRoot: projectBaseDir,
     memorySize: 256,
     timeout: Duration.seconds(timeoutInSeconds),
@@ -170,7 +178,7 @@ export class TypescriptLambdaFunction extends Construct {
    * @param id - The scoped construct ID. Must be unique amongst siblings in the same scope
    * @param props - Configuration properties for the Lambda function
    */
-  public constructor(scope: Construct, id: string, props: TypescriptLambdaFunctionProps){
+  public constructor(scope: Construct, id: string, props: TypescriptLambdaFunctionProps) {
     super(scope, id)
 
     // Destructure with defaults
@@ -186,7 +194,8 @@ export class TypescriptLambdaFunction extends Construct {
       commitId,
       layers = [], // Default to empty array
       projectBaseDir,
-      timeoutInSeconds = 50
+      timeoutInSeconds = 50,
+      runtime = Runtime.NODEJS_24_X
     } = props
 
     // Imports
@@ -266,7 +275,7 @@ export class TypescriptLambdaFunction extends Construct {
     })
 
     const lambdaFunction = new NodejsFunction(this, functionName, {
-      ...getDefaultLambdaOptions(packageBasePath, projectBaseDir, timeoutInSeconds),
+      ...getDefaultLambdaOptions(packageBasePath, projectBaseDir, timeoutInSeconds, runtime),
       functionName: `${functionName}`,
       entry: join(projectBaseDir, packageBasePath, entryPoint),
       role,
@@ -278,7 +287,7 @@ export class TypescriptLambdaFunction extends Construct {
         COMMIT_ID: commitId
       },
       logGroup,
-      layers:[
+      layers: [
         insightsLambdaLayer,
         ...layers
       ]

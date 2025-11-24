@@ -1,7 +1,7 @@
 import {App, assertions, Stack} from "aws-cdk-lib"
 import {ManagedPolicy, PolicyStatement, Role} from "aws-cdk-lib/aws-iam"
 import {LogGroup} from "aws-cdk-lib/aws-logs"
-import {Function, LayerVersion} from "aws-cdk-lib/aws-lambda"
+import {Function, LayerVersion, Runtime} from "aws-cdk-lib/aws-lambda"
 import {Template, Match} from "aws-cdk-lib/assertions"
 import {
   describe,
@@ -114,7 +114,7 @@ describe("functionConstruct works correctly", () => {
   test("it has the correct lambda", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
       Handler: "index.handler",
-      Runtime: "nodejs22.x",
+      Runtime: "nodejs24.x",
       FunctionName: "testLambda",
       MemorySize: 256,
       Architectures: ["x86_64"],
@@ -166,7 +166,7 @@ describe("functionConstruct works correctly with environment variables", () => {
 
   test("environment variables are added correctly", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
-      Runtime: "nodejs22.x",
+      Runtime: "nodejs24.x",
       FunctionName: "testLambda",
       Environment: {Variables: {foo: "bar"}}
     })
@@ -249,7 +249,7 @@ describe("functionConstruct works correctly with additional layers", () => {
   test("it has the correct layers added", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
       Handler: "index.handler",
-      Runtime: "nodejs22.x",
+      Runtime: "nodejs24.x",
       FunctionName: "testLambda",
       MemorySize: 256,
       Architectures: ["x86_64"],
@@ -289,11 +289,42 @@ describe("functionConstruct works correctly with custom timeout", () => {
   test("it has the correct timeout", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
       Handler: "index.handler",
-      Runtime: "nodejs22.x",
+      Runtime: "nodejs24.x",
       FunctionName: "testLambda",
       MemorySize: 256,
       Architectures: ["x86_64"],
       Timeout: 120
+    })
+  })
+})
+
+describe("functionConstruct works correctly with different runtime", () => {
+  let stack: Stack
+  let app: App
+  let template: assertions.Template
+  beforeAll(() => {
+    app = new App()
+    stack = new Stack(app, "lambdaConstructStack")
+    new TypescriptLambdaFunction(stack, "dummyFunction", {
+      functionName: "testLambda",
+      additionalPolicies: [],
+      packageBasePath: "packages/cdkConstructs",
+      entryPoint: "tests/src/dummyLambda.ts",
+      environmentVariables: {},
+      logRetentionInDays: 30,
+      logLevel: "DEBUG",
+      version: "1.0.0",
+      commitId: "abcd1234",
+      projectBaseDir: resolve(__dirname, "../../.."),
+      runtime: Runtime.NODEJS_22_X
+    })
+    template = Template.fromStack(stack)
+  })
+
+  test("it has correct runtime", () => {
+    template.hasResourceProperties("AWS::Lambda::Function", {
+      Runtime: "nodejs22.x",
+      FunctionName: "testLambda"
     })
   })
 })
