@@ -1,5 +1,6 @@
 [project]
-python = "^3.12"
+python = "^3.14"
+name = "eps-cdk-uitl"
 
 [tool.poetry]
 name = "eps-cdk-uitl"
@@ -14,14 +15,10 @@ repository = "https://github.com/NHSDigital/eps-cdk-util"
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.14"
 pre-commit = "^4.1.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pip-licenses = "^5.0.0"
 
 [tool.poetry.scripts]
-
-[build-system]
-requires = ["poetry>=1.8"]
-build-backend = "poetry.masonry.api"
