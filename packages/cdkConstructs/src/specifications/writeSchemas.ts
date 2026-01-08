@@ -1,5 +1,5 @@
-import fs from "fs"
-import path from "path"
+import fs from "node:fs"
+import path from "node:path"
 import {JSONSchema} from "json-schema-to-ts"
 
 function isNotJSONSchemaArray(schema: JSONSchema | ReadonlyArray<JSONSchema>): schema is JSONSchema {
@@ -30,7 +30,7 @@ function collapseExamples(schema: JSONSchema): JSONSchema {
   if (schema.properties) {
     const properties: Record<string, JSONSchema> = {}
     for (const key in schema.properties) {
-      if (Object.prototype.hasOwnProperty.call(schema.properties, key)) {
+      if (Object.hasOwn(schema.properties, key)) {
         properties[key] = collapseExamples(schema.properties[key])
       }
     }
@@ -48,7 +48,7 @@ export function writeSchemas(
     fs.mkdirSync(outputDir, {recursive: true})
   }
   for (const name in schemas) {
-    if (Object.prototype.hasOwnProperty.call(schemas, name)) {
+    if (Object.hasOwn(schemas, name)) {
       const schema = schemas[name]
       const fileName = `${name}.json`
       const filePath = path.join(outputDir, fileName)

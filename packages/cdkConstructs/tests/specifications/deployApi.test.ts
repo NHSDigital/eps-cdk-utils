@@ -6,6 +6,7 @@ import {
   vi
 } from "vitest"
 import {deployApi} from "../../src/specifications/deployApi"
+import type {ApiConfig} from "../../src/specifications/deployApi"
 
 const lambdaSendMock = vi.fn()
 
@@ -20,8 +21,6 @@ vi.mock("@aws-sdk/client-lambda", () => {
   }
 
   class LambdaClient {
-    constructor() {}
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     send(command: any) {
       return lambdaSendMock(command)
@@ -64,39 +63,49 @@ const defaultExportsMap = {
   "account-resources:proxygenKey": "arn:proxygen-key"
 }
 
+function buildConfig(overrides: Partial<ApiConfig> = {}): ApiConfig {
+  return {
+    specification: JSON.stringify(createSpec()),
+    apiName: "eps",
+    version: "1.0.0",
+    apigeeEnvironment: "internal-dev",
+    isPullRequest: false,
+    awsEnvironment: "nonprod",
+    stackName: "eps-stack-001",
+    mtlsSecretName: "mtls/secret",
+    clientCertExportName: "clientCert",
+    clientPrivateKeyExportName: "clientKey",
+    proxygenPrivateKeyExportName: "proxygenKey",
+    proxygenKid: "kid-123",
+    ...overrides
+  }
+}
+
+function payloadFromCall(callIndex: number) {
+  const command = lambdaSendMock.mock.calls[callIndex][0] as {input: {Payload: Buffer}}
+  return JSON.parse(command.input.Payload.toString())
+}
+
+function functionNameFromCall(callIndex: number) {
+  const command = lambdaSendMock.mock.calls[callIndex][0] as {input: {FunctionName: string}}
+  return command.input.FunctionName
+}
+
 describe("deployApi", () => {
   beforeEach(() => {
     lambdaSendMock.mockReset().mockResolvedValue({Payload: Buffer.from('"ok"')})
     getCloudFormationExportsMock.mockReset()
   })
 
-  function payloadFromCall(callIndex: number) {
-    const command = lambdaSendMock.mock.calls[callIndex][0] as {input: {Payload: Buffer}}
-    return JSON.parse(command.input.Payload.toString())
-  }
-
-  function functionNameFromCall(callIndex: number) {
-    const command = lambdaSendMock.mock.calls[callIndex][0] as {input: {FunctionName: string}}
-    return command.input.FunctionName
-  }
-
   test("stores secrets, deploys instance and publishes spec for internal-dev", async () => {
-    const spec = JSON.stringify(createSpec())
     getCloudFormationExportsMock.mockResolvedValue(defaultExportsMap)
 
     await deployApi(
-      spec,
-      "eps",
-      "2.0.0",
-      "internal-dev",
-      false,
-      "nonprod",
-      "eps-stack-001",
-      "mtls/secret",
-      "clientCert",
-      "clientKey",
-      "proxygenKey",
-      "kid-123",
+      buildConfig({
+        version: "2.0.0",
+        apigeeEnvironment: "internal-dev",
+        stackName: "eps-stack-001"
+      }),
       false
     )
 
@@ -135,22 +144,16 @@ describe("deployApi", () => {
   })
 
   test("handles pull requests in sandbox without storing secrets", async () => {
-    const spec = JSON.stringify(createSpec())
     getCloudFormationExportsMock.mockResolvedValue(defaultExportsMap)
 
     await deployApi(
-      spec,
-      "eps",
-      "3.1.4",
-      "sandbox",
-      true,
-      "nonprod",
-      "eps-pr-stack-456",
-      "mtls/secret",
-      "clientCert",
-      "clientKey",
-      "proxygenKey",
-      "kid-789",
+      buildConfig({
+        version: "3.1.4",
+        apigeeEnvironment: "sandbox",
+        isPullRequest: true,
+        stackName: "eps-pr-stack-456",
+        proxygenKid: "kid-789"
+      }),
       false
     )
 
@@ -168,22 +171,16 @@ describe("deployApi", () => {
   })
 
   test("uses prod lambdas and prod security scheme refs", async () => {
-    const spec = JSON.stringify(createSpec())
     getCloudFormationExportsMock.mockResolvedValue(defaultExportsMap)
 
     await deployApi(
-      spec,
-      "eps",
-      "4.0.0",
-      "prod",
-      false,
-      "prod",
-      "eps-prod-stack",
-      "mtls/secret",
-      "clientCert",
-      "clientKey",
-      "proxygenKey",
-      "kid-prod",
+      buildConfig({
+        version: "4.0.0",
+        apigeeEnvironment: "prod",
+        awsEnvironment: "prod",
+        stackName: "eps-prod-stack",
+        proxygenKid: "kid-prod"
+      }),
       false
     )
 
@@ -199,22 +196,15 @@ describe("deployApi", () => {
   })
 
   test("publishes spec to prod catalogue for int environment", async () => {
-    const spec = JSON.stringify(createSpec())
     getCloudFormationExportsMock.mockResolvedValue(defaultExportsMap)
 
     await deployApi(
-      spec,
-      "eps",
-      "5.0.0",
-      "int",
-      false,
-      "nonprod",
-      "eps-int-stack",
-      "mtls/secret",
-      "clientCert",
-      "clientKey",
-      "proxygenKey",
-      "kid-int",
+      buildConfig({
+        version: "5.0.0",
+        apigeeEnvironment: "int",
+        stackName: "eps-int-stack",
+        proxygenKid: "kid-int"
+      }),
       false
     )
 
@@ -227,23 +217,15 @@ describe("deployApi", () => {
   })
 
   test("dry run only logs intended invocations", async () => {
-    const spec = JSON.stringify(createSpec())
     getCloudFormationExportsMock.mockResolvedValue(defaultExportsMap)
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined)
 
     await deployApi(
-      spec,
-      "eps",
-      "1.0.0",
-      "int",
-      false,
-      "nonprod",
-      "eps-int-stack",
-      "mtls/secret",
-      "clientCert",
-      "clientKey",
-      "proxygenKey",
-      "kid-int",
+      buildConfig({
+        apigeeEnvironment: "int",
+        stackName: "eps-int-stack",
+        proxygenKid: "kid-int"
+      }),
       true
     )
 
@@ -255,24 +237,16 @@ describe("deployApi", () => {
   })
 
   test("throws when lambda invocation returns a FunctionError", async () => {
-    const spec = JSON.stringify(createSpec())
     getCloudFormationExportsMock.mockResolvedValue(defaultExportsMap)
     lambdaSendMock
       .mockResolvedValueOnce({FunctionError: "Handled", Payload: Buffer.from('"bad"')})
 
     await expect(deployApi(
-      spec,
-      "eps",
-      "1.2.3",
-      "int",
-      false,
-      "nonprod",
-      "eps-stack",
-      "mtls/secret",
-      "clientCert",
-      "clientKey",
-      "proxygenKey",
-      "kid",
+      buildConfig({
+        version: "1.2.3",
+        apigeeEnvironment: "int",
+        stackName: "eps-stack"
+      }),
       false
     )).rejects.toThrow("Error calling lambda lambda-resources-ProxygenProdMTLSSecretPut: \"bad\"")
   })

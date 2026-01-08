@@ -2,36 +2,54 @@
 import {LambdaClient, InvokeCommand} from "@aws-sdk/client-lambda"
 import {getCFConfigValue, getCloudFormationExports} from "../config"
 
+export type ApiConfig = {
+  specification: string
+  apiName: string
+  version: string
+  apigeeEnvironment: string
+  isPullRequest: boolean
+  awsEnvironment: string
+  stackName: string
+  mtlsSecretName: string
+  clientCertExportName: string
+  clientPrivateKeyExportName: string
+  proxygenPrivateKeyExportName: string
+  proxygenKid: string
+}
+
 export async function deployApi(
-  specification: string,
-  apiName: string,
-  version: string,
-  apigeeEnvironment: string,
-  isPullRequest: boolean,
-  awsEnvironment: string,
-  stackName: string,
-  mtlsSecretName: string,
-  clientCertExportName: string,
-  clientPrivateKeyExportName: string,
-  proxygenPrivateKeyExportName: string,
-  proxygenKid: string,
+  {
+    specification,
+    apiName,
+    version,
+    apigeeEnvironment,
+    isPullRequest,
+    awsEnvironment,
+    stackName,
+    mtlsSecretName,
+    clientCertExportName,
+    clientPrivateKeyExportName,
+    proxygenPrivateKeyExportName,
+    proxygenKid
+  }: ApiConfig,
   dryRun: boolean
 ): Promise<void> {
   const lambda = new LambdaClient({})
   async function invokeLambda(functionName: string, payload: unknown): Promise<void> {
-    if (!dryRun) {
-      const invokeResult = await lambda.send(new InvokeCommand({
-        FunctionName: functionName,
-        Payload: Buffer.from(JSON.stringify(payload))
-      }))
-      const responsePayload = Buffer.from(invokeResult.Payload!).toString()
-      if (invokeResult.FunctionError) {
-        throw new Error(`Error calling lambda ${functionName}: ${responsePayload}`)
-      }
-      console.log(`Lambda ${functionName} invoked successfully. Response:`, responsePayload)
-    } else {
+    if (dryRun) {
       console.log(`Would invoke lambda ${functionName}`)
+      return
     }
+
+    const invokeResult = await lambda.send(new InvokeCommand({
+      FunctionName: functionName,
+      Payload: Buffer.from(JSON.stringify(payload))
+    }))
+    const responsePayload = Buffer.from(invokeResult.Payload!).toString()
+    if (invokeResult.FunctionError) {
+      throw new Error(`Error calling lambda ${functionName}: ${responsePayload}`)
+    }
+    console.log(`Lambda ${functionName} invoked successfully. Response:`, responsePayload)
   }
 
   let instance = apiName
