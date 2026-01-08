@@ -23,10 +23,10 @@
         "@aws-sdk/client-cloudformation": "^3.958.0",
         "@aws-sdk/client-lambda": "^3.958.0",
         "@aws-sdk/client-s3": "^3.958.0",
-        "aws-cdk": "^2.1033.0",
-        "aws-cdk-lib": "^2.228.0",
+        "aws-cdk": "^2.1100.1",
+        "aws-cdk-lib": "^2.233.0",
         "cdk-nag": "^2.37.52",
-        "constructs": "^10.4.3",
+        "constructs": "^10.4.4",
         "json-schema-to-ts": "^3.1.1"
     },
     "bugs": {
