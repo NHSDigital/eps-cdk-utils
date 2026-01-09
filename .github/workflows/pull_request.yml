@@ -32,7 +32,7 @@ jobs:
           TAG_FORMAT=$(yq '.TAG_FORMAT' .github/config/settings.yml)
           echo "TAG_FORMAT=$TAG_FORMAT" >> "$GITHUB_OUTPUT"
   pr_title_format_check:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@2fe6bc6cd974efb4d55a2a7b665385f7a2d28950
+    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@9791a77de7b005056b4ddfb9789306f5179f53da
   quality_checks:
     uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks.yml@2fe6bc6cd974efb4d55a2a7b665385f7a2d28950
     needs: [get_asdf_version, get_commit_id]
