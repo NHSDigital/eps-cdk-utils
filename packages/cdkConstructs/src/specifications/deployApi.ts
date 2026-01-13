@@ -15,6 +15,7 @@ export type ApiConfig = {
   clientPrivateKeyExportName: string
   proxygenPrivateKeyExportName: string
   proxygenKid: string
+  hiddenPaths: Array<string>
 }
 
 export async function deployApi(
@@ -30,7 +31,8 @@ export async function deployApi(
     clientCertExportName,
     clientPrivateKeyExportName,
     proxygenPrivateKeyExportName,
-    proxygenKid
+    proxygenKid,
+    hiddenPaths
   }: ApiConfig,
   dryRun: boolean
 ): Promise<void> {
@@ -66,16 +68,23 @@ export async function deployApi(
   }
   spec.info.version = version
   spec["x-nhsd-apim"].target.url = `https://${stackName}.${awsEnvironment}.eps.national.nhs.uk`
+
+  function replaceSchemeRefs(domain: string) {
+    const schemes = ["nhs-cis2-aal3", "nhs-login-p9", "app-level3", "app-level0"]
+    for (const scheme of schemes) {
+      if (spec.components.securitySchemes[scheme]) {
+        spec.components.securitySchemes[scheme] = {
+          "$ref": `https://${domain}/components/securitySchemes/${scheme}`
+        }
+      }
+    }
+  }
   if (apigeeEnvironment === "prod") {
     spec.servers = [ {url: `https://api.service.nhs.uk/${instance}`} ]
-    spec.components.securitySchemes["nhs-cis2-aal3"] = {
-      "$ref": "https://proxygen.prod.api.platform.nhs.uk/components/securitySchemes/nhs-cis2-aal3"
-    }
+    replaceSchemeRefs("proxygen.prod.api.platform.nhs.uk")
   } else {
     spec.servers = [ {url: `https://${apigeeEnvironment}.api.service.nhs.uk/${instance}`} ]
-    spec.components.securitySchemes["nhs-cis2-aal3"] = {
-      "$ref": "https://proxygen.ptl.api.platform.nhs.uk/components/securitySchemes/nhs-cis2-aal3"
-    }
+    replaceSchemeRefs("proxygen.ptl.api.platform.nhs.uk")
   }
   if (apigeeEnvironment.includes("sandbox")) {
     delete spec["x-nhsd-apim"]["target-attributes"] // Resolve issue with sandbox trying to look up app name
@@ -132,6 +141,11 @@ export async function deployApi(
     spec_publish_env = "uat"
   }
   if (spec_publish_env) {
+    for (const path of hiddenPaths) {
+      if (spec.paths[path]) {
+        delete spec.paths[path]
+      }
+    }
     await invokeLambda(spec_publish_lambda, {
       apiName,
       environment: spec_publish_env,

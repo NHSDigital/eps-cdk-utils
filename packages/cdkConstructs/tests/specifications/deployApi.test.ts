@@ -40,7 +40,12 @@ vi.mock("../../src/config", async (importOriginal) => {
   }
 })
 
-function createSpec() {
+type SpecOverrides = {
+  securitySchemes?: Record<string, unknown>,
+  paths?: Record<string, unknown>
+}
+
+function createSpec(overrides: SpecOverrides = {}) {
   return {
     info: {title: "EPS API", version: "0.0.1"},
     "x-nhsd-apim": {
@@ -52,10 +57,9 @@ function createSpec() {
       "target-attributes": {app: "eps"}
     },
     components: {
-      securitySchemes: {
-        "nhs-cis2-aal3": {}
-      }
+      securitySchemes: overrides.securitySchemes || {"nhs-cis2-aal3": {}}
     },
+    paths: overrides.paths || {},
     servers: []
   }
 }
@@ -80,6 +84,7 @@ function buildConfig(overrides: Partial<ApiConfig> = {}): ApiConfig {
     clientPrivateKeyExportName: "clientKey",
     proxygenPrivateKeyExportName: "proxygenKey",
     proxygenKid: "kid-123",
+    hiddenPaths: [],
     ...overrides
   }
 }
@@ -209,6 +214,60 @@ describe("deployApi", () => {
     expect(publishPayload.environment).toBe("prod")
     expect(publishPayload.specDefinition.servers[0].url)
       .toBe("https://sandbox.api.service.nhs.uk/eps")
+  })
+
+  test("replaces all supported security scheme refs", async () => {
+    const spec = createSpec({
+      securitySchemes: {
+        "nhs-cis2-aal3": {},
+        "nhs-login-p9": {},
+        "app-level3": {},
+        "app-level0": {}
+      }
+    })
+    await deployApi(
+      buildConfig({
+        specification: JSON.stringify(spec),
+        apigeeEnvironment: "prod",
+        awsEnvironment: "prod",
+        stackName: "eps-prod-stack",
+        proxygenKid: "kid-prod"
+      }),
+      false
+    )
+    const specPayload = payloadFromCall(1)
+    const schemes = [
+      "nhs-cis2-aal3",
+      "nhs-login-p9",
+      "app-level3",
+      "app-level0"
+    ]
+    for (const scheme of schemes) {
+      expect(specPayload.specDefinition.components.securitySchemes[scheme].$ref)
+        .toBe(`https://proxygen.prod.api.platform.nhs.uk/components/securitySchemes/${scheme}`)
+    }
+  })
+
+  test("removes hidden paths from published spec", async () => {
+    const spec = createSpec({
+      paths: {
+        "/visible": {get: {}},
+        "/hidden": {post: {}}
+      }
+    })
+    await deployApi(
+      buildConfig({
+        specification: JSON.stringify(spec),
+        apigeeEnvironment: "int",
+        stackName: "eps-int-stack",
+        proxygenKid: "kid-int",
+        hiddenPaths: ["/hidden"]
+      }),
+      false
+    )
+    const publishPayload = payloadFromCall(2)
+    expect(publishPayload.specDefinition.paths["/hidden"]).toBeUndefined()
+    expect(publishPayload.specDefinition.paths["/visible"]).toBeDefined()
   })
 
   test("dry run only logs intended invocations", async () => {
