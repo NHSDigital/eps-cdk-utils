@@ -66,5 +66,5 @@ export function getBooleanCFConfigValue(exports: Record<string, string>, exportN
 }
 
 export function calculateVersionedStackName(baseStackName: string, version: string): string {
-  return `${baseStackName}-${version.replace(/\./g, "-")}`
+  return `${baseStackName}-${version.replaceAll(".", "-")}`
 }
