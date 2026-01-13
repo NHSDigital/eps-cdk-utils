@@ -30,12 +30,15 @@ vi.mock("@aws-sdk/client-lambda", () => {
   return {LambdaClient, InvokeCommand}
 })
 
-const getCloudFormationExportsMock = vi.fn()
+const getCloudFormationExportsMock = vi.hoisted(() => vi.fn())
 
-vi.mock("../../src/config", () => ({
-  getCloudFormationExports: () => getCloudFormationExportsMock(),
-  getCFConfigValue: (exports: Record<string, string>, name: string) => exports[name]
-}))
+vi.mock("../../src/config", async (importOriginal) => {
+  const originalModule = await importOriginal<typeof import("../../src/config")>()
+  return {
+    ...originalModule,
+    getCloudFormationExports: getCloudFormationExportsMock
+  }
+})
 
 function createSpec() {
   return {
@@ -94,17 +97,15 @@ function functionNameFromCall(callIndex: number) {
 describe("deployApi", () => {
   beforeEach(() => {
     lambdaSendMock.mockReset().mockResolvedValue({Payload: Buffer.from('"ok"')})
-    getCloudFormationExportsMock.mockReset()
+    getCloudFormationExportsMock.mockReset().mockResolvedValue(defaultExportsMap)
   })
 
   test("stores secrets, deploys instance and publishes spec for internal-dev", async () => {
-    getCloudFormationExportsMock.mockResolvedValue(defaultExportsMap)
-
     await deployApi(
       buildConfig({
         version: "2.0.0",
         apigeeEnvironment: "internal-dev",
-        stackName: "eps-stack-001"
+        stackName: "eps-stack"
       }),
       false
     )
@@ -130,7 +131,7 @@ describe("deployApi", () => {
     expect(instancePayload.specDefinition.info.version).toBe("2.0.0")
     expect(instancePayload.specDefinition["x-nhsd-apim"].target.security.secret).toBe("mtls/secret")
     expect(instancePayload.specDefinition["x-nhsd-apim"].target.url)
-      .toBe("https://eps-stack-001.nonprod.eps.national.nhs.uk")
+      .toBe("https://eps-stack-2-0-0.nonprod.eps.national.nhs.uk")
     expect(instancePayload.specDefinition.components.securitySchemes["nhs-cis2-aal3"].$ref)
       .toBe("https://proxygen.ptl.api.platform.nhs.uk/components/securitySchemes/nhs-cis2-aal3")
     expect(instancePayload.specDefinition.servers[0].url)
@@ -144,8 +145,6 @@ describe("deployApi", () => {
   })
 
   test("handles pull requests in sandbox without storing secrets", async () => {
-    getCloudFormationExportsMock.mockResolvedValue(defaultExportsMap)
-
     await deployApi(
       buildConfig({
         version: "3.1.4",
@@ -171,8 +170,6 @@ describe("deployApi", () => {
   })
 
   test("uses prod lambdas and prod security scheme refs", async () => {
-    getCloudFormationExportsMock.mockResolvedValue(defaultExportsMap)
-
     await deployApi(
       buildConfig({
         version: "4.0.0",
@@ -196,8 +193,6 @@ describe("deployApi", () => {
   })
 
   test("publishes spec to prod catalogue for int environment", async () => {
-    getCloudFormationExportsMock.mockResolvedValue(defaultExportsMap)
-
     await deployApi(
       buildConfig({
         version: "5.0.0",
@@ -217,7 +212,6 @@ describe("deployApi", () => {
   })
 
   test("dry run only logs intended invocations", async () => {
-    getCloudFormationExportsMock.mockResolvedValue(defaultExportsMap)
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined)
 
     await deployApi(
@@ -237,7 +231,6 @@ describe("deployApi", () => {
   })
 
   test("throws when lambda invocation returns a FunctionError", async () => {
-    getCloudFormationExportsMock.mockResolvedValue(defaultExportsMap)
     lambdaSendMock
       .mockResolvedValueOnce({FunctionError: "Handled", Payload: Buffer.from('"bad"')})
 

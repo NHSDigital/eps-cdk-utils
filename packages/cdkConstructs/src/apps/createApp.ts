@@ -5,7 +5,7 @@ import {
   StackProps
 } from "aws-cdk-lib"
 import {AwsSolutionsChecks} from "cdk-nag"
-import {getConfigFromEnvVar, getBooleanConfigFromEnvVar} from "../config"
+import {getConfigFromEnvVar, getBooleanConfigFromEnvVar, calculateVersionedStackName} from "../config"
 
 export interface StandardStackProps extends StackProps {
   readonly stackName: string
@@ -18,9 +18,10 @@ export function createApp(
   appName: string,
   repoName: string,
   driftDetectionGroup: string,
+  isStateless: boolean = true,
   region: string = "eu-west-2"
 ): {app: App, props: StandardStackProps} {
-  const stackName = getConfigFromEnvVar("stackName")
+  let stackName = getConfigFromEnvVar("stackName")
   const versionNumber = getConfigFromEnvVar("versionNumber")
   const commitId = getConfigFromEnvVar("commitId")
   const isPullRequest = getBooleanConfigFromEnvVar("isPullRequest")
@@ -39,6 +40,10 @@ export function createApp(
   Tags.of(app).add("cdkApp", appName)
   Tags.of(app).add("repo", repoName)
   Tags.of(app).add("cfnDriftDetectionGroup", cfnDriftDetectionGroup)
+
+  if (isStateless && !isPullRequest) {
+    stackName = calculateVersionedStackName(stackName, versionNumber)
+  }
 
   return {
     app,

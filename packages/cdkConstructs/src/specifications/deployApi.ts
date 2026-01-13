@@ -1,6 +1,6 @@
 
 import {LambdaClient, InvokeCommand} from "@aws-sdk/client-lambda"
-import {getCFConfigValue, getCloudFormationExports} from "../config"
+import {getCFConfigValue, getCloudFormationExports, calculateVersionedStackName} from "../config"
 
 export type ApiConfig = {
   specification: string
@@ -61,6 +61,7 @@ export async function deployApi(
     spec["x-nhsd-apim"].monitoring = false
     delete spec["x-nhsd-apim"].target.security.secret
   } else {
+    stackName = calculateVersionedStackName(stackName, version)
     spec["x-nhsd-apim"].target.security.secret = mtlsSecretName
   }
   spec.info.version = version

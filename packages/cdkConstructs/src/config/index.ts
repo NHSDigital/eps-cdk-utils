@@ -64,3 +64,7 @@ export function getBooleanCFConfigValue(exports: Record<string, string>, exportN
   const value = getCFConfigValue(exports, exportName)
   return value.toLowerCase() === "true"
 }
+
+export function calculateVersionedStackName(baseStackName: string, version: string): string {
+  return `${baseStackName}-${version.replace(/\./g, "-")}`
+}

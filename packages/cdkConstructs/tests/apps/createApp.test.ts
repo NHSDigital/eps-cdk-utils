@@ -51,15 +51,21 @@ describe("createApp", () => {
       const {app, props} = createApp("testApp", "testRepo", "test-drift-group")
 
       expect(app).toBeInstanceOf(App)
-      expect(props.stackName).toBe("test-stack")
+      expect(props.stackName).toBe("test-stack-1-2-3")
       expect(props.version).toBe("1.2.3")
       expect(props.commitId).toBe("abc123def456")
       expect(props.isPullRequest).toBe(false)
       expect(props.env?.region).toBe("eu-west-2")
     })
 
+    test("creates stateful App with correct stackName", () => {
+      const {props} = createApp("testApp", "testRepo", "test-drift-group", false)
+
+      expect(props.stackName).toBe("test-stack")
+    })
+
     test("uses custom region when provided", () => {
-      const {props} = createApp("testApp", "testRepo", "test-drift-group", "us-east-1")
+      const {props} = createApp("testApp", "testRepo", "test-drift-group", true, "us-east-1")
 
       expect(props.env?.region).toBe("us-east-1")
     })
@@ -107,10 +113,19 @@ describe("createApp", () => {
       process.env.CDK_CONFIG_isPullRequest = "true"
     })
 
-    test("sets isPullRequest to true in props", () => {
+    test("correctly modifies props", () => {
       const {props} = createApp("testApp", "testRepo", "test-drift-group")
 
+      expect(props.stackName).toBe("pr-stack")
+      expect(props.version).toBe("0.0.1-pr")
+      expect(props.commitId).toBe("pr123")
       expect(props.isPullRequest).toBe(true)
+    })
+
+    test("creates stateful App with unmodified stackName", () => {
+      const {props} = createApp("testApp", "testRepo", "test-drift-group", false)
+
+      expect(props.stackName).toBe("pr-stack")
     })
 
     test("modifies drift detection group with -pull-request suffix", () => {
