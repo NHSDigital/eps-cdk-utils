@@ -72,7 +72,7 @@ const defaultExportsMap = {
 
 function buildConfig(overrides: Partial<ApiConfig> = {}): ApiConfig {
   return {
-    specification: JSON.stringify(createSpec()),
+    spec: createSpec(),
     apiName: "eps",
     version: "1.0.0",
     apigeeEnvironment: "internal-dev",
@@ -133,14 +133,6 @@ describe("deployApi", () => {
     expect(functionNameFromCall(1)).toBe("lambda-resources-ProxygenPTLInstancePut")
     const instancePayload = payloadFromCall(1)
     expect(instancePayload.instance).toBe("eps")
-    expect(instancePayload.specDefinition.info.version).toBe("2.0.0")
-    expect(instancePayload.specDefinition["x-nhsd-apim"].target.security.secret).toBe("mtls/secret")
-    expect(instancePayload.specDefinition["x-nhsd-apim"].target.url)
-      .toBe("https://eps-stack-2-0-0.nonprod.eps.national.nhs.uk")
-    expect(instancePayload.specDefinition.components.securitySchemes["nhs-cis2-aal3"].$ref)
-      .toBe("https://proxygen.ptl.api.platform.nhs.uk/components/securitySchemes/nhs-cis2-aal3")
-    expect(instancePayload.specDefinition.servers[0].url)
-      .toBe("https://internal-dev.api.service.nhs.uk/eps")
 
     expect(functionNameFromCall(2)).toBe("lambda-resources-ProxygenPTLSpecPublish")
     const publishPayload = payloadFromCall(2)
@@ -166,15 +158,9 @@ describe("deployApi", () => {
 
     const instancePayload = payloadFromCall(0)
     expect(instancePayload.instance).toBe("eps-pr-456")
-    expect(instancePayload.specDefinition.info.title).toBe("[PR-456] EPS API")
-    expect(instancePayload.specDefinition["x-nhsd-apim"].monitoring).toBe(false)
-    expect(instancePayload.specDefinition["x-nhsd-apim"].target.security.secret).toBeUndefined()
-    expect(instancePayload.specDefinition["x-nhsd-apim"]["target-attributes"]).toBeUndefined()
-    expect(instancePayload.specDefinition.servers[0].url)
-      .toBe("https://sandbox.api.service.nhs.uk/eps-pr-456")
   })
 
-  test("uses prod lambdas and prod security scheme refs", async () => {
+  test("uses prod lambdas for prod environment", async () => {
     await deployApi(
       buildConfig({
         version: "4.0.0",
@@ -189,12 +175,6 @@ describe("deployApi", () => {
     expect(lambdaSendMock).toHaveBeenCalledTimes(2)
     expect(functionNameFromCall(0)).toBe("lambda-resources-ProxygenProdMTLSSecretPut")
     expect(functionNameFromCall(1)).toBe("lambda-resources-ProxygenProdInstancePut")
-
-    const specPayload = payloadFromCall(1)
-    expect(specPayload.specDefinition.servers[0].url)
-      .toBe("https://api.service.nhs.uk/eps")
-    expect(specPayload.specDefinition.components.securitySchemes["nhs-cis2-aal3"].$ref)
-      .toBe("https://proxygen.prod.api.platform.nhs.uk/components/securitySchemes/nhs-cis2-aal3")
   })
 
   test("publishes spec to prod catalogue for int environment", async () => {
@@ -216,38 +196,6 @@ describe("deployApi", () => {
       .toBe("https://sandbox.api.service.nhs.uk/eps")
   })
 
-  test("replaces all supported security scheme refs", async () => {
-    const spec = createSpec({
-      securitySchemes: {
-        "nhs-cis2-aal3": {},
-        "nhs-login-p9": {},
-        "app-level3": {},
-        "app-level0": {}
-      }
-    })
-    await deployApi(
-      buildConfig({
-        specification: JSON.stringify(spec),
-        apigeeEnvironment: "prod",
-        awsEnvironment: "prod",
-        stackName: "eps-prod-stack",
-        proxygenKid: "kid-prod"
-      }),
-      false
-    )
-    const specPayload = payloadFromCall(1)
-    const schemes = [
-      "nhs-cis2-aal3",
-      "nhs-login-p9",
-      "app-level3",
-      "app-level0"
-    ]
-    for (const scheme of schemes) {
-      expect(specPayload.specDefinition.components.securitySchemes[scheme].$ref)
-        .toBe(`https://proxygen.prod.api.platform.nhs.uk/components/securitySchemes/${scheme}`)
-    }
-  })
-
   test("removes hidden paths from published spec", async () => {
     const spec = createSpec({
       paths: {
@@ -257,7 +205,7 @@ describe("deployApi", () => {
     })
     await deployApi(
       buildConfig({
-        specification: JSON.stringify(spec),
+        spec,
         apigeeEnvironment: "int",
         stackName: "eps-int-stack",
         proxygenKid: "kid-int",

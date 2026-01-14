@@ -11,9 +11,9 @@
 	],
 	"settings": {
 		"files.exclude": {
-		"packages/": true,
+			"packages/": true,
 		},
-        "cSpell.words": [
+		"cSpell.words": [
 			"apigw",
 			"ASID",
 			"AWSKMS",
@@ -49,6 +49,7 @@
 			"pollable",
 			"powertools",
 			"Prosthetist",
+			"proxygen",
 			"querystring",
 			"reingest",
 			"reingested",
