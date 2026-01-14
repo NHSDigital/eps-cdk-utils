@@ -57,9 +57,10 @@ export async function deployApi(
     proxygenKid,
     hiddenPaths
   }: ApiConfig,
-  dryRun: boolean
+  blueGreen: boolean = true,
+  dryRun: boolean = false
 ): Promise<void> {
-  const instance = fixSpec(
+  const instance = fixSpec({
     spec,
     apiName,
     version,
@@ -67,8 +68,9 @@ export async function deployApi(
     isPullRequest,
     awsEnvironment,
     stackName,
-    mtlsSecretName
-  )
+    mtlsSecretName,
+    blueGreen
+  })
 
   const exports = await getCloudFormationExports()
   const clientCertArn = getCFConfigValue(exports, `account-resources:${clientCertExportName}`)

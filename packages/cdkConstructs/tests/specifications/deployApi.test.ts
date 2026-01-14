@@ -112,6 +112,7 @@ describe("deployApi", () => {
         apigeeEnvironment: "internal-dev",
         stackName: "eps-stack"
       }),
+      true,
       false
     )
 
@@ -150,6 +151,7 @@ describe("deployApi", () => {
         stackName: "eps-pr-stack-456",
         proxygenKid: "kid-789"
       }),
+      true,
       false
     )
 
@@ -169,6 +171,7 @@ describe("deployApi", () => {
         stackName: "eps-prod-stack",
         proxygenKid: "kid-prod"
       }),
+      true,
       false
     )
 
@@ -185,6 +188,7 @@ describe("deployApi", () => {
         stackName: "eps-int-stack",
         proxygenKid: "kid-int"
       }),
+      true,
       false
     )
 
@@ -211,6 +215,7 @@ describe("deployApi", () => {
         proxygenKid: "kid-int",
         hiddenPaths: ["/hidden"]
       }),
+      true,
       false
     )
     const publishPayload = payloadFromCall(2)
@@ -227,6 +232,7 @@ describe("deployApi", () => {
         stackName: "eps-int-stack",
         proxygenKid: "kid-int"
       }),
+      true,
       true
     )
 
@@ -247,6 +253,7 @@ describe("deployApi", () => {
         apigeeEnvironment: "int",
         stackName: "eps-stack"
       }),
+      true,
       false
     )).rejects.toThrow("Error calling lambda lambda-resources-ProxygenProdMTLSSecretPut: \"bad\"")
   })

@@ -135,4 +135,24 @@ describe("writeSchemas", () => {
     expect(message).toContain("failing.json")
     expect(err).toBeInstanceOf(Error)
   })
+
+  test("does not modify non-object schemas (collapseExamples type check)", () => {
+    const schemas = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      primitive: true as any
+    }
+
+    const outputDir = "primitive-schemas"
+    const writes: Record<string, string> = {}
+
+    vi.spyOn(fs, "existsSync").mockReturnValue(true)
+    vi.spyOn(fs, "writeFileSync").mockImplementation((filePath, data) => {
+      writes[filePath.toString()] = data.toString()
+    })
+
+    writeSchemas(schemas, outputDir)
+
+    const writtenSchema = writes[path.join(outputDir, "primitive.json")]
+    expect(writtenSchema).toBe("true")
+  })
 })

@@ -1,5 +1,18 @@
 import {calculateVersionedStackName} from "../config"
 
+type SpecConfig = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  spec: any
+  apiName: string
+  version: string
+  apigeeEnvironment: string
+  isPullRequest: boolean
+  awsEnvironment: string
+  stackName: string
+  mtlsSecretName: string
+  blueGreen: boolean
+}
+
 function replaceSchemeRefs(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   spec: any,
@@ -15,17 +28,17 @@ function replaceSchemeRefs(
   }
 }
 
-export function fixSpec(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  spec: any,
-  apiName: string,
-  version: string,
-  apigeeEnvironment: string,
-  isPullRequest: boolean,
-  awsEnvironment: string,
-  stackName: string,
-  mtlsSecretName: string
-): string {
+export function fixSpec({
+  spec,
+  apiName,
+  version,
+  apigeeEnvironment,
+  isPullRequest,
+  awsEnvironment,
+  stackName,
+  mtlsSecretName,
+  blueGreen
+}: SpecConfig): string {
   let instance = apiName
   let stack = stackName
   if (isPullRequest) {
@@ -35,7 +48,9 @@ export function fixSpec(
     spec["x-nhsd-apim"].monitoring = false
     delete spec["x-nhsd-apim"].target.security.secret
   } else {
-    stack = calculateVersionedStackName(stackName, version)
+    if (blueGreen) {
+      stack = calculateVersionedStackName(stackName, version)
+    }
     spec["x-nhsd-apim"].target.security.secret = mtlsSecretName
   }
   spec.info.version = version
