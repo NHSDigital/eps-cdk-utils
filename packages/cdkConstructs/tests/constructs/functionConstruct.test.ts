@@ -10,7 +10,7 @@ import {
   expect
 } from "vitest"
 
-import {TypescriptLambdaFunction} from "../src/constructs/TypescriptLambdaFunction"
+import {TypescriptLambdaFunction} from "../../src/constructs/TypescriptLambdaFunction"
 import {resolve} from "node:path"
 
 describe("functionConstruct works correctly", () => {
@@ -39,7 +39,7 @@ describe("functionConstruct works correctly", () => {
       logLevel: "DEBUG",
       version: "1.0.0",
       commitId: "abcd1234",
-      projectBaseDir: resolve(__dirname, "../../..")
+      projectBaseDir: resolve(__dirname, "../../../..")
     })
     template = Template.fromStack(stack)
     const lambdaLogGroup = functionConstruct.node.tryFindChild("LambdaLogGroup") as LogGroup
@@ -159,7 +159,7 @@ describe("functionConstruct works correctly with environment variables", () => {
       logLevel: "DEBUG",
       version: "1.0.0",
       commitId: "abcd1234",
-      projectBaseDir: resolve(__dirname, "../../..")
+      projectBaseDir: resolve(__dirname, "../../../..")
     })
     template = Template.fromStack(stack)
   })
@@ -202,7 +202,7 @@ describe("functionConstruct works correctly with additional policies", () => {
       logLevel: "DEBUG",
       version: "1.0.0",
       commitId: "abcd1234",
-      projectBaseDir: resolve(__dirname, "../../..")
+      projectBaseDir: resolve(__dirname, "../../../..")
     })
     template = Template.fromStack(stack)
     testPolicyResource = stack.resolve(testPolicy.managedPolicyArn)
@@ -241,7 +241,7 @@ describe("functionConstruct works correctly with additional layers", () => {
       version: "1.0.0",
       layers: [parameterAndSecretsLayer],
       commitId: "abcd1234",
-      projectBaseDir: resolve(__dirname, "../../..")
+      projectBaseDir: resolve(__dirname, "../../../..")
     })
     template = Template.fromStack(stack)
   })
@@ -280,7 +280,7 @@ describe("functionConstruct works correctly with custom timeout", () => {
       version: "1.0.0",
       layers: [],
       commitId: "abcd1234",
-      projectBaseDir: resolve(__dirname, "../../.."),
+      projectBaseDir: resolve(__dirname, "../../../.."),
       timeoutInSeconds: 120
     })
     template = Template.fromStack(stack)
@@ -315,7 +315,7 @@ describe("functionConstruct works correctly with different runtime", () => {
       logLevel: "DEBUG",
       version: "1.0.0",
       commitId: "abcd1234",
-      projectBaseDir: resolve(__dirname, "../../.."),
+      projectBaseDir: resolve(__dirname, "../../../.."),
       runtime: Runtime.NODEJS_22_X
     })
     template = Template.fromStack(stack)

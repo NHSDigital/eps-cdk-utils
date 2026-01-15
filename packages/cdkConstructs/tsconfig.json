@@ -12,7 +12,7 @@
     "outDir": "lib",
     "strict": true,
     "lib": [
-      "es2020"
+      "es2022"
     ],
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -32,6 +32,12 @@
       "../../node_modules/@types"
     ]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "cdk.out", "tests/**/*"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "cdk.out",
+    "tests/**/*"
+  ]
 }

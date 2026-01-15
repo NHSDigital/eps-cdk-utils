@@ -6,6 +6,7 @@ This repository contains a docker image used to deploy CDK to our environments a
 
 - `docker/` Contains Dockerfile used to build image used fo for CDK deployments
 - `packages/cdkConstructs/` Contains common CDK constructs used in EPS projects
+- `packages/depoymentUtils/` Contains shared code for standardizing OAS files and performing proxygen deployments
 - `scripts/` Utilities helpful to developers of this specification
 - `.github/` Contains GitHub workflows that are used for building and deploying from pull requests and releases
 
