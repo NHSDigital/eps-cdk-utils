@@ -32,8 +32,8 @@ vi.mock("@aws-sdk/client-lambda", () => {
 
 const getCloudFormationExportsMock = vi.hoisted(() => vi.fn())
 
-vi.mock("../../src/config", async (importOriginal) => {
-  const originalModule = await importOriginal<typeof import("../../src/config")>()
+vi.mock("../../src/config/index", async (importOriginal) => {
+  const originalModule = await importOriginal<typeof import("../../src/config/index")>()
   return {
     ...originalModule,
     getCloudFormationExports: getCloudFormationExportsMock

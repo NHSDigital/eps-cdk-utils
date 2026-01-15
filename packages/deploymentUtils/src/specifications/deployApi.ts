@@ -1,5 +1,5 @@
 import {LambdaClient, InvokeCommand} from "@aws-sdk/client-lambda"
-import {getCFConfigValue, getCloudFormationExports} from "../config"
+import {getCFConfigValue, getCloudFormationExports} from "../config/index"
 import {fixSpec} from "./fixSpec"
 
 export type ApiConfig = {
@@ -57,8 +57,8 @@ export async function deployApi(
     proxygenKid,
     hiddenPaths
   }: ApiConfig,
-  blueGreen: boolean = true,
-  dryRun: boolean = false
+  blueGreen: boolean,
+  dryRun: boolean
 ): Promise<void> {
   const instance = fixSpec({
     spec,

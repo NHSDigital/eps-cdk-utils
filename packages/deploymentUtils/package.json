@@ -1,7 +1,7 @@
 {
-    "name": "@nhsdigital/eps-cdk-constructs",
+    "name": "@nhsdigital/eps-deployment-utils",
     "version": "1.0.0",
-    "description": "Common AWS CDK Constructs for NHS Digital EPS Projects",
+    "description": "Shared deployment utilities for EPS projects (spec publishing, config helpers, etc)",
     "scripts": {
         "build": "tsc",
         "clean": "rm -rf lib",
@@ -21,11 +21,8 @@
     "type": "module",
     "dependencies": {
         "@aws-sdk/client-cloudformation": "^3.958.0",
-        "@aws-sdk/client-s3": "^3.958.0",
-        "aws-cdk": "^2.1100.3",
-        "aws-cdk-lib": "^2.234.1",
-        "cdk-nag": "^2.37.52",
-        "constructs": "^10.4.4"
+        "@aws-sdk/client-lambda": "^3.958.0",
+        "json-schema-to-ts": "^3.1.1"
     },
     "bugs": {
         "url": "https://github.com/NHSDigital/eps-cdk-utils/issues"

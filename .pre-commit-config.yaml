@@ -50,5 +50,14 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
+      - id: lint-deploymentUtils
+        name: Lint deploymentUtils
+        entry: npm
+        args: ["run", "--prefix=packages/deploymentUtils", "lint"]
+        language: system
+        files: ^packages\/deploymentUtils
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
 fail_fast: true
 default_stages: [pre-commit]

@@ -7,6 +7,10 @@
 		{
 			"name": "packages/cdkConstructs",
 			"path": "../packages/cdkConstructs"
+		},
+		{
+			"name": "packages/deploymentUtils",
+			"path": "../packages/deploymentUtils"
 		}
 	],
 	"settings": {

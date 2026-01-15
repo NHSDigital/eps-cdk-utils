@@ -10,7 +10,9 @@ import {
   getConfigFromEnvVar,
   getBooleanConfigFromEnvVar,
   getNumberConfigFromEnvVar,
-  getTrustStoreVersion
+  getCloudFormationExports,
+  getCFConfigValue,
+  getBooleanCFConfigValue
 } from "../../src/config/index"
 
 const mockCloudFormationSend = vi.fn()
@@ -33,16 +35,16 @@ vi.mock("@aws-sdk/client-cloudformation", () => {
     }
   }
 
-  class DescribeStacksCommand {
+  class ListExportsCommand {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     input: any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(input: any) {
-      this.input = input
+      this.input = {...input}
     }
   }
 
-  return {CloudFormationClient, DescribeStacksCommand}
+  return {CloudFormationClient, ListExportsCommand}
 })
 
 vi.mock("@aws-sdk/client-s3", () => {
@@ -88,57 +90,62 @@ describe("config helpers", () => {
   })
 
   test("getConfigFromEnvVar returns the configured value", () => {
-    process.env.CDK_CONFIG_STACK_NAME = "primary"
+    process.env.STACK_NAME = "primary"
 
     expect(getConfigFromEnvVar("STACK_NAME")).toBe("primary")
   })
 
   test("getConfigFromEnvVar throws when value is missing", () => {
-    delete process.env.CDK_CONFIG_MISSING
+    delete process.env.MISSING
 
     expect(() => getConfigFromEnvVar("MISSING"))
-      .toThrow("Environment variable CDK_CONFIG_MISSING is not set")
-  })
-
-  test("getConfigFromEnvVar supports alternate prefixes", () => {
-    process.env.APP_CUSTOM_VALUE = "alt"
-
-    expect(getConfigFromEnvVar("CUSTOM_VALUE", "APP_")).toBe("alt")
+      .toThrow("Environment variable MISSING is not set")
   })
 
   test("getBooleanConfigFromEnvVar maps string booleans", () => {
-    process.env.CDK_CONFIG_FEATURE_FLAG = "true"
-    process.env.CDK_CONFIG_OTHER_FLAG = "false"
+    process.env.FEATURE_FLAG = "true"
+    process.env.OTHER_FLAG = "false"
 
     expect(getBooleanConfigFromEnvVar("FEATURE_FLAG")).toBe(true)
     expect(getBooleanConfigFromEnvVar("OTHER_FLAG")).toBe(false)
   })
 
   test("getNumberConfigFromEnvVar parses numeric strings", () => {
-    process.env.CDK_CONFIG_TIMEOUT = "45"
+    process.env.TIMEOUT = "45"
 
     expect(getNumberConfigFromEnvVar("TIMEOUT")).toBe(45)
   })
 
-  test("getTrustStoreVersion returns the version ID from S3", async () => {
-    mockCloudFormationSend.mockResolvedValueOnce({
-      Stacks: [{
-        Outputs: [{OutputKey: "TrustStoreBucket", OutputValue: "arn:aws:s3:::nhs-trust"}]
-      }]
-    })
-    mockS3Send.mockResolvedValueOnce({VersionId: "abc123"})
+  test("getCloudFormationExports aggregates paginated results", async () => {
+    mockCloudFormationSend
+      .mockResolvedValueOnce({
+        Exports: [{Name: "exportA", Value: "valueA"}],
+        NextToken: "next"
+      })
+      .mockResolvedValueOnce({
+        Exports: [
+          {Name: "exportB", Value: "valueB"},
+          {Name: "missingValue", Value: undefined}
+        ]
+      })
 
-    const version = await getTrustStoreVersion("truststore.pem", "eu-central-1")
+    const exports = await getCloudFormationExports("eu-west-1")
 
-    expect(version).toBe("abc123")
+    expect(mockCloudFormationSend).toHaveBeenCalledTimes(2)
+    expect(exports).toEqual({exportA: "valueA", exportB: "valueB"})
+  })
 
-    expect(createdCfnClients.at(-1)?.region).toBe("eu-central-1")
-    expect(createdS3Clients.at(-1)?.region).toBe("eu-central-1")
+  test("getCFConfigValue returns values and throws when missing", () => {
+    const exports = {foo: "bar"}
 
-    const describeCommand = mockCloudFormationSend.mock.calls[0][0] as {input: {StackName: string}}
-    expect(describeCommand.input.StackName).toBe("account-resources")
+    expect(getCFConfigValue(exports, "foo")).toBe("bar")
+    expect(() => getCFConfigValue(exports, "baz")).toThrow("CloudFormation export baz not found")
+  })
 
-    const headCommand = mockS3Send.mock.calls[0][0] as {input: {Bucket: string, Key: string}}
-    expect(headCommand.input).toEqual({Bucket: "nhs-trust", Key: "truststore.pem"})
+  test("getBooleanCFConfigValue interprets true/false strings", () => {
+    const exports = {flagTrue: "TRUE", flagFalse: "false"}
+
+    expect(getBooleanCFConfigValue(exports, "flagTrue")).toBe(true)
+    expect(getBooleanCFConfigValue(exports, "flagFalse")).toBe(false)
   })
 })
