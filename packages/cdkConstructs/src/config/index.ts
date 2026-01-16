@@ -11,7 +11,7 @@ export function getConfigFromEnvVar(varName: string, prefix: string = "CDK_CONFI
 
 export function getBooleanConfigFromEnvVar(varName: string, prefix: string = "CDK_CONFIG_"): boolean {
   const value = getConfigFromEnvVar(varName, prefix)
-  return value.toLowerCase() === "true"
+  return value.toLowerCase().trim() === "true"
 }
 
 export function getNumberConfigFromEnvVar(varName: string, prefix: string = "CDK_CONFIG_"): number {

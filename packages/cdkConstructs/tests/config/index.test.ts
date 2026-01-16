@@ -107,8 +107,8 @@ describe("config helpers", () => {
   })
 
   test("getBooleanConfigFromEnvVar maps string booleans", () => {
-    process.env.CDK_CONFIG_FEATURE_FLAG = "true"
-    process.env.CDK_CONFIG_OTHER_FLAG = "false"
+    process.env.CDK_CONFIG_FEATURE_FLAG = "true "
+    process.env.CDK_CONFIG_OTHER_FLAG = " false"
 
     expect(getBooleanConfigFromEnvVar("FEATURE_FLAG")).toBe(true)
     expect(getBooleanConfigFromEnvVar("OTHER_FLAG")).toBe(false)
