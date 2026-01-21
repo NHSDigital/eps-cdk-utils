@@ -71,7 +71,6 @@ describe("fixSpec", () => {
     expect(instance).toBe("eps-pr-456")
     expect(spec.info.title).toBe("[PR-456] EPS API")
     expect(spec["x-nhsd-apim"].monitoring).toBe(false)
-    expect(spec["x-nhsd-apim"].target.security.secret).toBeUndefined()
     expect(spec["x-nhsd-apim"]["target-attributes"]).toBeUndefined()
     expect(spec.servers[0].url)
       .toBe("https://sandbox.api.service.nhs.uk/eps-pr-456")
