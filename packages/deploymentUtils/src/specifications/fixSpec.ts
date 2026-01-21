@@ -46,15 +46,12 @@ export function fixSpec({
     instance = `${apiName}-pr-${pr_id}`
     spec.info.title = `[PR-${pr_id}] ${spec.info.title}`
     spec["x-nhsd-apim"].monitoring = false
-    delete spec["x-nhsd-apim"].target.security.secret
-  } else {
-    if (blueGreen) {
-      stack = calculateVersionedStackName(stackName, version)
-    }
-    spec["x-nhsd-apim"].target.security.secret = mtlsSecretName
+  } else if (blueGreen) {
+    stack = calculateVersionedStackName(stackName, version)
   }
   spec.info.version = version
   spec["x-nhsd-apim"].target.url = `https://${stack}.${awsEnvironment}.eps.national.nhs.uk`
+  spec["x-nhsd-apim"].target.security.secret = mtlsSecretName
   if (apigeeEnvironment === "prod") {
     spec.servers = [ {url: `https://api.service.nhs.uk/${instance}`} ]
     replaceSchemeRefs(spec, "proxygen.prod.api.platform.nhs.uk")
