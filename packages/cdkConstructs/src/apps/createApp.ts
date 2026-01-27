@@ -75,7 +75,8 @@ export function createApp(
       stackName,
       version: versionNumber,
       commitId,
-      isPullRequest
+      isPullRequest,
+      environment
     }
   }
 }
