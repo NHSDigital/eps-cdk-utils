@@ -15,17 +15,29 @@ export interface StandardStackProps extends StackProps {
   readonly environment: string
 }
 
-export function createApp(
-  productName: string,
-  appName: string,
-  repoName: string,
-  driftDetectionGroup: string,
-  isStateless: boolean = true,
-  region: string = "eu-west-2",
-  projectType: string = "Production",
-  publicFacing: string = "Y",
-  serviceCategory: string = "Platinum"
-): { app: App, props: StandardStackProps } {
+export interface CreateAppParams {
+  readonly productName: string
+  readonly appName: string
+  readonly repoName: string
+  readonly driftDetectionGroup: string
+  readonly isStateless?: boolean
+  readonly region?: string
+  readonly projectType?: string
+  readonly publicFacing?: string
+  readonly serviceCategory?: string
+}
+
+export function createApp({
+  productName,
+  appName,
+  repoName,
+  driftDetectionGroup,
+  isStateless = true,
+  region = "eu-west-2",
+  projectType = "Production",
+  publicFacing = "Y",
+  serviceCategory = "Platinum"
+}: CreateAppParams): { app: App, props: StandardStackProps } {
   let stackName = getConfigFromEnvVar("stackName")
   const versionNumber = getConfigFromEnvVar("versionNumber")
   const commitId = getConfigFromEnvVar("commitId")
@@ -43,7 +55,6 @@ export function createApp(
   Tags.of(app).add("TagVersion", "1")
   Tags.of(app).add("Programme", "EPS")
   Tags.of(app).add("Product", productName)
-  Tags.of(app).add("EPS", productName)
   Tags.of(app).add("Owner", "england.epssupport@nhs.net")
   Tags.of(app).add("CostCentre", "128997")
   Tags.of(app).add("Customer", "NHS England")
