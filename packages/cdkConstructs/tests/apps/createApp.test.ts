@@ -116,7 +116,7 @@ describe("createApp", () => {
       expect(addTagSpy).toHaveBeenCalledWith("repo", "testRepo")
       expect(addTagSpy).toHaveBeenCalledWith("cfnDriftDetectionGroup", "test-drift-group")
 
-      // Verify exactly 6 tags were added
+      // Verify exactly 20 tags were added
       expect(addTagSpy).toHaveBeenCalledTimes(20)
 
       // Restore the spy
