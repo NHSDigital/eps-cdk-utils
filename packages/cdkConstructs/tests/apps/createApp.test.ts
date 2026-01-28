@@ -22,11 +22,21 @@ import {
   expect,
   vi
 } from "vitest"
-import {createApp} from "../../src/apps/createApp"
+import {createApp, type CreateAppParams} from "../../src/apps/createApp"
 import {AwsSolutionsChecks} from "cdk-nag"
 
 describe("createApp", () => {
   const originalEnv = process.env
+  const defaultParams: CreateAppParams = {
+    productName: "testProduct",
+    appName: "testApp",
+    repoName: "testRepo",
+    driftDetectionGroup: "test-drift-group"
+  }
+  const buildParams = (overrides: Partial<CreateAppParams> = {}): CreateAppParams => ({
+    ...defaultParams,
+    ...overrides
+  })
 
   beforeEach(() => {
     // Reset environment before each test
@@ -45,10 +55,11 @@ describe("createApp", () => {
       process.env.CDK_CONFIG_versionNumber = "1.2.3"
       process.env.CDK_CONFIG_commitId = "abc123def456"
       process.env.CDK_CONFIG_isPullRequest = "false"
+      process.env.CDK_CONFIG_environment = "test-environment"
     })
 
     test("creates an App with correct configuration", () => {
-      const {app, props} = createApp("testApp", "testRepo", "test-drift-group")
+      const {app, props} = createApp(buildParams())
 
       expect(app).toBeInstanceOf(App)
       expect(props.stackName).toBe("test-stack-1-2-3")
@@ -59,13 +70,13 @@ describe("createApp", () => {
     })
 
     test("creates stateful App with correct stackName", () => {
-      const {props} = createApp("testApp", "testRepo", "test-drift-group", false)
+      const {props} = createApp(buildParams({isStateless: false}))
 
       expect(props.stackName).toBe("test-stack")
     })
 
     test("uses custom region when provided", () => {
-      const {props} = createApp("testApp", "testRepo", "test-drift-group", true, "us-east-1")
+      const {props} = createApp(buildParams({region: "us-east-1"}))
 
       expect(props.env?.region).toBe("us-east-1")
     })
@@ -77,12 +88,27 @@ describe("createApp", () => {
         add: addTagSpy
       } as unknown as Tags)
 
-      const {app} = createApp("testApp", "testRepo", "test-drift-group")
+      const {app} = createApp(buildParams())
 
       // Verify Tags.of was called with the app
       expect(tagsOfSpy).toHaveBeenCalledWith(app)
 
       // Verify all expected tags were added with correct values
+      expect(addTagSpy).toHaveBeenCalledWith("TagVersion", "1")
+      expect(addTagSpy).toHaveBeenCalledWith("Programme", "EPS")
+      expect(addTagSpy).toHaveBeenCalledWith("Product", "testProduct")
+      expect(addTagSpy).toHaveBeenCalledWith("Owner", "england.epssupport@nhs.net")
+      expect(addTagSpy).toHaveBeenCalledWith("Product", "testProduct")
+      expect(addTagSpy).toHaveBeenCalledWith("CostCentre", "128997")
+      expect(addTagSpy).toHaveBeenCalledWith("Customer", "NHS England")
+      expect(addTagSpy).toHaveBeenCalledWith("data_classification", "5")
+      expect(addTagSpy).toHaveBeenCalledWith("DataType", "PII")
+      expect(addTagSpy).toHaveBeenCalledWith("Environment", "test-environment")
+      expect(addTagSpy).toHaveBeenCalledWith("ProjectType", "Production")
+      expect(addTagSpy).toHaveBeenCalledWith("PublicFacing", "Y")
+      expect(addTagSpy).toHaveBeenCalledWith("ServiceCategory", "Platinum")
+      expect(addTagSpy).toHaveBeenCalledWith("OnOffPattern", "AlwaysOn")
+      expect(addTagSpy).toHaveBeenCalledWith("DeploymentTool", "CDK")
       expect(addTagSpy).toHaveBeenCalledWith("version", "1.2.3")
       expect(addTagSpy).toHaveBeenCalledWith("commit", "abc123def456")
       expect(addTagSpy).toHaveBeenCalledWith("stackName", "test-stack")
@@ -90,15 +116,15 @@ describe("createApp", () => {
       expect(addTagSpy).toHaveBeenCalledWith("repo", "testRepo")
       expect(addTagSpy).toHaveBeenCalledWith("cfnDriftDetectionGroup", "test-drift-group")
 
-      // Verify exactly 6 tags were added
-      expect(addTagSpy).toHaveBeenCalledTimes(6)
+      // Verify exactly 20 tags were added
+      expect(addTagSpy).toHaveBeenCalledTimes(20)
 
       // Restore the spy
       tagsOfSpy.mockRestore()
     })
 
     test("adds AwsSolutionsChecks aspect", () => {
-      const {app} = createApp("testApp", "testRepo", "test-drift-group")
+      const {app} = createApp(buildParams())
 
       const aspects = Aspects.of(app).all
       expect(aspects).toContainEqual(new AwsSolutionsChecks({verbose: true}))
@@ -111,19 +137,21 @@ describe("createApp", () => {
       process.env.CDK_CONFIG_versionNumber = "0.0.1-pr"
       process.env.CDK_CONFIG_commitId = "pr123"
       process.env.CDK_CONFIG_isPullRequest = "true"
+      process.env.CDK_CONFIG_environment = "test-environment"
     })
 
     test("correctly modifies props", () => {
-      const {props} = createApp("testApp", "testRepo", "test-drift-group")
+      const {props} = createApp(buildParams())
 
       expect(props.stackName).toBe("pr-stack")
       expect(props.version).toBe("0.0.1-pr")
       expect(props.commitId).toBe("pr123")
       expect(props.isPullRequest).toBe(true)
+      expect(props.environment).toBe("test-environment")
     })
 
     test("creates stateful App with unmodified stackName", () => {
-      const {props} = createApp("testApp", "testRepo", "test-drift-group", false)
+      const {props} = createApp(buildParams({isStateless: false}))
 
       expect(props.stackName).toBe("pr-stack")
     })
@@ -135,7 +163,7 @@ describe("createApp", () => {
         add: addTagSpy
       } as unknown as Tags)
 
-      const {app} = createApp("testApp", "testRepo", "test-drift-group")
+      const {app} = createApp(buildParams())
 
       // Verify Tags.of was called with the app
       expect(tagsOfSpy).toHaveBeenCalledWith(app)
@@ -150,9 +178,10 @@ describe("createApp", () => {
       process.env.CDK_CONFIG_versionNumber = "1.0.0"
       process.env.CDK_CONFIG_commitId = "abc123"
       process.env.CDK_CONFIG_isPullRequest = "false"
+      process.env.CDK_CONFIG_environment = "test-environment"
 
       expect(() => {
-        createApp("testApp", "testRepo", "test-drift-group")
+        createApp(buildParams())
       }).toThrow("Environment variable CDK_CONFIG_stackName is not set")
     })
 
@@ -160,9 +189,10 @@ describe("createApp", () => {
       process.env.CDK_CONFIG_stackName = "test-stack"
       process.env.CDK_CONFIG_commitId = "abc123"
       process.env.CDK_CONFIG_isPullRequest = "false"
+      process.env.CDK_CONFIG_environment = "test-environment"
 
       expect(() => {
-        createApp("testApp", "testRepo", "test-drift-group")
+        createApp(buildParams())
       }).toThrow("Environment variable CDK_CONFIG_versionNumber is not set")
     })
 
@@ -170,9 +200,10 @@ describe("createApp", () => {
       process.env.CDK_CONFIG_stackName = "test-stack"
       process.env.CDK_CONFIG_versionNumber = "1.0.0"
       process.env.CDK_CONFIG_isPullRequest = "false"
+      process.env.CDK_CONFIG_environment = "test-environment"
 
       expect(() => {
-        createApp("testApp", "testRepo", "test-drift-group")
+        createApp(buildParams())
       }).toThrow("Environment variable CDK_CONFIG_commitId is not set")
     })
 
@@ -180,10 +211,21 @@ describe("createApp", () => {
       process.env.CDK_CONFIG_stackName = "test-stack"
       process.env.CDK_CONFIG_versionNumber = "1.0.0"
       process.env.CDK_CONFIG_commitId = "abc123"
-
+      process.env.CDK_CONFIG_environment = "test-environment"
       expect(() => {
-        createApp("testApp", "testRepo", "test-drift-group")
+        createApp(buildParams())
       }).toThrow("Environment variable CDK_CONFIG_isPullRequest is not set")
     })
+
+    test("throws error when environment is not set", () => {
+      process.env.CDK_CONFIG_stackName = "test-stack"
+      process.env.CDK_CONFIG_versionNumber = "1.0.0"
+      process.env.CDK_CONFIG_commitId = "abc123"
+      process.env.CDK_CONFIG_isPullRequest = "false"
+      expect(() => {
+        createApp(buildParams())
+      }).toThrow("Environment variable CDK_CONFIG_environment is not set")
+    })
+
   })
 })
