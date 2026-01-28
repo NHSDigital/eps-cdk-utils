@@ -23,7 +23,7 @@
         "@aws-sdk/client-cloudformation": "^3.970.0",
         "@aws-sdk/client-s3": "^3.970.0",
         "aws-cdk": "^2.1102.0",
-        "aws-cdk-lib": "^2.235.0",
+        "aws-cdk-lib": "^2.236.0",
         "cdk-nag": "^2.37.52",
         "constructs": "^10.4.5"
     },
