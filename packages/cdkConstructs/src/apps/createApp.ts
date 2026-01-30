@@ -8,11 +8,21 @@ import {AwsSolutionsChecks} from "cdk-nag"
 import {getConfigFromEnvVar, getBooleanConfigFromEnvVar, calculateVersionedStackName} from "../config"
 
 export interface StandardStackProps extends StackProps {
+  /** Fully qualified stack name (potentially versioned). */
   readonly stackName: string
+  /** Semantic version of the deployment (from `versionNumber`). */
   readonly version: string
+  /** Git commit identifier baked into the stack. */
   readonly commitId: string
+  /** Whether the stack originates from a pull-request environment. */
   readonly isPullRequest: boolean
+  /** Logical environment identifier (for example `dev`, `prod`). */
   readonly environment: string
+  /** CDK environment configuration used when synthesizing the stack. */
+  readonly env: {
+    /** AWS region targeted by the stack. */
+    readonly region: string
+  }
 }
 
 export interface CreateAppParams {
@@ -27,6 +37,24 @@ export interface CreateAppParams {
   readonly serviceCategory?: string
 }
 
+/**
+ * Initialize a CDK `App` pre-loaded with NHS EPS tags and mandatory configuration.
+ *
+ * Reads stack metadata from environment variables, and returns
+ * both the created `App` instance and the resolved stack props (including version info).
+ *
+ * @param params - High-level app metadata and optional deployment modifiers.
+ * @param params.productName - Product tag value for the stack.
+ * @param params.appName - Identifier used for `cdkApp` tagging.
+ * @param params.repoName - Repository name stored on the stack tags.
+ * @param params.driftDetectionGroup - Baseline drift detection tag (suffixes `-pull-request` when `isPullRequest`).
+ * @param params.isStateless - Whether to version the stack name automatically (default `true`).
+ * @param params.region - AWS region assigned to the stack environment (default `eu-west-2`).
+ * @param params.projectType - Tag describing the project classification (default `Production`).
+ * @param params.publicFacing - Public-facing classification tag (default `Y`).
+ * @param params.serviceCategory - Service category tag (default `Platinum`).
+ * @returns The constructed CDK `App` and the resolved stack props for downstream stacks.
+ */
 export function createApp({
   productName,
   appName,
