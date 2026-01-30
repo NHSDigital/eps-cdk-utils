@@ -122,7 +122,7 @@ describe("functionConstruct works correctly", () => {
       LoggingConfig: {
         "LogGroup": lambdaLogGroupResource
       },
-      Layers: ["arn:aws:lambda:eu-west-2:580247275435:layer:LambdaInsightsExtension:60"],
+      Layers: ["arn:aws:lambda:eu-west-2:580247275435:layer:LambdaInsightsExtension:64"],
       Role: {"Fn::GetAtt": [lambdaRoleResource.Ref, "Arn"]}
     })
   })
@@ -255,7 +255,7 @@ describe("functionConstruct works correctly with additional layers", () => {
       Architectures: ["x86_64"],
       Timeout: 50,
       Layers: [
-        "arn:aws:lambda:eu-west-2:580247275435:layer:LambdaInsightsExtension:60",
+        "arn:aws:lambda:eu-west-2:580247275435:layer:LambdaInsightsExtension:64",
         "arn:aws:lambda:eu-west-2:133256977650:layer:AWS-Parameters-and-Secrets-Lambda-Extension:20"
       ]
     })
