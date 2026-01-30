@@ -5,11 +5,9 @@ import {
   StackProps
 } from "aws-cdk-lib"
 import {AwsSolutionsChecks} from "cdk-nag"
-import {getConfigFromEnvVar, getBooleanConfigFromEnvVar, calculateVersionedStackName} from "../config"
+import {getConfigFromEnvVar, getBooleanConfigFromEnvVar} from "../config"
 
 export interface StandardStackProps extends StackProps {
-  /** Fully qualified stack name (potentially versioned). */
-  readonly stackName: string
   /** Semantic version of the deployment (from `versionNumber`). */
   readonly version: string
   /** Git commit identifier baked into the stack. */
@@ -30,7 +28,6 @@ export interface CreateAppParams {
   readonly appName: string
   readonly repoName: string
   readonly driftDetectionGroup: string
-  readonly isStateless?: boolean
   readonly region?: string
   readonly projectType?: string
   readonly publicFacing?: string
@@ -48,7 +45,6 @@ export interface CreateAppParams {
  * @param params.appName - Identifier used for `cdkApp` tagging.
  * @param params.repoName - Repository name stored on the stack tags.
  * @param params.driftDetectionGroup - Baseline drift detection tag (suffixes `-pull-request` when `isPullRequest`).
- * @param params.isStateless - Whether to version the stack name automatically (default `true`).
  * @param params.region - AWS region assigned to the stack environment (default `eu-west-2`).
  * @param params.projectType - Tag describing the project classification (default `Production`).
  * @param params.publicFacing - Public-facing classification tag (default `Y`).
@@ -60,13 +56,11 @@ export function createApp({
   appName,
   repoName,
   driftDetectionGroup,
-  isStateless = true,
   region = "eu-west-2",
   projectType = "Production",
   publicFacing = "Y",
   serviceCategory = "Platinum"
 }: CreateAppParams): { app: App, props: StandardStackProps } {
-  let stackName = getConfigFromEnvVar("stackName")
   const versionNumber = getConfigFromEnvVar("versionNumber")
   const commitId = getConfigFromEnvVar("commitId")
   const isPullRequest = getBooleanConfigFromEnvVar("isPullRequest")
@@ -96,14 +90,9 @@ export function createApp({
   Tags.of(app).add("DeploymentTool", "CDK")
   Tags.of(app).add("version", versionNumber)
   Tags.of(app).add("commit", commitId)
-  Tags.of(app).add("stackName", stackName)
   Tags.of(app).add("cdkApp", appName)
   Tags.of(app).add("repo", repoName)
   Tags.of(app).add("cfnDriftDetectionGroup", cfnDriftDetectionGroup)
-
-  if (isStateless && !isPullRequest) {
-    stackName = calculateVersionedStackName(stackName, versionNumber)
-  }
 
   return {
     app,
@@ -111,7 +100,6 @@ export function createApp({
       env: {
         region
       },
-      stackName,
       version: versionNumber,
       commitId,
       isPullRequest,
