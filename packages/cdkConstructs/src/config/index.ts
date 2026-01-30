@@ -1,5 +1,6 @@
 import {CloudFormationClient, DescribeStacksCommand} from "@aws-sdk/client-cloudformation"
 import {S3Client, HeadObjectCommand} from "@aws-sdk/client-s3"
+import {StandardStackProps} from "../apps/createApp"
 
 export function getConfigFromEnvVar(varName: string, prefix: string = "CDK_CONFIG_"): string {
   const value = process.env[prefix + varName]
@@ -32,8 +33,11 @@ export async function getTrustStoreVersion(trustStoreFile: string, region: strin
   return headObjectResponse.VersionId!
 }
 
-export function calculateVersionedStackName(baseStackName: string, version: string): string {
-  return `${baseStackName}-${version.replaceAll(".", "-")}`
+export function calculateVersionedStackName(baseStackName: string, props: StandardStackProps): string {
+  if (props.isPullRequest) {
+    return baseStackName
+  }
+  return `${baseStackName}-${props.version.replaceAll(".", "-")}`
 }
 
 export {LAMBDA_INSIGHTS_LAYER_ARNS} from "./lambdaInsights"
