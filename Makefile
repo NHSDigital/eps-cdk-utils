@@ -69,3 +69,6 @@ package: build
 build:
 	npm run build --workspace packages/cdkConstructs
 	npm run build --workspace packages/deploymentUtils
+
+docker-build:
+	docker build -t eps-cdk-utils . -f docker/Dockerfile
