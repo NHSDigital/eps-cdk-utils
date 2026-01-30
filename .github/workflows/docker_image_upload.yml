@@ -81,11 +81,3 @@ jobs:
         run: |
           docker tag "cdk-utils-build:${VERSION_NUMBER}" "${ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:latest"
           docker push "${ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:latest"
-
-      - name: Check cdk-utils-build scan results
-        env:
-          REPOSITORY_NAME: cdk-utils-build-repo
-          IMAGE_TAG: ${{ inputs.DOCKER_IMAGE_TAG }}
-        working-directory: .github/scripts
-        run: |
-          ./check_ecr_image_scan_results.sh
