@@ -1,6 +1,7 @@
-import {LambdaClient, InvokeCommand} from "@aws-sdk/client-lambda"
+import {LambdaClient} from "@aws-sdk/client-lambda"
 import {getCFConfigValue, getCloudFormationExports} from "../config/index"
 import {fixSpec} from "./fixSpec"
+import {invokeLambda} from "./invokeLambda"
 
 export type ApiConfig = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -17,28 +18,6 @@ export type ApiConfig = {
   proxygenPrivateKeyExportName: string
   proxygenKid: string
   hiddenPaths: Array<string>
-}
-
-const lambda = new LambdaClient({})
-
-async function invokeLambda(
-  dryRun: boolean,
-  functionName: string,
-  payload: unknown
-): Promise<void> {
-  if (dryRun) {
-    console.log(`Would invoke lambda ${functionName}`)
-    return
-  }
-  const invokeResult = await lambda.send(new InvokeCommand({
-    FunctionName: functionName,
-    Payload: Buffer.from(JSON.stringify(payload))
-  }))
-  const responsePayload = Buffer.from(invokeResult.Payload!).toString()
-  if (invokeResult.FunctionError) {
-    throw new Error(`Error calling lambda ${functionName}: ${responsePayload}`)
-  }
-  console.log(`Lambda ${functionName} invoked successfully. Response:`, responsePayload)
 }
 
 export async function deployApi(
@@ -60,6 +39,7 @@ export async function deployApi(
   blueGreen: boolean,
   dryRun: boolean
 ): Promise<void> {
+  const lambda = new LambdaClient({})
   const instance = fixSpec({
     spec,
     apiName,
@@ -89,6 +69,7 @@ export async function deployApi(
   if (!isPullRequest) {
     console.log("Store the secret used for mutual TLS to AWS using Proxygen proxy lambda")
     await invokeLambda(
+      lambda,
       dryRun,
       put_secret_lambda,
       {
@@ -105,6 +86,7 @@ export async function deployApi(
 
   console.log("Deploy the API instance using Proxygen proxy lambda")
   await invokeLambda(
+    lambda,
     dryRun,
     instance_put_lambda,
     {
@@ -132,6 +114,7 @@ export async function deployApi(
       delete spec.paths[path]
     }
     await invokeLambda(
+      lambda,
       dryRun,
       spec_publish_lambda,
       {
