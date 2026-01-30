@@ -267,6 +267,7 @@ export class PythonLambdaFunction extends Construct {
       runtime: runtime,
       memorySize: 256,
       timeout: Duration.seconds(timeoutInSeconds),
+      functionName: functionName,
       architecture,
       handler: handler,
       code: Code.fromAsset(join(projectBaseDir, packageBasePath)),
