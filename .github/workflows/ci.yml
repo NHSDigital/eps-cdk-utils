@@ -44,10 +44,12 @@ jobs:
           TAG_FORMAT=$(yq '.TAG_FORMAT' .github/config/settings.yml)
           echo "TAG_FORMAT=$TAG_FORMAT" >> "$GITHUB_OUTPUT"
   quality_checks:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks.yml@27a44fb54f4023136d2c14058e3256e73af9901e
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks.yml@e31e25273fb87450be4ef763ddbed4f531c45f8e
     needs: [get_asdf_version, get_commit_id]
     with:
       asdfVersion: ${{ needs.get_asdf_version.outputs.asdf_version }}
+      run_docker_scan: true
+      docker_images: "eps-cdk-utils"
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
