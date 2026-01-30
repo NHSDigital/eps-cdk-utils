@@ -1,22 +1,24 @@
-import {Duration} from "aws-cdk-lib"
+import {Construct} from "constructs"
+import {Duration, RemovalPolicy} from "aws-cdk-lib"
 import {
-  IManagedPolicy,
   ManagedPolicy,
   PolicyStatement,
-  Role
+  Role,
+  IManagedPolicy
 } from "aws-cdk-lib/aws-iam"
 import {
   Architecture,
   CfnFunction,
-  ILayerVersion,
-  Runtime
+  LayerVersion,
+  Runtime,
+  Function as LambdaFunctionResource,
+  Code,
+  ILayerVersion
 } from "aws-cdk-lib/aws-lambda"
-import {NodejsFunction, NodejsFunctionProps} from "aws-cdk-lib/aws-lambda-nodejs"
-import {Construct} from "constructs"
 import {join} from "node:path"
 import {createSharedLambdaResources} from "./lambdaSharedResources"
 
-export interface TypescriptLambdaFunctionProps {
+export interface PythonLambdaFunctionProps {
   /**
    * Name of the lambda function. The log group name is also based on this name.
    *
@@ -33,14 +35,13 @@ export interface TypescriptLambdaFunctionProps {
    */
   readonly packageBasePath: string
   /**
-   * The entry point file for the Lambda function, relative to the package base path.
-   *
+   * The function handler (file and method).  Example: `index.handler` for `index.py` file and `handler` method.
    */
-  readonly entryPoint: string
+  readonly handler: string
   /**
    * A map of environment variables to set for the lambda function.
    */
-  readonly environmentVariables: { [key: string]: string }
+  readonly environmentVariables?: {[key: string]: string}
   /**
    * Optional additional IAM policies to attach to role the lambda executes as.
    */
@@ -54,15 +55,11 @@ export interface TypescriptLambdaFunctionProps {
    * The log level for the lambda function.
    * @default "INFO"
    */
-  readonly logLevel: string,
+  readonly logLevel: string
   /**
-   * The version tag being deployed. Passed as environment variable VERSION_NUMBER to the function.
+   * Optional location of dependencies to include as a separate Lambda layer.
    */
-  readonly version: string
-  /**
-   * The commit ID being deployed. Passed as environment variable COMMIT_ID to the function.
-   */
-  readonly commitId: string
+  readonly dependencyLocation?: string
   /**
    * Optional list of Lambda layers to attach to the function.
    */
@@ -72,10 +69,9 @@ export interface TypescriptLambdaFunctionProps {
    * @default 50 seconds
    */
   readonly timeoutInSeconds?: number
-
   /**
    * Optional runtime for the Lambda function.
-   * @default Runtime.NODEJS_24_X
+   * @default Runtime.PYTHON_3_14
    */
   readonly runtime?: Runtime
   /**
@@ -85,34 +81,7 @@ export interface TypescriptLambdaFunctionProps {
   readonly architecture?: Architecture
 }
 
-const getDefaultLambdaOptions = (
-  packageBasePath: string,
-  projectBaseDir: string,
-  timeoutInSeconds: number,
-  runtime: Runtime,
-  architecture: Architecture
-): NodejsFunctionProps => {
-  return {
-    runtime: runtime,
-    projectRoot: projectBaseDir,
-    memorySize: 256,
-    timeout: Duration.seconds(timeoutInSeconds),
-    architecture: architecture,
-    handler: "handler",
-    bundling: {
-      minify: true,
-      sourceMap: true,
-      tsconfig: join(projectBaseDir, packageBasePath, "tsconfig.json"),
-      target: "es2022"
-    }
-  }
-}
-
-/**
- * A construct that creates a TypeScript-based AWS Lambda function with all necessary AWS resources.
- *
- */
-export class TypescriptLambdaFunction extends Construct {
+export class PythonLambdaFunction extends Construct {
   /**
    * The managed policy that allows execution of the Lambda function.
    *
@@ -141,7 +110,7 @@ export class TypescriptLambdaFunction extends Construct {
    * lambdaConstruct.function.addEnvironment('NEW_VAR', 'value');
    * ```
    */
-  public readonly function: NodejsFunction
+  public readonly function: LambdaFunctionResource
 
   /**
    * The IAM role assumed by the Lambda function during execution.
@@ -149,10 +118,10 @@ export class TypescriptLambdaFunction extends Construct {
   public readonly executionRole: Role
 
   /**
-   * Creates a new TypescriptLambdaFunction construct.
+   * Creates a new PythonLambdaFunction construct.
    *
    * This construct creates:
-   * - A Lambda function with TypeScript bundling
+   * - A python Lambda function with
    * - CloudWatch log group with KMS encryption
    * - Managed IAM policy for writing logs
    * - IAM role for execution with necessary permissions
@@ -166,41 +135,37 @@ export class TypescriptLambdaFunction extends Construct {
    *
    * @example
    * ```typescript
-   * const lambdaFunction = new TypescriptLambdaFunction(this, 'MyFunction', {
+   * const lambdaFunction = new PythonLambdaFunction(this, 'MyFunction', {
    *   functionName: 'my-lambda',
-   *   projectBaseDir: '/path/to/monorepo',
+   *   projectBaseDir: '/path/to/monorepo'
    *   packageBasePath: 'packages/my-lambda',
-   *   entryPoint: 'src/handler.ts',
+   *   handler: 'app.handler.handler',
    *   environmentVariables: {
    *     TABLE_NAME: 'my-table'
    *   },
    *   logRetentionInDays: 30,
-   *   logLevel: 'INFO',
-   *   version: '1.0.0',
-   *   commitId: 'abc123'
+   *   logLevel: 'INFO'
    * });
    * @param scope - The scope in which to define this construct
    * @param id - The scoped construct ID. Must be unique amongst siblings in the same scope
    * @param props - Configuration properties for the Lambda function
    */
-  public constructor(scope: Construct, id: string, props: TypescriptLambdaFunctionProps) {
+  public constructor(scope: Construct, id: string, props: PythonLambdaFunctionProps) {
     super(scope, id)
-
     // Destructure with defaults
     const {
       functionName,
+      projectBaseDir,
       packageBasePath,
-      entryPoint,
+      handler,
       environmentVariables,
       additionalPolicies = [], // Default to empty array
       logRetentionInDays = 30, // Default retention
       logLevel = "INFO", // Default log level
-      version,
-      commitId,
+      dependencyLocation,
       layers = [], // Default to empty array
-      projectBaseDir,
       timeoutInSeconds = 50,
-      runtime = Runtime.NODEJS_24_X,
+      runtime = Runtime.PYTHON_3_14,
       architecture = Architecture.X86_64
     } = props
 
@@ -211,25 +176,36 @@ export class TypescriptLambdaFunction extends Construct {
       architecture
     })
 
-    const lambdaFunction = new NodejsFunction(this, functionName, {
-      ...getDefaultLambdaOptions(packageBasePath, projectBaseDir, timeoutInSeconds, runtime, architecture),
-      functionName: `${functionName}`,
-      entry: join(projectBaseDir, packageBasePath, entryPoint),
+    const layersToAdd = [insightsLayer]
+    if (dependencyLocation) {
+      const dependencyLayer = new LayerVersion(this, "DependencyLayer", {
+        removalPolicy: RemovalPolicy.DESTROY,
+        code: Code.fromAsset(join(projectBaseDir, dependencyLocation)),
+        compatibleArchitectures: [architecture]
+      })
+      layersToAdd.push(dependencyLayer)
+    }
+    layersToAdd.push(...layers)
+
+    // Create Lambda function with Python runtime and monitoring
+    const lambdaFunction = new LambdaFunctionResource(this, functionName, {
+      runtime: runtime,
+      memorySize: 256,
+      timeout: Duration.seconds(timeoutInSeconds),
+      functionName: functionName,
+      architecture,
+      handler: handler,
+      code: Code.fromAsset(join(projectBaseDir, packageBasePath)),
       role,
       environment: {
         ...environmentVariables,
-        LOG_LEVEL: logLevel,
-        NODE_OPTIONS: "--enable-source-maps",
-        VERSION_NUMBER: version,
-        COMMIT_ID: commitId
+        POWERTOOLS_LOG_LEVEL: logLevel
       },
       logGroup,
-      layers: [
-        insightsLayer,
-        ...layers
-      ]
+      layers: layersToAdd
     })
 
+    // Suppress CFN guard rules for Lambda function
     const cfnLambda = lambdaFunction.node.defaultChild as CfnFunction
     cfnLambda.cfnOptions.metadata = {
       guard: {
@@ -241,16 +217,18 @@ export class TypescriptLambdaFunction extends Construct {
       }
     }
 
+    // Create policy for external services to invoke this Lambda
     const executionManagedPolicy = new ManagedPolicy(this, "ExecuteLambdaManagedPolicy", {
       description: `execute lambda ${functionName}`,
       statements: [
         new PolicyStatement({
           actions: ["lambda:InvokeFunction"],
           resources: [lambdaFunction.functionArn]
-        })]
+        })
+      ]
     })
 
-    // Outputs
+    // Export Lambda function and sexecution policy for use by other constructs
     this.function = lambdaFunction
     this.executionPolicy = executionManagedPolicy
     this.executionRole = role

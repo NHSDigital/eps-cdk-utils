@@ -35,3 +35,5 @@ export async function getTrustStoreVersion(trustStoreFile: string, region: strin
 export function calculateVersionedStackName(baseStackName: string, version: string): string {
   return `${baseStackName}-${version.replaceAll(".", "-")}`
 }
+
+export {LAMBDA_INSIGHTS_LAYER_ARNS} from "./lambdaInsights"

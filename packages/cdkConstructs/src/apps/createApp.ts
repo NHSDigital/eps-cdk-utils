@@ -5,14 +5,22 @@ import {
   StackProps
 } from "aws-cdk-lib"
 import {AwsSolutionsChecks} from "cdk-nag"
-import {getConfigFromEnvVar, getBooleanConfigFromEnvVar, calculateVersionedStackName} from "../config"
+import {getConfigFromEnvVar, getBooleanConfigFromEnvVar} from "../config"
 
 export interface StandardStackProps extends StackProps {
-  readonly stackName: string
+  /** Semantic version of the deployment (from `versionNumber`). */
   readonly version: string
+  /** Git commit identifier baked into the stack. */
   readonly commitId: string
+  /** Whether the stack originates from a pull-request environment. */
   readonly isPullRequest: boolean
+  /** Logical environment identifier (for example `dev`, `prod`). */
   readonly environment: string
+  /** CDK environment configuration used when synthesizing the stack. */
+  readonly env: {
+    /** AWS region targeted by the stack. */
+    readonly region: string
+  }
 }
 
 export interface CreateAppParams {
@@ -20,25 +28,39 @@ export interface CreateAppParams {
   readonly appName: string
   readonly repoName: string
   readonly driftDetectionGroup: string
-  readonly isStateless?: boolean
   readonly region?: string
   readonly projectType?: string
   readonly publicFacing?: string
   readonly serviceCategory?: string
 }
 
+/**
+ * Initialize a CDK `App` pre-loaded with NHS EPS tags and mandatory configuration.
+ *
+ * Reads stack metadata from environment variables, and returns
+ * both the created `App` instance and the resolved stack props (including version info).
+ *
+ * @param params - High-level app metadata and optional deployment modifiers.
+ * @param params.productName - Product tag value for the stack.
+ * @param params.appName - Identifier used for `cdkApp` tagging.
+ * @param params.repoName - Repository name stored on the stack tags.
+ * @param params.driftDetectionGroup - Baseline drift detection tag (suffixes `-pull-request` when `isPullRequest`).
+ * @param params.region - AWS region assigned to the stack environment (default `eu-west-2`).
+ * @param params.projectType - Tag describing the project classification (default `Production`).
+ * @param params.publicFacing - Public-facing classification tag (default `Y`).
+ * @param params.serviceCategory - Service category tag (default `Platinum`).
+ * @returns The constructed CDK `App` and the resolved stack props for downstream stacks.
+ */
 export function createApp({
   productName,
   appName,
   repoName,
   driftDetectionGroup,
-  isStateless = true,
   region = "eu-west-2",
   projectType = "Production",
   publicFacing = "Y",
   serviceCategory = "Platinum"
 }: CreateAppParams): { app: App, props: StandardStackProps } {
-  let stackName = getConfigFromEnvVar("stackName")
   const versionNumber = getConfigFromEnvVar("versionNumber")
   const commitId = getConfigFromEnvVar("commitId")
   const isPullRequest = getBooleanConfigFromEnvVar("isPullRequest")
@@ -68,14 +90,9 @@ export function createApp({
   Tags.of(app).add("DeploymentTool", "CDK")
   Tags.of(app).add("version", versionNumber)
   Tags.of(app).add("commit", commitId)
-  Tags.of(app).add("stackName", stackName)
   Tags.of(app).add("cdkApp", appName)
   Tags.of(app).add("repo", repoName)
   Tags.of(app).add("cfnDriftDetectionGroup", cfnDriftDetectionGroup)
-
-  if (isStateless && !isPullRequest) {
-    stackName = calculateVersionedStackName(stackName, versionNumber)
-  }
 
   return {
     app,
@@ -83,7 +100,6 @@ export function createApp({
       env: {
         region
       },
-      stackName,
       version: versionNumber,
       commitId,
       isPullRequest,

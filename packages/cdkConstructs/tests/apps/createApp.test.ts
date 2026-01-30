@@ -51,7 +51,6 @@ describe("createApp", () => {
 
   describe("when all environment variables are set", () => {
     beforeEach(() => {
-      process.env.CDK_CONFIG_stackName = "test-stack"
       process.env.CDK_CONFIG_versionNumber = "1.2.3"
       process.env.CDK_CONFIG_commitId = "abc123def456"
       process.env.CDK_CONFIG_isPullRequest = "false"
@@ -62,17 +61,10 @@ describe("createApp", () => {
       const {app, props} = createApp(buildParams())
 
       expect(app).toBeInstanceOf(App)
-      expect(props.stackName).toBe("test-stack-1-2-3")
       expect(props.version).toBe("1.2.3")
       expect(props.commitId).toBe("abc123def456")
       expect(props.isPullRequest).toBe(false)
       expect(props.env?.region).toBe("eu-west-2")
-    })
-
-    test("creates stateful App with correct stackName", () => {
-      const {props} = createApp(buildParams({isStateless: false}))
-
-      expect(props.stackName).toBe("test-stack")
     })
 
     test("uses custom region when provided", () => {
@@ -111,13 +103,12 @@ describe("createApp", () => {
       expect(addTagSpy).toHaveBeenCalledWith("DeploymentTool", "CDK")
       expect(addTagSpy).toHaveBeenCalledWith("version", "1.2.3")
       expect(addTagSpy).toHaveBeenCalledWith("commit", "abc123def456")
-      expect(addTagSpy).toHaveBeenCalledWith("stackName", "test-stack")
       expect(addTagSpy).toHaveBeenCalledWith("cdkApp", "testApp")
       expect(addTagSpy).toHaveBeenCalledWith("repo", "testRepo")
       expect(addTagSpy).toHaveBeenCalledWith("cfnDriftDetectionGroup", "test-drift-group")
 
-      // Verify exactly 20 tags were added
-      expect(addTagSpy).toHaveBeenCalledTimes(20)
+      // Verify exactly 19 tags were added
+      expect(addTagSpy).toHaveBeenCalledTimes(19)
 
       // Restore the spy
       tagsOfSpy.mockRestore()
@@ -133,7 +124,6 @@ describe("createApp", () => {
 
   describe("when isPullRequest is true", () => {
     beforeEach(() => {
-      process.env.CDK_CONFIG_stackName = "pr-stack"
       process.env.CDK_CONFIG_versionNumber = "0.0.1-pr"
       process.env.CDK_CONFIG_commitId = "pr123"
       process.env.CDK_CONFIG_isPullRequest = "true"
@@ -143,17 +133,10 @@ describe("createApp", () => {
     test("correctly modifies props", () => {
       const {props} = createApp(buildParams())
 
-      expect(props.stackName).toBe("pr-stack")
       expect(props.version).toBe("0.0.1-pr")
       expect(props.commitId).toBe("pr123")
       expect(props.isPullRequest).toBe(true)
       expect(props.environment).toBe("test-environment")
-    })
-
-    test("creates stateful App with unmodified stackName", () => {
-      const {props} = createApp(buildParams({isStateless: false}))
-
-      expect(props.stackName).toBe("pr-stack")
     })
 
     test("modifies drift detection group with -pull-request suffix", () => {
@@ -174,19 +157,8 @@ describe("createApp", () => {
   })
 
   describe("when environment variables are missing", () => {
-    test("throws error when stackName is not set", () => {
-      process.env.CDK_CONFIG_versionNumber = "1.0.0"
-      process.env.CDK_CONFIG_commitId = "abc123"
-      process.env.CDK_CONFIG_isPullRequest = "false"
-      process.env.CDK_CONFIG_environment = "test-environment"
-
-      expect(() => {
-        createApp(buildParams())
-      }).toThrow("Environment variable CDK_CONFIG_stackName is not set")
-    })
 
     test("throws error when versionNumber is not set", () => {
-      process.env.CDK_CONFIG_stackName = "test-stack"
       process.env.CDK_CONFIG_commitId = "abc123"
       process.env.CDK_CONFIG_isPullRequest = "false"
       process.env.CDK_CONFIG_environment = "test-environment"
@@ -197,7 +169,6 @@ describe("createApp", () => {
     })
 
     test("throws error when commitId is not set", () => {
-      process.env.CDK_CONFIG_stackName = "test-stack"
       process.env.CDK_CONFIG_versionNumber = "1.0.0"
       process.env.CDK_CONFIG_isPullRequest = "false"
       process.env.CDK_CONFIG_environment = "test-environment"
@@ -208,7 +179,6 @@ describe("createApp", () => {
     })
 
     test("throws error when isPullRequest is not set", () => {
-      process.env.CDK_CONFIG_stackName = "test-stack"
       process.env.CDK_CONFIG_versionNumber = "1.0.0"
       process.env.CDK_CONFIG_commitId = "abc123"
       process.env.CDK_CONFIG_environment = "test-environment"
@@ -218,7 +188,6 @@ describe("createApp", () => {
     })
 
     test("throws error when environment is not set", () => {
-      process.env.CDK_CONFIG_stackName = "test-stack"
       process.env.CDK_CONFIG_versionNumber = "1.0.0"
       process.env.CDK_CONFIG_commitId = "abc123"
       process.env.CDK_CONFIG_isPullRequest = "false"
