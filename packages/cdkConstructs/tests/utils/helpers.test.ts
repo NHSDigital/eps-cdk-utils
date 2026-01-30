@@ -16,7 +16,7 @@ const defaultSuppressionRules = ["LAMBDA_DLQ_CHECK", "LAMBDA_INSIDE_VPC", "LAMBD
 const createResource = (stack: Stack, id: string, type = "Custom::Test", path?: string): CfnResource => {
   const resource = new CfnResource(stack, id, {type, properties: {}})
   resource.cfnOptions.metadata = {
-    ...(resource.cfnOptions.metadata ?? {}),
+    ...(resource.cfnOptions.metadata),
     "aws:cdk:path": path ?? `${stack.stackName}/${id}`
   }
   return resource

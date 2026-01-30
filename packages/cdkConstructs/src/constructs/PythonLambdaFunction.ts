@@ -15,7 +15,7 @@ import {
   Code,
   ILayerVersion
 } from "aws-cdk-lib/aws-lambda"
-import {join} from "path"
+import {join} from "node:path"
 import {createSharedLambdaResources} from "./lambdaSharedResources"
 
 export interface PythonLambdaFunctionProps {

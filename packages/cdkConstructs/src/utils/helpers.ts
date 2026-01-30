@@ -67,9 +67,7 @@ export function findCloudFormationResourcesByType(construct: IConstruct, type: s
  */
 export function addSuppressions(resources: Array<CfnResource>, rules: Array<string>): void {
   resources.forEach(resource => {
-    if (!resource.cfnOptions.metadata) {
-      resource.cfnOptions.metadata = {}
-    }
+    resource.cfnOptions.metadata ??= {}
     const existing = resource.cfnOptions.metadata.guard?.SuppressedRules || []
     const combined = Array.from(new Set([...existing, ...rules]))
     resource.cfnOptions.metadata.guard = {SuppressedRules: combined}
