@@ -1,14 +1,11 @@
 import {Construct} from "constructs"
-import {Duration, Fn, RemovalPolicy} from "aws-cdk-lib"
+import {Duration, RemovalPolicy} from "aws-cdk-lib"
 import {
   ManagedPolicy,
   PolicyStatement,
   Role,
-  ServicePrincipal,
   IManagedPolicy
 } from "aws-cdk-lib/aws-iam"
-import {Key} from "aws-cdk-lib/aws-kms"
-import {Stream} from "aws-cdk-lib/aws-kinesis"
 import {
   Architecture,
   CfnFunction,
@@ -18,9 +15,8 @@ import {
   Code,
   ILayerVersion
 } from "aws-cdk-lib/aws-lambda"
-import {CfnLogGroup, CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
 import {join} from "path"
-import {LAMBDA_INSIGHTS_LAYER_ARNS} from "../config"
+import {createSharedLambdaResources} from "./lambdaSharedResources"
 
 export interface PythonLambdaFunctionProps {
   /**
@@ -173,85 +169,14 @@ export class PythonLambdaFunction extends Construct {
       architecture = Architecture.X86_64
     } = props
 
-    // Import shared cloud resources from cross-stack references
-    const cloudWatchLogsKmsKey = Key.fromKeyArn(
-      this, "cloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
-
-    const cloudwatchEncryptionKMSPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "cloudwatchEncryptionKMSPolicyArn", Fn.importValue("account-resources:CloudwatchEncryptionKMSPolicyArn"))
-
-    const splunkDeliveryStream = Stream.fromStreamArn(
-      this, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
-
-    const splunkSubscriptionFilterRole = Role.fromRoleArn(
-      this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"))
-
-    const lambdaInsightsLogGroupPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "lambdaInsightsLogGroupPolicy", Fn.importValue("lambda-resources:LambdaInsightsLogGroupPolicy"))
-
-    const insightsLambdaLayerArn = architecture === Architecture.ARM_64
-      ? LAMBDA_INSIGHTS_LAYER_ARNS.arm64
-      : LAMBDA_INSIGHTS_LAYER_ARNS.x64
-    const insightsLambdaLayer = LayerVersion.fromLayerVersionArn(
-      this, "LayerFromArn", insightsLambdaLayerArn)
-
-    // Log group with encryption and retention
-    const logGroup = new LogGroup(this, "LambdaLogGroup", {
-      encryptionKey: cloudWatchLogsKmsKey,
-      logGroupName: `/aws/lambda/${functionName}`,
-      retention: logRetentionInDays,
-      removalPolicy: RemovalPolicy.DESTROY
+    const {logGroup, role, insightsLayer} = createSharedLambdaResources(this, {
+      functionName,
+      logRetentionInDays,
+      additionalPolicies,
+      architecture
     })
 
-    // Suppress CFN guard rules for log group
-    const cfnlogGroup = logGroup.node.defaultChild as CfnLogGroup
-    cfnlogGroup.cfnOptions.metadata = {
-      guard: {
-        SuppressedRules: [
-          "CW_LOGGROUP_RETENTION_PERIOD_CHECK"
-        ]
-      }
-    }
-
-    // Send logs to Splunk
-    new CfnSubscriptionFilter(this, "LambdaLogsSplunkSubscriptionFilter", {
-      destinationArn: splunkDeliveryStream.streamArn,
-      filterPattern: "",
-      logGroupName: logGroup.logGroupName,
-      roleArn: splunkSubscriptionFilterRole.roleArn
-    })
-
-    // Create managed policy for Lambda CloudWatch logs access
-    const putLogsManagedPolicy = new ManagedPolicy(this, "LambdaPutLogsManagedPolicy", {
-      description: `write to ${functionName} logs`,
-      statements: [
-        new PolicyStatement({
-          actions: [
-            "logs:CreateLogStream",
-            "logs:PutLogEvents"
-          ],
-          resources: [
-            logGroup.logGroupArn,
-            `${logGroup.logGroupArn}:log-stream:*`
-          ]
-        })
-      ]
-    })
-
-    // Aggregate all required policies for Lambda execution
-    const requiredPolicies: Array<IManagedPolicy> = [
-      putLogsManagedPolicy,
-      lambdaInsightsLogGroupPolicy,
-      cloudwatchEncryptionKMSPolicy,
-      ...(additionalPolicies ?? [])
-    ]
-
-    const role = new Role(this, "LambdaRole", {
-      assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
-      managedPolicies: requiredPolicies
-    })
-
-    const layersToAdd = [insightsLambdaLayer]
+    const layersToAdd = [insightsLayer]
     if (dependencyLocation) {
       const dependencyLayer = new LayerVersion(this, "DependencyLayer", {
         removalPolicy: RemovalPolicy.DESTROY,

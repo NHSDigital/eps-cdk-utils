@@ -1,26 +1,20 @@
-import {Duration, Fn, RemovalPolicy} from "aws-cdk-lib"
+import {Duration} from "aws-cdk-lib"
 import {
   IManagedPolicy,
   ManagedPolicy,
   PolicyStatement,
-  Role,
-  ServicePrincipal
+  Role
 } from "aws-cdk-lib/aws-iam"
-import {Stream} from "aws-cdk-lib/aws-kinesis"
-import {Key} from "aws-cdk-lib/aws-kms"
 import {
   Architecture,
   CfnFunction,
   ILayerVersion,
-  LayerVersion,
   Runtime
 } from "aws-cdk-lib/aws-lambda"
 import {NodejsFunction, NodejsFunctionProps} from "aws-cdk-lib/aws-lambda-nodejs"
-import {CfnLogGroup, CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
 import {Construct} from "constructs"
 import {join} from "node:path"
-import {NagSuppressions} from "cdk-nag"
-import {LAMBDA_INSIGHTS_LAYER_ARNS} from "../config"
+import {createSharedLambdaResources} from "./lambdaSharedResources"
 
 export interface TypescriptLambdaFunctionProps {
   /**
@@ -210,83 +204,11 @@ export class TypescriptLambdaFunction extends Construct {
       architecture = Architecture.X86_64
     } = props
 
-    // Imports
-    const cloudWatchLogsKmsKey = Key.fromKeyArn(
-      this, "cloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
-
-    const splunkDeliveryStream = Stream.fromStreamArn(
-      this, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
-
-    const splunkSubscriptionFilterRole = Role.fromRoleArn(
-      this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"))
-
-    const lambdaInsightsLogGroupPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "lambdaInsightsLogGroupPolicy", Fn.importValue("lambda-resources:LambdaInsightsLogGroupPolicy"))
-
-    const cloudwatchEncryptionKMSPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "cloudwatchEncryptionKMSPolicyArn", Fn.importValue("account-resources:CloudwatchEncryptionKMSPolicyArn"))
-
-    const insightsLambdaLayerArn = architecture === Architecture.ARM_64
-      ? LAMBDA_INSIGHTS_LAYER_ARNS.arm64
-      : LAMBDA_INSIGHTS_LAYER_ARNS.x64
-    const insightsLambdaLayer = LayerVersion.fromLayerVersionArn(
-      this, "LayerFromArn", insightsLambdaLayerArn)
-
-    // Resources
-    const logGroup = new LogGroup(this, "LambdaLogGroup", {
-      encryptionKey: cloudWatchLogsKmsKey,
-      logGroupName: `/aws/lambda/${functionName}`,
-      retention: logRetentionInDays,
-      removalPolicy: RemovalPolicy.DESTROY
-    })
-
-    const cfnlogGroup = logGroup.node.defaultChild as CfnLogGroup
-    cfnlogGroup.cfnOptions.metadata = {
-      guard: {
-        SuppressedRules: [
-          "CW_LOGGROUP_RETENTION_PERIOD_CHECK"
-        ]
-      }
-    }
-
-    new CfnSubscriptionFilter(this, "LambdaLogsSplunkSubscriptionFilter", {
-      destinationArn: splunkDeliveryStream.streamArn,
-      filterPattern: "",
-      logGroupName: logGroup.logGroupName,
-      roleArn: splunkSubscriptionFilterRole.roleArn
-
-    })
-
-    const putLogsManagedPolicy = new ManagedPolicy(this, "LambdaPutLogsManagedPolicy", {
-      description: `write to ${functionName} logs`,
-      statements: [
-        new PolicyStatement({
-          actions: [
-            "logs:CreateLogStream",
-            "logs:PutLogEvents"
-          ],
-          resources: [
-            logGroup.logGroupArn,
-            `${logGroup.logGroupArn}:log-stream:*`
-          ]
-        })]
-    })
-    NagSuppressions.addResourceSuppressions(putLogsManagedPolicy, [
-      {
-        id: "AwsSolutions-IAM5",
-        // eslint-disable-next-line max-len
-        reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
-      }
-    ])
-
-    const role = new Role(this, "LambdaRole", {
-      assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
-      managedPolicies: [
-        putLogsManagedPolicy,
-        lambdaInsightsLogGroupPolicy,
-        cloudwatchEncryptionKMSPolicy,
-        ...(additionalPolicies)
-      ]
+    const {logGroup, role, insightsLayer} = createSharedLambdaResources(this, {
+      functionName,
+      logRetentionInDays,
+      additionalPolicies,
+      architecture
     })
 
     const lambdaFunction = new NodejsFunction(this, functionName, {
@@ -303,7 +225,7 @@ export class TypescriptLambdaFunction extends Construct {
       },
       logGroup,
       layers: [
-        insightsLambdaLayer,
+        insightsLayer,
         ...layers
       ]
     })
