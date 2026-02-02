@@ -10,9 +10,8 @@ export default Object.defineProperty(
   (node: CfnResource): NagRuleCompliance => {
     if (node instanceof CfnDomainName) {
       const stack = Stack.of(node)
-      // Pull from context or props
-      const isPullRequest =
-      stack.node.tryGetContext("isPullRequest") === true
+      // Try getting isPullRequest context value
+      const isPullRequest = stack.node.tryGetContext("isPullRequest") === true
 
       if (isPullRequest) {
         return NagRuleCompliance.COMPLIANT
