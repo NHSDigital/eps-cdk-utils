@@ -1,11 +1,11 @@
 import {NagMessageLevel, NagPack, NagPackProps} from "cdk-nag"
 import {IConstruct} from "constructs"
 import {CfnResource} from "aws-cdk-lib"
-import {ApiGatewayMutualTls} from "../rules"
+import {ApiGatewayMutualTls, APIGWStructuredLogging} from "../rules"
 import {LambdaFunctionPublicAccessProhibited} from "cdk-nag/lib/rules/lambda"
 import {CloudWatchLogGroupEncrypted} from "cdk-nag/lib/rules/cloudwatch"
 import {ALBHttpDropInvalidHeaderEnabled, ELBLoggingEnabled, ELBTlsHttpsListenersOnly} from "cdk-nag/lib/rules/elb"
-import {APIGWAccessLogging, APIGWStructuredLogging} from "cdk-nag/lib/rules/apigw"
+import {APIGWAccessLogging} from "cdk-nag/lib/rules/apigw"
 import {
   IAMNoInlinePolicy,
   IAMPolicyNoStatementsWithAdminAccess,
