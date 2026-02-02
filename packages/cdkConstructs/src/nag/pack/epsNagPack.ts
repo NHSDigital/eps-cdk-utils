@@ -1,7 +1,7 @@
 import {NagMessageLevel, NagPack, NagPackProps} from "cdk-nag"
 import {IConstruct} from "constructs"
 import {CfnResource} from "aws-cdk-lib"
-import {ApiGatewayMutualTls, APIGWStructuredLogging} from "../rules"
+import {ApiGWMutualTls, APIGWStructuredLogging} from "../rules"
 import {LambdaFunctionPublicAccessProhibited} from "cdk-nag/lib/rules/lambda"
 import {CloudWatchLogGroupEncrypted} from "cdk-nag/lib/rules/cloudwatch"
 import {ALBHttpDropInvalidHeaderEnabled, ELBLoggingEnabled, ELBTlsHttpsListenersOnly} from "cdk-nag/lib/rules/elb"
@@ -34,7 +34,7 @@ export class EpsNagPack extends NagPack {
         info: "API Gateway must does not use mutual TLS.",
         explanation: "All non pull request deployments must enforce mutual TLS on api gateways.",
         level: NagMessageLevel.ERROR,
-        rule: ApiGatewayMutualTls,
+        rule: ApiGWMutualTls,
         node: node
       })
       this.applyRule({
