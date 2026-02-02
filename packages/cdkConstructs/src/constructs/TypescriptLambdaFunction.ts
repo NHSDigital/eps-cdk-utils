@@ -15,6 +15,7 @@ import {NodejsFunction, NodejsFunctionProps} from "aws-cdk-lib/aws-lambda-nodejs
 import {Construct} from "constructs"
 import {join} from "node:path"
 import {createSharedLambdaResources} from "./lambdaSharedResources"
+import {addSuppressions} from "../utils/helpers"
 
 export interface TypescriptLambdaFunctionProps {
   /**
@@ -231,15 +232,11 @@ export class TypescriptLambdaFunction extends Construct {
     })
 
     const cfnLambda = lambdaFunction.node.defaultChild as CfnFunction
-    cfnLambda.cfnOptions.metadata = {
-      guard: {
-        SuppressedRules: [
-          "LAMBDA_DLQ_CHECK",
-          "LAMBDA_INSIDE_VPC",
-          "LAMBDA_CONCURRENCY_CHECK"
-        ]
-      }
-    }
+    addSuppressions([cfnLambda], [
+      "LAMBDA_DLQ_CHECK",
+      "LAMBDA_INSIDE_VPC",
+      "LAMBDA_CONCURRENCY_CHECK"
+    ])
 
     const executionManagedPolicy = new ManagedPolicy(this, "ExecuteLambdaManagedPolicy", {
       description: `execute lambda ${functionName}`,

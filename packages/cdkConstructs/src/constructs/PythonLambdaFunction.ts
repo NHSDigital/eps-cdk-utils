@@ -17,6 +17,7 @@ import {
 } from "aws-cdk-lib/aws-lambda"
 import {join} from "node:path"
 import {createSharedLambdaResources} from "./lambdaSharedResources"
+import {addSuppressions} from "../utils/helpers"
 
 export interface PythonLambdaFunctionProps {
   /**
@@ -207,15 +208,11 @@ export class PythonLambdaFunction extends Construct {
 
     // Suppress CFN guard rules for Lambda function
     const cfnLambda = lambdaFunction.node.defaultChild as CfnFunction
-    cfnLambda.cfnOptions.metadata = {
-      guard: {
-        SuppressedRules: [
-          "LAMBDA_DLQ_CHECK",
-          "LAMBDA_INSIDE_VPC",
-          "LAMBDA_CONCURRENCY_CHECK"
-        ]
-      }
-    }
+    addSuppressions([cfnLambda], [
+      "LAMBDA_DLQ_CHECK",
+      "LAMBDA_INSIDE_VPC",
+      "LAMBDA_CONCURRENCY_CHECK"
+    ])
 
     // Create policy for external services to invoke this Lambda
     const executionManagedPolicy = new ManagedPolicy(this, "ExecuteLambdaManagedPolicy", {

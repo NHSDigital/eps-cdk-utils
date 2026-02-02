@@ -6,6 +6,7 @@ import {
 } from "aws-cdk-lib"
 import {AwsSolutionsChecks} from "cdk-nag"
 import {getConfigFromEnvVar, getBooleanConfigFromEnvVar} from "../config"
+import {EpsNagPack} from "../nag/pack/epsNagPack"
 
 export interface StandardStackProps extends StackProps {
   /** Semantic version of the deployment (from `versionNumber`). */
@@ -71,8 +72,10 @@ export function createApp({
   }
 
   const app = new App()
+  app.node.setContext("isPullRequest", isPullRequest)
 
   Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
+  Aspects.of(app).add(new EpsNagPack({verbose: true}))
 
   Tags.of(app).add("TagVersion", "1")
   Tags.of(app).add("Programme", "EPS")
