@@ -18,7 +18,8 @@ describe("ApiGWMutualTls", () => {
   const ruleId = "ApiGWMutualTls"
   test("Non-compliant when mutual TLS is not enabled", () => {
     new CfnDomainName(stack, "TestDomain", {
-      domainName: "test.example.com"
+      domainName: "test.example.com",
+      securityPolicy: "SecurityPolicy_TLS13_1_3_2025_09 "
     })
 
     // Validate
@@ -27,6 +28,7 @@ describe("ApiGWMutualTls", () => {
   test("Compliant when mutual TLS is enabled", () => {
     new CfnDomainName(stack, "TestDomain", {
       domainName: "test.example.com",
+      securityPolicy: "SecurityPolicy_TLS13_1_3_2025_09 ",
       mutualTlsAuthentication: {
         truststoreUri: "truststoreUri",
         truststoreVersion: "truststoreVersion"
@@ -40,6 +42,7 @@ describe("ApiGWMutualTls", () => {
   test("Non-compliant when mutual TLS is missing trustStoreVersion", () => {
     new CfnDomainName(stack, "TestDomain", {
       domainName: "test.example.com",
+      securityPolicy: "SecurityPolicy_TLS13_1_3_2025_09 ",
       mutualTlsAuthentication: {
         truststoreUri: "truststoreUri"
       }
@@ -51,7 +54,8 @@ describe("ApiGWMutualTls", () => {
   test("Compliant when mutual TLS is not enabled in a pull request", () => {
     stack.node.setContext("isPullRequest", true)
     new CfnDomainName(stack, "TestDomain", {
-      domainName: "test.example.com"
+      domainName: "test.example.com",
+      securityPolicy: "SecurityPolicy_TLS13_1_3_2025_09 "
     })
 
     // Validate
@@ -60,7 +64,8 @@ describe("ApiGWMutualTls", () => {
   test("Compliant when mutual TLS is not enabled in not a pull request", () => {
     stack.node.setContext("isPullRequest", false)
     new CfnDomainName(stack, "TestDomain", {
-      domainName: "test.example.com"
+      domainName: "test.example.com",
+      securityPolicy: "SecurityPolicy_TLS13_1_3_2025_09 "
     })
 
     // Validate
