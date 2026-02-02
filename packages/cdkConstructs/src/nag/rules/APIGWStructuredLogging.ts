@@ -4,7 +4,7 @@ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 Modifications copyright (c) 2026 NHS Digital – see THIRD_PARTY_NOTICES.md
 */
-import {parse} from "path"
+import {parse} from "node:path"
 import {CfnResource, Stack} from "aws-cdk-lib"
 import {CfnDeployment, CfnStage} from "aws-cdk-lib/aws-apigateway"
 import {CfnStage as CfnStageV2} from "aws-cdk-lib/aws-apigatewayv2"

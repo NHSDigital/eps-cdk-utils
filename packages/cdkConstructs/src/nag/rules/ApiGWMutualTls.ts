@@ -1,4 +1,4 @@
-import {parse} from "path"
+import {parse} from "node:path"
 import {CfnResource, Stack} from "aws-cdk-lib"
 import {CfnDomainName} from "aws-cdk-lib/aws-apigateway"
 import {NagRules, NagRuleCompliance} from "cdk-nag"
