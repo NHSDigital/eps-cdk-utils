@@ -13,6 +13,7 @@ import {
 } from "aws-cdk-lib/aws-iam"
 import {NagSuppressions} from "cdk-nag"
 import {LAMBDA_INSIGHTS_LAYER_ARNS} from "../config"
+import {addSuppressions} from "../utils/helpers"
 
 export interface SharedLambdaResourceProps {
   readonly functionName: string
@@ -65,13 +66,7 @@ export const createSharedLambdaResources = (
   })
 
   const cfnlogGroup = logGroup.node.defaultChild as CfnLogGroup
-  cfnlogGroup.cfnOptions.metadata = {
-    guard: {
-      SuppressedRules: [
-        "CW_LOGGROUP_RETENTION_PERIOD_CHECK"
-      ]
-    }
-  }
+  addSuppressions([cfnlogGroup], ["CW_LOGGROUP_RETENTION_PERIOD_CHECK"])
 
   new CfnSubscriptionFilter(scope, "LambdaLogsSplunkSubscriptionFilter", {
     destinationArn: splunkDeliveryStream.streamArn,
