@@ -6,26 +6,26 @@ import {
 } from "@aws-sdk/client-cloudformation"
 import {ChangeResourceRecordSetsCommand, ListHostedZonesByNameCommand, Route53Client} from "@aws-sdk/client-route-53"
 
-const CNAME_HOSTED_ZONE_NAME = "dev.eps.national.nhs.uk."
-
 /**
  * Deletes unused CloudFormation stacks and their associated Route 53 CNAME records.
  *
- * A stack is considered unused if:
- * - it represents a pull request deployment whose PR has been closed; or
- * - it is a superseded version of the base stack (and is not within the 24‑hour embargo window).
+ * A stack is considered unused if it is a superseded version of the base stack
+ * (and is not within the 24‑hour embargo window).
  *
  * @param baseStackName - Base name/prefix of the CloudFormation stacks to evaluate.
- * @param repoName - GitHub repository name used to look up pull request state.
- * @param basePath - Base path of the API used to determine the currently active version.
+ * @param hostedZoneName - Hosted zone name used to look up Route 53 records.
+ * @param getActiveVersions - Function to get the currently active versions.
  * @returns A promise that resolves when all eligible stacks have been processed.
  */
-export async function deleteUnusedStacks(baseStackName: string, repoName: string, basePath: string): Promise<void> {
+export async function deleteUnusedMainStacks(
+  baseStackName: string,
+  hostedZoneName: string,
+  getActiveVersions: () => Promise<ActiveVersions>
+): Promise<void> {
   const cloudFormationClient = new CloudFormationClient({})
   const route53Client = new Route53Client({})
-  const hostedZoneId = await getHostedZoneId(route53Client)
-  const activeVersions = await getActiveVersions(basePath)
-
+  const hostedZoneId = await getHostedZoneId(route53Client, hostedZoneName)
+  const activeVersions = await getActiveVersions()
   console.log("checking cloudformation stacks")
 
   const allStacks = await listAllStacks(cloudFormationClient)
@@ -37,7 +37,12 @@ export async function deleteUnusedStacks(baseStackName: string, repoName: string
     const {version, isSandbox} = versionInfo
     return !isSandbox && version === activeVersions.baseEnvVersion?.replaceAll(".", "-")
   })?.CreationTime
-  const keepAllNonPRStacks = isEmbargoed(activeVersionDeployed)
+  if (isEmbargoed(activeVersionDeployed)) {
+    console.log(
+      `Active version ${activeVersions.baseEnvVersion} deployed less than 24 hours ago,` +
+      "skipping deletion of superseded stacks")
+    return
+  }
 
   for (const stack of allStacks) {
     if (stack.StackStatus === "DELETE_COMPLETE" || !stack.StackName) {
@@ -45,36 +50,81 @@ export async function deleteUnusedStacks(baseStackName: string, repoName: string
     }
 
     const stackName = stack.StackName
-    const deleteSuperseded = !keepAllNonPRStacks && isSupersededVersion(stack, baseStackName, activeVersions)
-    if (!deleteSuperseded && !(await isClosedPullRequest(stackName, baseStackName, repoName))) {
+    if (!isSupersededVersion(stack, baseStackName, activeVersions)) {
       continue
     }
 
-    await cloudFormationClient.send(new DeleteStackCommand({StackName: stackName}))
-    console.log("** Sleeping for 60 seconds to avoid 429 on delete stack **")
-    await new Promise((resolve) => setTimeout(resolve, 60_000))
-
-    const recordName = `${stackName}.${CNAME_HOSTED_ZONE_NAME}`
-    console.log(`** going to delete CNAME record ${recordName} **`)
-    await route53Client.send(
-      new ChangeResourceRecordSetsCommand({
-        HostedZoneId: hostedZoneId,
-        ChangeBatch: {
-          Changes: [
-            {
-              Action: "DELETE",
-              ResourceRecordSet: {
-                Name: recordName,
-                Type: "CNAME"
-              }
-            }
-          ]
-        }
-      })
-    )
-
-    console.log(`CNAME record ${recordName} deleted`)
+    await deleteStack(cloudFormationClient, route53Client, hostedZoneId, hostedZoneName, stackName)
   }
+}
+
+/**
+ * Deletes unused CloudFormation stacks and their associated Route 53 CNAME records.
+ *
+ * A stack is considered unused if it represents a pull request deployment whose PR has been closed.
+ *
+ * @param baseStackName - Base name/prefix of the CloudFormation stacks to evaluate.
+ * @param hostedZoneName - Hosted zone name used to look up Route 53 records.
+ * @param repoName - GitHub repository name used to look up pull request state.
+ * @returns A promise that resolves when all eligible stacks have been processed.
+ */
+export async function deleteUnusedPrStacks(
+  baseStackName: string,
+  hostedZoneName: string,
+  repoName: string): Promise<void> {
+  const cloudFormationClient = new CloudFormationClient({})
+  const route53Client = new Route53Client({})
+  const hostedZoneId = await getHostedZoneId(route53Client, hostedZoneName)
+
+  console.log("checking cloudformation stacks")
+
+  const allStacks = await listAllStacks(cloudFormationClient)
+
+  for (const stack of allStacks) {
+    if (stack.StackStatus === "DELETE_COMPLETE" || !stack.StackName) {
+      continue
+    }
+
+    const stackName = stack.StackName
+    if (!(await isClosedPullRequest(stackName, baseStackName, repoName))) {
+      continue
+    }
+
+    await deleteStack(cloudFormationClient, route53Client, hostedZoneId, hostedZoneName, stackName)
+  }
+}
+
+async function deleteStack(
+  cloudFormationClient: CloudFormationClient,
+  route53Client: Route53Client,
+  hostedZoneId: string | undefined,
+  hostedZoneName: string,
+  stackName: string
+): Promise<void> {
+  await cloudFormationClient.send(new DeleteStackCommand({StackName: stackName}))
+  console.log("** Sleeping for 60 seconds to avoid 429 on delete stack **")
+  await new Promise((resolve) => setTimeout(resolve, 60_000))
+
+  const recordName = `${stackName}.${hostedZoneName}`
+  console.log(`** going to delete CNAME record ${recordName} **`)
+  await route53Client.send(
+    new ChangeResourceRecordSetsCommand({
+      HostedZoneId: hostedZoneId,
+      ChangeBatch: {
+        Changes: [
+          {
+            Action: "DELETE",
+            ResourceRecordSet: {
+              Name: recordName,
+              Type: "CNAME"
+            }
+          }
+        ]
+      }
+    })
+  )
+
+  console.log(`CNAME record ${recordName} deleted`)
 }
 
 async function listAllStacks(cloudFormationClient: CloudFormationClient): Promise<Array<StackSummary>> {
@@ -94,10 +144,10 @@ async function listAllStacks(cloudFormationClient: CloudFormationClient): Promis
   return stacks
 }
 
-async function getHostedZoneId(route53Client: Route53Client): Promise<string | undefined> {
+async function getHostedZoneId(route53Client: Route53Client, hostedZoneName: string): Promise<string | undefined> {
   const response = await route53Client.send(
     new ListHostedZonesByNameCommand({
-      DNSName: CNAME_HOSTED_ZONE_NAME
+      DNSName: hostedZoneName
     })
   )
 
@@ -135,20 +185,20 @@ async function isClosedPullRequest(stackName: string, baseStackName: string, rep
   return true
 }
 
-type ActiveVersions = {
+export type ActiveVersions = {
   baseEnvVersion: string
   sandboxEnvVersion: string | null
 }
 
-async function getActiveVersions(basePath: string): Promise<ActiveVersions> {
+export async function getActiveApiVersions(basePath: string): Promise<ActiveVersions> {
   let apigeeEnv = process.env.APIGEE_ENVIRONMENT!
-  const baseEnvVersion = await getActiveVersion(apigeeEnv, basePath)
+  const baseEnvVersion = await getActiveApiVersion(apigeeEnv, basePath)
   let sandboxEnvVersion: string | null = null
   try {
     if (apigeeEnv === "int") {
-      sandboxEnvVersion = await getActiveVersion("sandbox", basePath)
+      sandboxEnvVersion = await getActiveApiVersion("sandbox", basePath)
     } else if (apigeeEnv === "internal-dev") {
-      sandboxEnvVersion = await getActiveVersion("internal-dev-sandbox", basePath)
+      sandboxEnvVersion = await getActiveApiVersion("internal-dev-sandbox", basePath)
     }
   } catch (error) {
     console.log(`Failed to get active version for sandbox environment: ${(error as Error).message}`)
@@ -156,7 +206,7 @@ async function getActiveVersions(basePath: string): Promise<ActiveVersions> {
   return {baseEnvVersion, sandboxEnvVersion}
 }
 
-async function getActiveVersion(apimDomain: string, basePath: string): Promise<string> {
+async function getActiveApiVersion(apimDomain: string, basePath: string): Promise<string> {
   const headers: Record<string, string> = {
     Accept: "application/json",
     apikey: `${process.env.APIM_STATUS_API_KEY}`
@@ -173,9 +223,9 @@ async function getActiveVersion(apimDomain: string, basePath: string): Promise<s
 }
 
 function getVersion(stackName: string, baseStackName: string): {version: string, isSandbox: boolean} | null {
-  const pattern = String.raw`^${baseStackName}(?<sandbox>-sandbox)?-(?<version>v[\da-z-]+)?$`
+  const pattern = String.raw`^${baseStackName}(?<sandbox>-sandbox)?-(?<version>[\da-z-]+)?$`
   const match = new RegExp(pattern).exec(stackName)
-  if (!match?.groups?.version) {
+  if (!match?.groups?.version || match.groups.version.startsWith("pr-")) {
     return null
   }
   return {version: match.groups.version, isSandbox: match.groups.sandbox === "-sandbox"}
