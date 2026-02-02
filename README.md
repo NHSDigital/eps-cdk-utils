@@ -38,8 +38,9 @@ these licenses. In particular this means that this project may not depend on
 GPL-licensed or AGPL-licensed libraries, as these would violate the terms of those
 libraries' licenses.   
 
-`packages/cdkConstructs/src/nag/rules/APIGWStructuredLogging.ts` derives from https://github.com/cdklabs/cdk-nag and is remains under Apache 2.0 licence
-
+These files derive from https://github.com/cdklabs/cdk-nag and remain under Apache 2.0 licence
+`packages/cdkConstructs/src/nag/rules/APIGWStructuredLogging.ts` 
+`packages/cdkConstructs/tests/nag/ApiGWStructuredLogging.test.ts`   
 
 The contents of this repository are protected by Crown Copyright (C).
 

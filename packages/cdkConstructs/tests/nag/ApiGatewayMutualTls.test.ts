@@ -1,12 +1,12 @@
 import {Aspects, Stack} from "aws-cdk-lib"
 import {beforeEach, test} from "vitest"
 import {TestPack, TestType, validateStack} from "./utils"
-import {ApiGatewayMutualTls} from "../../src/nag/rules"
+import {ApiGWMutualTls} from "../../src/nag/rules"
 import {describe} from "node:test"
 import {CfnDomainName} from "aws-cdk-lib/aws-apigateway"
 
 const testPack = new TestPack([
-  ApiGatewayMutualTls
+  ApiGWMutualTls
 ])
 let stack: Stack
 beforeEach(() => {
@@ -14,14 +14,15 @@ beforeEach(() => {
   Aspects.of(stack).add(testPack)
 })
 
-describe("ApiGatewayMutualTls", () => {
+describe("ApiGWMutualTls", () => {
+  const ruleId = "ApiGWMutualTls"
   test("Non-compliant when mutual TLS is not enabled", () => {
     new CfnDomainName(stack, "TestDomain", {
       domainName: "test.example.com"
     })
 
     // Validate
-    validateStack(stack, "ApiGatewayMutualTls", TestType.NON_COMPLIANCE)
+    validateStack(stack, ruleId, TestType.NON_COMPLIANCE)
   })
   test("Compliant when mutual TLS is enabled", () => {
     new CfnDomainName(stack, "TestDomain", {
@@ -33,7 +34,7 @@ describe("ApiGatewayMutualTls", () => {
     })
 
     // Validate
-    validateStack(stack, "ApiGatewayMutualTls", TestType.COMPLIANCE)
+    validateStack(stack, ruleId, TestType.COMPLIANCE)
   })
 
   test("Non-compliant when mutual TLS is missing trustStoreVersion", () => {
@@ -45,7 +46,7 @@ describe("ApiGatewayMutualTls", () => {
     })
 
     // Validate
-    validateStack(stack, "ApiGatewayMutualTls", TestType.NON_COMPLIANCE)
+    validateStack(stack, ruleId, TestType.NON_COMPLIANCE)
   })
   test("Compliant when mutual TLS is not enabled in a pull request", () => {
     stack.node.setContext("isPullRequest", true)
@@ -54,7 +55,7 @@ describe("ApiGatewayMutualTls", () => {
     })
 
     // Validate
-    validateStack(stack, "ApiGatewayMutualTls", TestType.COMPLIANCE)
+    validateStack(stack, ruleId, TestType.COMPLIANCE)
   })
   test("Compliant when mutual TLS is not enabled in not a pull request", () => {
     stack.node.setContext("isPullRequest", false)
@@ -63,7 +64,7 @@ describe("ApiGatewayMutualTls", () => {
     })
 
     // Validate
-    validateStack(stack, "ApiGatewayMutualTls", TestType.NON_COMPLIANCE)
+    validateStack(stack, ruleId, TestType.NON_COMPLIANCE)
   })
 
 })
