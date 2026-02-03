@@ -219,11 +219,32 @@ async function isClosedPullRequest(stackName: string, baseStackName: string, rep
   return true
 }
 
+/**
+ * Represents the currently active API versions in the base environment
+ * and (optionally) the corresponding sandbox environment.
+ */
 export type ActiveVersions = {
+  /** Currently deployed version in the base APIGEE environment (e.g. "v1.2.3"). */
   baseEnvVersion: string
+  /**
+   * Currently deployed version in the sandbox APIGEE environment, or null when
+   * there is no sandbox deployment for the given base environment.
+   */
   sandboxEnvVersion: string | null
 }
 
+/**
+ * Fetches the active API versions from the APIM status endpoint for the
+ * configured APIGEE environment, and where applicable its sandbox variant.
+ *
+ * The base environment is taken from `process.env.APIGEE_ENVIRONMENT`, and the
+ * sandbox environment is queried for `int` ("sandbox") and `internal-dev`
+ * ("internal-dev-sandbox"). Failures to resolve the sandbox version are
+ * logged and surfaced as `sandboxEnvVersion: null`.
+ *
+ * @param basePath - Base path of the API used to build the _status URL.
+ * @returns An object containing the active base and sandbox API versions.
+ */
 export async function getActiveApiVersions(basePath: string): Promise<ActiveVersions> {
   let apigeeEnv = process.env.APIGEE_ENVIRONMENT!
   const baseEnvVersion = await getActiveApiVersion(apigeeEnv, basePath)
