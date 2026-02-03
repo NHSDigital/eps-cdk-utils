@@ -13,6 +13,7 @@ const mockListStacksSend = vi.fn()
 const mockDeleteStackSend = vi.fn()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const mockListHostedZonesByNameSend = vi.fn((_) => ({HostedZones: [{Id: "Z123"}]}))
+const mockListResourceRecordSetsSend = vi.fn()
 const mockChangeResourceRecordSetsSend = vi.fn()
 
 vi.mock("@aws-sdk/client-cloudformation", () => {
@@ -62,6 +63,8 @@ vi.mock("@aws-sdk/client-route-53", () => {
     send(command: any) {
       if (command instanceof ListHostedZonesByNameCommand) {
         return mockListHostedZonesByNameSend(command.input)
+      } else if (command instanceof ListResourceRecordSetsCommand) {
+        return mockListResourceRecordSetsSend(command.input)
       } else if (command instanceof ChangeResourceRecordSetsCommand) {
         return mockChangeResourceRecordSetsSend(command.input)
       } else {
@@ -79,6 +82,15 @@ vi.mock("@aws-sdk/client-route-53", () => {
     }
   }
 
+  class ListResourceRecordSetsCommand {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    input: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(input: any) {
+      this.input = input
+    }
+  }
+
   class ChangeResourceRecordSetsCommand {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     input: any
@@ -88,7 +100,7 @@ vi.mock("@aws-sdk/client-route-53", () => {
     }
   }
 
-  return {Route53Client, ListHostedZonesByNameCommand, ChangeResourceRecordSetsCommand}
+  return {Route53Client, ListHostedZonesByNameCommand, ListResourceRecordSetsCommand, ChangeResourceRecordSetsCommand}
 })
 
 const originalEnv = process.env
@@ -116,8 +128,13 @@ describe("stack deletion", () => {
     mockListStacksSend.mockReset()
     mockDeleteStackSend.mockReset()
     mockListHostedZonesByNameSend.mockReset()
+    mockListResourceRecordSetsSend.mockReset()
     mockChangeResourceRecordSetsSend.mockReset()
     mockGetPRState.mockReset()
+
+    // By default, no CNAME records are present; individual tests
+    // can override this where specific records are required.
+    mockListResourceRecordSetsSend.mockReturnValue({ResourceRecordSets: []})
 
     vi.useFakeTimers()
     vi.setSystemTime(new Date("2024-01-03T00:00:00.000Z"))
@@ -167,7 +184,7 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, hostedZoneName, () => getActiveApiVersions(basePath))
+      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
       await vi.runAllTimersAsync()
       await promise
 
@@ -197,7 +214,7 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, hostedZoneName, () => getActiveApiVersions(basePath))
+      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
       await vi.runAllTimersAsync()
       await promise
 
@@ -225,7 +242,7 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, hostedZoneName, () => getActiveApiVersions(basePath))
+      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
       await vi.runAllTimersAsync()
       await promise
 
@@ -238,6 +255,19 @@ describe("stack deletion", () => {
       const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
 
       process.env.APIGEE_ENVIRONMENT = "int"
+
+      mockListResourceRecordSetsSend.mockReturnValue({
+        ResourceRecordSets: [
+          {
+            Name: `${baseStackName}-sandbox-v1-2-3.dev.eps.national.nhs.uk.`,
+            Type: "CNAME"
+          },
+          {
+            Name: `${baseStackName}-sandbox-v1-2-2.dev.eps.national.nhs.uk.`,
+            Type: "CNAME"
+          }
+        ]
+      })
 
       mockListStacksSend.mockReturnValue({
         StackSummaries: [
@@ -259,7 +289,7 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, hostedZoneName, () => getActiveApiVersions(basePath))
+      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
       await vi.runAllTimersAsync()
       await promise
 
@@ -283,11 +313,126 @@ describe("stack deletion", () => {
       })
     })
 
+    test("does not delete CNAME records if no hosted zone name is provided", async () => {
+      const now = new Date()
+      const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
+
+      process.env.APIGEE_ENVIRONMENT = "int"
+
+      mockListStacksSend.mockReturnValue({
+        StackSummaries: [
+          {
+            StackName: `${baseStackName}-v1-2-3`,
+            StackStatus: "CREATE_COMPLETE",
+            CreationTime: twoDaysAgo
+          },
+          {
+            StackName: `${baseStackName}-v1-2-2`,
+            StackStatus: "CREATE_COMPLETE",
+            CreationTime: twoDaysAgo
+          }
+        ]
+      })
+
+      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), undefined)
+      await vi.runAllTimersAsync()
+      await promise
+
+      // Superseded sandbox version should be deleted
+      expect(mockDeleteStackSend).toHaveBeenCalledTimes(1)
+      expect(mockDeleteStackSend).toHaveBeenCalledWith({StackName: `${baseStackName}-v1-2-2`})
+
+      // No CNAME deletion should have been made
+      expect(mockChangeResourceRecordSetsSend).not.toHaveBeenCalled()
+    })
+
+    test("does not delete CNAME records if hosted zone cannot be found", async () => {
+      const now = new Date()
+      const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
+
+      process.env.APIGEE_ENVIRONMENT = "int"
+
+      mockListHostedZonesByNameSend.mockReturnValueOnce({HostedZones: []})
+
+      mockListStacksSend.mockReturnValue({
+        StackSummaries: [
+          {
+            StackName: `${baseStackName}-v1-2-3`,
+            StackStatus: "CREATE_COMPLETE",
+            CreationTime: twoDaysAgo
+          },
+          {
+            StackName: `${baseStackName}-v1-2-2`,
+            StackStatus: "CREATE_COMPLETE",
+            CreationTime: twoDaysAgo
+          }
+        ]
+      })
+
+      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
+      await vi.runAllTimersAsync()
+      await promise
+
+      // Superseded sandbox version should be deleted
+      expect(mockDeleteStackSend).toHaveBeenCalledTimes(1)
+      expect(mockDeleteStackSend).toHaveBeenCalledWith({StackName: `${baseStackName}-v1-2-2`})
+
+      // No CNAME deletion should have been made
+      expect(mockChangeResourceRecordSetsSend).not.toHaveBeenCalled()
+    })
+
+    test("does not delete CNAME records if no CNAME records are found", async () => {
+      const now = new Date()
+      const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
+
+      process.env.APIGEE_ENVIRONMENT = "int"
+      mockListResourceRecordSetsSend.mockReturnValueOnce({})
+
+      mockListStacksSend.mockReturnValue({
+        StackSummaries: [
+          {
+            StackName: `${baseStackName}-v1-2-3`,
+            StackStatus: "CREATE_COMPLETE",
+            CreationTime: twoDaysAgo
+          },
+          {
+            StackName: `${baseStackName}-v1-2-2`,
+            StackStatus: "CREATE_COMPLETE",
+            CreationTime: twoDaysAgo
+          }
+        ]
+      })
+
+      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
+      await vi.runAllTimersAsync()
+      await promise
+
+      // Superseded sandbox version should be deleted
+      expect(mockDeleteStackSend).toHaveBeenCalledTimes(1)
+      expect(mockDeleteStackSend).toHaveBeenCalledWith({StackName: `${baseStackName}-v1-2-2`})
+
+      // No CNAME deletion should have been made
+      expect(mockChangeResourceRecordSetsSend).not.toHaveBeenCalled()
+    })
+
     test("deletes superseded internal-dev sandbox stacks when embargo has passed", async () => {
       const now = new Date()
       const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
 
       process.env.APIGEE_ENVIRONMENT = "internal-dev"
+
+      mockListResourceRecordSetsSend.mockReturnValue({
+        ResourceRecordSets: [
+          {
+            Name: `${baseStackName}-sandbox-v1-2-3.dev.eps.national.nhs.uk.`,
+            Type: "CNAME"
+          },
+          {
+            Name: `${baseStackName}-sandbox-v1-2-2.dev.eps.national.nhs.uk.`,
+            Type: "CNAME"
+          }
+        ]
+      })
 
       mockListStacksSend.mockReturnValue({
         StackSummaries: [
@@ -309,7 +454,7 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, hostedZoneName, () => getActiveApiVersions(basePath))
+      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
       await vi.runAllTimersAsync()
       await promise
 
@@ -382,7 +527,7 @@ describe("stack deletion", () => {
         })
       }
 
-      const promise = deleteUnusedMainStacks(baseStackName, hostedZoneName, () => getActiveApiVersions(basePath))
+      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
       await vi.runAllTimersAsync()
       await promise
 
@@ -405,7 +550,7 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, hostedZoneName, () => getActiveApiVersions(basePath))
+      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
       await vi.runAllTimersAsync()
       await promise
 
@@ -427,7 +572,7 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, hostedZoneName, () => getActiveApiVersions(basePath))
+      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
       await vi.runAllTimersAsync()
       await promise
 
@@ -468,6 +613,15 @@ describe("stack deletion", () => {
         ]
       })
 
+      mockListResourceRecordSetsSend.mockReturnValue({
+        ResourceRecordSets: [
+          {
+            Name: `${baseStackName}-pr-123.dev.eps.national.nhs.uk.`,
+            Type: "CNAME"
+          }
+        ]
+      })
+
       mockGetPRState.mockImplementation((url: string) => {
         if (url.endsWith("/repos/NHSDigital/eps-cdk-utils/pulls/123")) {
           return "closed"
@@ -475,7 +629,7 @@ describe("stack deletion", () => {
         throw new Error(`Unexpected URL: ${url}`)
       })
 
-      const promise = deleteUnusedPrStacks(baseStackName, hostedZoneName, repoName)
+      const promise = deleteUnusedPrStacks(baseStackName, repoName, hostedZoneName)
       await vi.runAllTimersAsync()
       await promise
 
@@ -520,7 +674,7 @@ describe("stack deletion", () => {
         throw new Error(`Unexpected URL: ${url}`)
       })
 
-      const promise = deleteUnusedPrStacks(baseStackName, hostedZoneName, repoName)
+      const promise = deleteUnusedPrStacks(baseStackName, repoName, hostedZoneName)
       await vi.runAllTimersAsync()
       await promise
 
@@ -567,7 +721,7 @@ describe("stack deletion", () => {
         throw new Error(`Unexpected URL: ${url}`)
       })
 
-      const promise = deleteUnusedPrStacks(baseStackName, hostedZoneName, repoName)
+      const promise = deleteUnusedPrStacks(baseStackName, repoName, hostedZoneName)
       await vi.runAllTimersAsync()
       await promise
 
@@ -593,7 +747,7 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedPrStacks(baseStackName, hostedZoneName, repoName)
+      const promise = deleteUnusedPrStacks(baseStackName, repoName, hostedZoneName)
       await vi.runAllTimersAsync()
       await promise
 
@@ -636,7 +790,7 @@ describe("stack deletion", () => {
         })
       }
 
-      const promise = deleteUnusedPrStacks(baseStackName, hostedZoneName, repoName)
+      const promise = deleteUnusedPrStacks(baseStackName, repoName, hostedZoneName)
       await vi.runAllTimersAsync()
       await promise
 
@@ -650,7 +804,7 @@ describe("stack deletion", () => {
     test("handles no stacks returned", async () => {
       mockListStacksSend.mockReturnValue({})
 
-      const promise = deleteUnusedPrStacks(baseStackName, hostedZoneName, repoName)
+      const promise = deleteUnusedPrStacks(baseStackName, repoName, hostedZoneName)
       await vi.runAllTimersAsync()
       await promise
 

@@ -4,7 +4,13 @@ import {
   ListStacksCommand,
   StackSummary
 } from "@aws-sdk/client-cloudformation"
-import {ChangeResourceRecordSetsCommand, ListHostedZonesByNameCommand, Route53Client} from "@aws-sdk/client-route-53"
+import {
+  ChangeResourceRecordSetsCommand,
+  ListHostedZonesByNameCommand,
+  ListResourceRecordSetsCommand,
+  ResourceRecordSet,
+  Route53Client
+} from "@aws-sdk/client-route-53"
 
 /**
  * Deletes unused CloudFormation stacks and their associated Route 53 CNAME records.
@@ -13,18 +19,19 @@ import {ChangeResourceRecordSetsCommand, ListHostedZonesByNameCommand, Route53Cl
  * (and is not within the 24‑hour embargo window).
  *
  * @param baseStackName - Base name/prefix of the CloudFormation stacks to evaluate.
- * @param hostedZoneName - Hosted zone name used to look up Route 53 records.
  * @param getActiveVersions - Function to get the currently active versions.
+ * @param hostedZoneName - Hosted zone name used to look up Route 53 records.
+ * (Only required if stacks have CNAME records that need cleaning up.)
  * @returns A promise that resolves when all eligible stacks have been processed.
  */
 export async function deleteUnusedMainStacks(
   baseStackName: string,
-  hostedZoneName: string,
-  getActiveVersions: () => Promise<ActiveVersions>
+  getActiveVersions: () => Promise<ActiveVersions>,
+  hostedZoneName?: string | undefined
 ): Promise<void> {
   const cloudFormationClient = new CloudFormationClient({})
   const route53Client = new Route53Client({})
-  const hostedZoneId = await getHostedZoneId(route53Client, hostedZoneName)
+  const {hostedZoneId, cnameRecords} = await getHostedZoneInfo(route53Client, hostedZoneName)
   const activeVersions = await getActiveVersions()
   console.log("checking cloudformation stacks")
 
@@ -54,7 +61,7 @@ export async function deleteUnusedMainStacks(
       continue
     }
 
-    await deleteStack(cloudFormationClient, route53Client, hostedZoneId, hostedZoneName, stackName)
+    await deleteStack(cloudFormationClient, route53Client, hostedZoneId, cnameRecords, stackName)
   }
 }
 
@@ -64,17 +71,18 @@ export async function deleteUnusedMainStacks(
  * A stack is considered unused if it represents a pull request deployment whose PR has been closed.
  *
  * @param baseStackName - Base name/prefix of the CloudFormation stacks to evaluate.
- * @param hostedZoneName - Hosted zone name used to look up Route 53 records.
  * @param repoName - GitHub repository name used to look up pull request state.
+ * @param hostedZoneName - Hosted zone name used to look up Route 53 records.
+ * (Only required if stacks have CNAME records that need cleaning up.)
  * @returns A promise that resolves when all eligible stacks have been processed.
  */
 export async function deleteUnusedPrStacks(
   baseStackName: string,
-  hostedZoneName: string,
-  repoName: string): Promise<void> {
+  repoName: string,
+  hostedZoneName?: string | undefined): Promise<void> {
   const cloudFormationClient = new CloudFormationClient({})
   const route53Client = new Route53Client({})
-  const hostedZoneId = await getHostedZoneId(route53Client, hostedZoneName)
+  const {hostedZoneId, cnameRecords} = await getHostedZoneInfo(route53Client, hostedZoneName)
 
   console.log("checking cloudformation stacks")
 
@@ -90,7 +98,7 @@ export async function deleteUnusedPrStacks(
       continue
     }
 
-    await deleteStack(cloudFormationClient, route53Client, hostedZoneId, hostedZoneName, stackName)
+    await deleteStack(cloudFormationClient, route53Client, hostedZoneId, cnameRecords, stackName)
   }
 }
 
@@ -98,33 +106,34 @@ async function deleteStack(
   cloudFormationClient: CloudFormationClient,
   route53Client: Route53Client,
   hostedZoneId: string | undefined,
-  hostedZoneName: string,
+  cnameRecords: Array<ResourceRecordSet>,
   stackName: string
 ): Promise<void> {
   await cloudFormationClient.send(new DeleteStackCommand({StackName: stackName}))
   console.log("** Sleeping for 60 seconds to avoid 429 on delete stack **")
   await new Promise((resolve) => setTimeout(resolve, 60_000))
 
-  const recordName = `${stackName}.${hostedZoneName}`
-  console.log(`** going to delete CNAME record ${recordName} **`)
+  console.log(`** going to delete CNAME records for stack ${stackName} **`)
+  const toDelete = cnameRecords.filter(r => r.Name?.includes(stackName))
+  if (!hostedZoneId || toDelete.length === 0) {
+    console.log(`No CNAME records to delete for stack ${stackName}`)
+    return
+  }
   await route53Client.send(
     new ChangeResourceRecordSetsCommand({
       HostedZoneId: hostedZoneId,
       ChangeBatch: {
-        Changes: [
-          {
-            Action: "DELETE",
-            ResourceRecordSet: {
-              Name: recordName,
-              Type: "CNAME"
-            }
-          }
-        ]
+        Changes: toDelete.map(r => ({
+          Action: "DELETE",
+          ResourceRecordSet: r
+        }))
       }
     })
   )
 
-  console.log(`CNAME record ${recordName} deleted`)
+  for (const record of toDelete) {
+    console.log(`Deleted CNAME record: ${record.Name}`)
+  }
 }
 
 async function listAllStacks(cloudFormationClient: CloudFormationClient): Promise<Array<StackSummary>> {
@@ -144,14 +153,39 @@ async function listAllStacks(cloudFormationClient: CloudFormationClient): Promis
   return stacks
 }
 
-async function getHostedZoneId(route53Client: Route53Client, hostedZoneName: string): Promise<string | undefined> {
+async function getHostedZoneInfo(
+  route53Client: Route53Client,
+  hostedZoneName: string | undefined
+): Promise<{ hostedZoneId: string | undefined, cnameRecords: Array<ResourceRecordSet> }> {
+  if (!hostedZoneName) {
+    return {hostedZoneId: undefined, cnameRecords: []}
+  }
   const response = await route53Client.send(
     new ListHostedZonesByNameCommand({
       DNSName: hostedZoneName
     })
   )
 
-  return response.HostedZones?.[0]?.Id
+  const hostedZoneId = response.HostedZones?.[0]?.Id
+  if (!hostedZoneId) {
+    console.log(`Hosted zone ${hostedZoneName} not found`)
+    return {hostedZoneId: undefined, cnameRecords: []}
+  }
+
+  let cnameRecords: Array<ResourceRecordSet> = []
+  let nextRecordName: string | undefined
+  do {
+    const response = await route53Client.send(
+      new ListResourceRecordSetsCommand({
+        HostedZoneId: hostedZoneId,
+        StartRecordName: nextRecordName
+      })
+    )
+    cnameRecords.push(...(response.ResourceRecordSets?.filter(record => record.Type === "CNAME") || []))
+    nextRecordName = response.NextRecordName
+  } while (nextRecordName)
+
+  return {hostedZoneId, cnameRecords}
 }
 
 async function isClosedPullRequest(stackName: string, baseStackName: string, repoName: string): Promise<boolean> {
