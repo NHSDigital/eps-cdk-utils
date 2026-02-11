@@ -29,6 +29,9 @@ vulnerabilities:
   - id: CVE-2025-61728
     statement: downstream dependency for asdf/go - waiting for new asdf release
     expired_at: 2026-06-01
-  - id: CVE-2026-25128
-    statement: downstream dependency for fast-xml-parser - waiting for aws-sdk release
+  - id: CVE-2025-61730
+    statement: downstream dependency for asdf/go - waiting for new asdf release
+    expired_at: 2026-06-01
+  - id: CVE-2025-68121
+    statement: downstream dependency for asdf/go - waiting for new asdf release
     expired_at: 2026-06-01
