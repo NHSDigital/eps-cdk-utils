@@ -261,10 +261,14 @@ export async function getActiveApiVersions(basePath: string): Promise<ActiveVers
   return {baseEnvVersion, sandboxEnvVersion}
 }
 
-async function getActiveApiVersion(apimDomain: string, basePath: string): Promise<string> {
+async function getActiveApiVersion(apigeeEnv: string, basePath: string): Promise<string> {
   const headers: Record<string, string> = {
     Accept: "application/json",
     apikey: `${process.env.APIM_STATUS_API_KEY}`
+  }
+  let apimDomain = "api.service.nhs.uk"
+  if (apigeeEnv !== "prod") {
+    apimDomain = `${apigeeEnv}.api.service.nhs.uk`
   }
   const url = `https://${apimDomain}/${basePath}/_status`
   console.log(`Checking live api status endpoint at ${url} for active version`)

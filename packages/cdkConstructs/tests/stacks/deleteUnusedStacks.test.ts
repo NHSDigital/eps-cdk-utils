@@ -148,18 +148,6 @@ describe("stack deletion", () => {
   })
 
   describe("deleteUnusedMainStacks", () => {
-    beforeEach(() => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(globalThis as any).fetch = () => {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          text: async () => "",
-          json: async () => ({checks: {healthcheck: {outcome: {versionNumber: mockActiveVersion}}}})
-        })
-      }
-    })
-
     test("deletes superseded stacks when embargo has passed", async () => {
       const now = new Date()
       const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
@@ -184,7 +172,11 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
+      const promise = deleteUnusedMainStacks(
+        baseStackName,
+        () => Promise.resolve({baseEnvVersion: mockActiveVersion, sandboxEnvVersion: null}),
+        hostedZoneName
+      )
       await vi.runAllTimersAsync()
       await promise
 
@@ -214,7 +206,11 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
+      const promise = deleteUnusedMainStacks(
+        baseStackName,
+        () => Promise.resolve({baseEnvVersion: mockActiveVersion, sandboxEnvVersion: null}),
+        hostedZoneName
+      )
       await vi.runAllTimersAsync()
       await promise
 
@@ -242,7 +238,11 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
+      const promise = deleteUnusedMainStacks(
+        baseStackName,
+        () => Promise.resolve({baseEnvVersion: mockActiveVersion, sandboxEnvVersion: null}),
+        hostedZoneName
+      )
       await vi.runAllTimersAsync()
       await promise
 
@@ -289,7 +289,11 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
+      const promise = deleteUnusedMainStacks(
+        baseStackName,
+        () => Promise.resolve({baseEnvVersion: mockActiveVersion, sandboxEnvVersion: mockActiveVersion}),
+        hostedZoneName
+      )
       await vi.runAllTimersAsync()
       await promise
 
@@ -334,7 +338,11 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), undefined)
+      const promise = deleteUnusedMainStacks(
+        baseStackName,
+        () => Promise.resolve({baseEnvVersion: mockActiveVersion, sandboxEnvVersion: null}),
+        undefined
+      )
       await vi.runAllTimersAsync()
       await promise
 
@@ -369,7 +377,11 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
+      const promise = deleteUnusedMainStacks(
+        baseStackName,
+        () => Promise.resolve({baseEnvVersion: mockActiveVersion, sandboxEnvVersion: null}),
+        hostedZoneName
+      )
       await vi.runAllTimersAsync()
       await promise
 
@@ -403,7 +415,11 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
+      const promise = deleteUnusedMainStacks(
+        baseStackName,
+        () => Promise.resolve({baseEnvVersion: mockActiveVersion, sandboxEnvVersion: null}),
+        hostedZoneName
+      )
       await vi.runAllTimersAsync()
       await promise
 
@@ -454,7 +470,11 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
+      const promise = deleteUnusedMainStacks(
+        baseStackName,
+        () => Promise.resolve({baseEnvVersion: mockActiveVersion, sandboxEnvVersion: mockActiveVersion}),
+        hostedZoneName
+      )
       await vi.runAllTimersAsync()
       await promise
 
@@ -478,7 +498,7 @@ describe("stack deletion", () => {
       })
     })
 
-    test("still deletes non sandbox superseded stacks when fetching sandbox state fails", async () => {
+    test("still deletes non sandbox superseded stacks when sandbox state is unavailable", async () => {
       const now = new Date()
       const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
 
@@ -509,25 +529,11 @@ describe("stack deletion", () => {
         ]
       })
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(globalThis as any).fetch = (url: string) => {
-        if (url.includes("sandbox")) {
-          return Promise.resolve({
-            ok: false,
-            status: 500,
-            text: async () => "Error fetching sandbox status"
-          })
-        }
-        // Default mock for other fetch calls
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          text: async () => "",
-          json: async () => ({checks: {healthcheck: {outcome: {versionNumber: mockActiveVersion}}}})
-        })
-      }
-
-      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
+      const promise = deleteUnusedMainStacks(
+        baseStackName,
+        () => Promise.resolve({baseEnvVersion: mockActiveVersion, sandboxEnvVersion: null}),
+        hostedZoneName
+      )
       await vi.runAllTimersAsync()
       await promise
 
@@ -550,7 +556,11 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
+      const promise = deleteUnusedMainStacks(
+        baseStackName,
+        () => Promise.resolve({baseEnvVersion: mockActiveVersion, sandboxEnvVersion: null}),
+        hostedZoneName
+      )
       await vi.runAllTimersAsync()
       await promise
 
@@ -572,12 +582,207 @@ describe("stack deletion", () => {
         ]
       })
 
-      const promise = deleteUnusedMainStacks(baseStackName, () => getActiveApiVersions(basePath), hostedZoneName)
+      const promise = deleteUnusedMainStacks(
+        baseStackName,
+        () => Promise.resolve({baseEnvVersion: mockActiveVersion, sandboxEnvVersion: null}),
+        hostedZoneName
+      )
       await vi.runAllTimersAsync()
       await promise
 
       // No delete stack call should have been made
       expect(mockDeleteStackSend).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("getActiveApiVersions", () => {
+    test("fetches active version for prod environment", async () => {
+      process.env.APIGEE_ENVIRONMENT = "prod"
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(globalThis as any).fetch = vi.fn((url: string) => {
+        expect(url).toBe(`https://api.service.nhs.uk/${basePath}/_status`)
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          text: async () => "",
+          json: async () => ({checks: {healthcheck: {outcome: {versionNumber: "v2.0.0"}}}})
+        })
+      })
+
+      const result = await getActiveApiVersions(basePath)
+
+      expect(result).toEqual({
+        baseEnvVersion: "v2.0.0",
+        sandboxEnvVersion: null
+      })
+    })
+
+    test("fetches active version for int environment with sandbox", async () => {
+      process.env.APIGEE_ENVIRONMENT = "int"
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(globalThis as any).fetch = vi.fn((url: string) => {
+        if (url === `https://int.api.service.nhs.uk/${basePath}/_status`) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            text: async () => "",
+            json: async () => ({checks: {healthcheck: {outcome: {versionNumber: "v1.5.0"}}}})
+          })
+        } else if (url === `https://sandbox.api.service.nhs.uk/${basePath}/_status`) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            text: async () => "",
+            json: async () => ({checks: {healthcheck: {outcome: {versionNumber: "v1.5.1"}}}})
+          })
+        }
+        throw new Error(`Unexpected URL: ${url}`)
+      })
+
+      const result = await getActiveApiVersions(basePath)
+
+      expect(result).toEqual({
+        baseEnvVersion: "v1.5.0",
+        sandboxEnvVersion: "v1.5.1"
+      })
+    })
+
+    test("fetches active version for internal-dev environment with sandbox", async () => {
+      process.env.APIGEE_ENVIRONMENT = "internal-dev"
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(globalThis as any).fetch = vi.fn((url: string) => {
+        if (url === `https://internal-dev.api.service.nhs.uk/${basePath}/_status`) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            text: async () => "",
+            json: async () => ({checks: {healthcheck: {outcome: {versionNumber: "v1.3.0"}}}})
+          })
+        } else if (url === `https://internal-dev-sandbox.api.service.nhs.uk/${basePath}/_status`) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            text: async () => "",
+            json: async () => ({checks: {healthcheck: {outcome: {versionNumber: "v1.3.2"}}}})
+          })
+        }
+        throw new Error(`Unexpected URL: ${url}`)
+      })
+
+      const result = await getActiveApiVersions(basePath)
+
+      expect(result).toEqual({
+        baseEnvVersion: "v1.3.0",
+        sandboxEnvVersion: "v1.3.2"
+      })
+    })
+
+    test("handles sandbox environment fetch failure gracefully", async () => {
+      process.env.APIGEE_ENVIRONMENT = "int"
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(globalThis as any).fetch = vi.fn((url: string) => {
+        if (url === `https://int.api.service.nhs.uk/${basePath}/_status`) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            text: async () => "",
+            json: async () => ({checks: {healthcheck: {outcome: {versionNumber: "v1.7.0"}}}})
+          })
+        } else if (url === `https://sandbox.api.service.nhs.uk/${basePath}/_status`) {
+          return Promise.resolve({
+            ok: false,
+            status: 503,
+            text: async () => "Service Unavailable"
+          })
+        }
+        throw new Error(`Unexpected URL: ${url}`)
+      })
+
+      const result = await getActiveApiVersions(basePath)
+
+      expect(result).toEqual({
+        baseEnvVersion: "v1.7.0",
+        sandboxEnvVersion: null
+      })
+    })
+
+    test("throws error when base environment fetch fails", async () => {
+      process.env.APIGEE_ENVIRONMENT = "prod"
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(globalThis as any).fetch = vi.fn(() => {
+        return Promise.resolve({
+          ok: false,
+          status: 404,
+          text: async () => "Not Found"
+        })
+      })
+
+      await expect(getActiveApiVersions(basePath)).rejects.toThrow(
+        `Failed to fetch active version from https://api.service.nhs.uk/${basePath}/_status: 404 Not Found`
+      )
+    })
+
+    test("does not fetch sandbox for non-int/internal-dev environments", async () => {
+      process.env.APIGEE_ENVIRONMENT = "ref"
+
+      const mockFetch = vi.fn((url: string) => {
+        if (url === `https://ref.api.service.nhs.uk/${basePath}/_status`) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            text: async () => "",
+            json: async () => ({checks: {healthcheck: {outcome: {versionNumber: "v1.9.0"}}}})
+          })
+        }
+        throw new Error(`Unexpected URL: ${url}`)
+      })
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(globalThis as any).fetch = mockFetch
+
+      const result = await getActiveApiVersions(basePath)
+
+      expect(result).toEqual({
+        baseEnvVersion: "v1.9.0",
+        sandboxEnvVersion: null
+      })
+
+      // Should only have called fetch once (for base environment)
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+    })
+
+    test("includes authorization header in requests", async () => {
+      process.env.APIGEE_ENVIRONMENT = "prod"
+      const testApiKey = "test-api-key-value"
+      process.env.APIM_STATUS_API_KEY = testApiKey
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mockFetch = vi.fn((_url: string, options: any) => {
+        expect(options.headers.apikey).toBe(testApiKey)
+        expect(options.headers.Accept).toBe("application/json")
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          text: async () => "",
+          json: async () => ({checks: {healthcheck: {outcome: {versionNumber: "v2.1.0"}}}})
+        })
+      })
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(globalThis as any).fetch = mockFetch
+
+      const result = await getActiveApiVersions(basePath)
+
+      expect(result).toEqual({
+        baseEnvVersion: "v2.1.0",
+        sandboxEnvVersion: null
+      })
+      expect(mockFetch).toHaveBeenCalled()
     })
   })
 
