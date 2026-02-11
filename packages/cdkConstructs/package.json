@@ -38,6 +38,6 @@
     "main": "lib/src/index.js",
     "types": "lib/src/index.d.ts",
     "devDependencies": {
-        "@types/node": "^25.1.0"
+        "@types/node": "^25.2.3"
     }
 }
