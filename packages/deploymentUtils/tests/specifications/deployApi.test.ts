@@ -65,8 +65,6 @@ function createSpec(overrides: SpecOverrides = {}) {
 }
 
 const defaultExportsMap = {
-  "account-resources:clientCert": "arn:client-cert",
-  "account-resources:clientKey": "arn:client-key",
   "account-resources:proxygenKey": "arn:proxygen-key"
 }
 
@@ -80,8 +78,8 @@ function buildConfig(overrides: Partial<ApiConfig> = {}): ApiConfig {
     awsEnvironment: "nonprod",
     stackName: "eps-stack-001",
     mtlsSecretName: "mtls/secret",
-    clientCertExportName: "clientCert",
-    clientPrivateKeyExportName: "clientKey",
+    clientCert: "clientCert",
+    clientPrivateKey: "clientKey",
     proxygenPrivateKeyExportName: "proxygenKey",
     proxygenKid: "kid-123",
     hiddenPaths: [],
@@ -125,8 +123,8 @@ describe("deployApi", () => {
       apiName: "eps",
       environment: "internal-dev",
       secretName: "mtls/secret",
-      secretKeyName: "arn:client-key",
-      secretCertName: "arn:client-cert",
+      secretKey: "clientKey",
+      secretCert: "clientCert",
       kid: "kid-123",
       proxygenSecretName: "arn:proxygen-key"
     })

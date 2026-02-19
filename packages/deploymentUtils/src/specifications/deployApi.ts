@@ -13,8 +13,8 @@ export type ApiConfig = {
   awsEnvironment: string
   stackName: string
   mtlsSecretName: string
-  clientCertExportName: string
-  clientPrivateKeyExportName: string
+  clientCert: string
+  clientPrivateKey: string
   proxygenPrivateKeyExportName: string
   proxygenKid: string
   hiddenPaths: Array<string>
@@ -30,8 +30,8 @@ export async function deployApi(
     awsEnvironment,
     stackName,
     mtlsSecretName,
-    clientCertExportName,
-    clientPrivateKeyExportName,
+    clientCert,
+    clientPrivateKey,
     proxygenPrivateKeyExportName,
     proxygenKid,
     hiddenPaths
@@ -53,8 +53,6 @@ export async function deployApi(
   })
 
   const exports = await getCloudFormationExports()
-  const clientCertArn = getCFConfigValue(exports, `account-resources:${clientCertExportName}`)
-  const clientPrivateKeyArn = getCFConfigValue(exports, `account-resources:${clientPrivateKeyExportName}`)
   const proxygenPrivateKeyArn = getCFConfigValue(exports, `account-resources:${proxygenPrivateKeyExportName}`)
 
   let put_secret_lambda = "lambda-resources-ProxygenPTLMTLSSecretPut"
@@ -76,8 +74,8 @@ export async function deployApi(
         apiName,
         environment: apigeeEnvironment,
         secretName: mtlsSecretName,
-        secretKeyName: clientPrivateKeyArn,
-        secretCertName: clientCertArn,
+        secretKey: clientPrivateKey,
+        secretCert: clientCert,
         kid: proxygenKid,
         proxygenSecretName: proxygenPrivateKeyArn
       }
