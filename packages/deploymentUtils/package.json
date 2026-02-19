@@ -20,7 +20,7 @@
     "private": false,
     "type": "module",
     "dependencies": {
-        "@aws-sdk/client-cloudformation": "^3.989.0",
+        "@aws-sdk/client-cloudformation": "^3.993.0",
         "@aws-sdk/client-lambda": "^3.987.0",
         "json-schema-to-ts": "^3.1.1"
     },
