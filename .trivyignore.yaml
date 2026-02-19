@@ -47,3 +47,6 @@ vulnerabilities:
   - id: CVE-2026-26996
     statement: minimatch node module
     expired_at: 2026-06-01
+  - id: CVE-2026-2696
+    statement: tar node module
+    expired_at: 2026-06-01
