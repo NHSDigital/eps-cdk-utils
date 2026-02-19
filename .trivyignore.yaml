@@ -41,3 +41,12 @@ vulnerabilities:
   - id: CVE-2025-68121
     statement: downstream dependency for asdf/go - waiting for new asdf release
     expired_at: 2026-06-01
+  - id: CVE-2026-26278
+    statement: fast-xml-parser node module
+    expired_at: 2026-06-01
+  - id: CVE-2026-26996
+    statement: minimatch node module
+    expired_at: 2026-06-01
+  - id: CVE-2026-26960
+    statement: tar node module
+    expired_at: 2026-06-01
