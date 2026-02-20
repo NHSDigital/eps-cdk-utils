@@ -20,7 +20,7 @@ vi.mock("@aws-sdk/client-cloudformation", () => {
   class CloudFormationClient {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     config: any
-    constructor(config: {region: string}) {
+    constructor(config: { region: string }) {
       this.config = config
     }
 
@@ -112,7 +112,7 @@ describe("checkDestructiveChangeSet", () => {
       await expect(checkDestructiveChangeSet("cs", "stack", "eu-west-2")).resolves.toBeUndefined()
 
       expect(mockCloudFormationSend).toHaveBeenCalledTimes(1)
-      const command = mockCloudFormationSend.mock.calls[0][0] as {input: {ChangeSetName: string; StackName: string}}
+      const command = mockCloudFormationSend.mock.calls[0][0] as { input: { ChangeSetName: string; StackName: string } }
       expect(command.input).toEqual({ChangeSetName: "cs", StackName: "stack"})
       expect(logSpy).toHaveBeenCalledWith("Change set cs for stack stack has no destructive changes.")
       expect(errorSpy).not.toHaveBeenCalled()

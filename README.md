@@ -73,6 +73,31 @@ It exposes the following main entry points via [packages/deploymentUtils/src/ind
 - `writeSchemas` – Writes JSON Schemas to disk, collapsing `examples` arrays into a single `example` value to be compatible with OAS.
 - `deleteProxygenDeployments` – Removes Proxygen PTL instances that correspond to closed GitHub pull requests for a given API.
 - Config helpers from `config/index` – used to resolve configuration and CloudFormation export values.
+- `checkDestructiveChangeSet` – Describes a CloudFormation change set, filters out replacements and removals (optionally applying time-bound waivers) and throws if anything destructive remains.
+
+`checkDestructiveChangeSet(changeSetName, stackName, region, allowedChanges?)` is useful in CI pipelines for blocking deployments that would recreate or delete infrastructure. The optional `allowedChanges` array lets you provide short-lived waivers, for example:
+
+```ts
+import {checkDestructiveChangeSet} from "@nhsdigital/eps-deployment-utils"
+
+await checkDestructiveChangeSet(
+	process.env.CDK_CHANGE_SET_NAME,
+	process.env.STACK_NAME,
+	process.env.AWS_REGION,
+	[
+		{
+			LogicalResourceId: "MyAlarm",
+			PhysicalResourceId: "monitoring-alarm",
+			ResourceType: "AWS::CloudWatch::Alarm",
+			StackName: "monitoring",
+			ExpiryDate: "2026-03-01T00:00:00Z",
+			AllowedReason: "Pending rename rollout"
+		}
+	]
+)
+```
+
+Each waiver is effective only when the stack name, logical ID, physical ID, and resource type all match and the waiver’s `ExpiryDate` is later than the change set’s `CreationTime`. When no destructive changes remain, the helper logs a confirmation message; otherwise it prints the problematic resources and throws.
 
 Typical usage pattern (pseudo-code):
 
