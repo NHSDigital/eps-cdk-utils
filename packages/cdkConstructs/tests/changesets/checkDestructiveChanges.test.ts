@@ -118,7 +118,7 @@ describe("checkDestructiveChangeSet", () => {
     expect(mockCloudFormationSend).toHaveBeenCalledTimes(1)
     const command = mockCloudFormationSend.mock.calls[0][0] as { input: { ChangeSetName: string; StackName: string } }
     expect(command.input).toEqual({ChangeSetName: "cs", StackName: "stack"})
-    expect(logSpy).toHaveBeenCalledWith("Change set cs for stack stack has no destructive changes.")
+    expect(logSpy).toHaveBeenCalledWith("Change set cs for stack stack has no destructive changes that are not waived.")
     expect(errorSpy).not.toHaveBeenCalled()
   })
 
@@ -166,7 +166,7 @@ describe("checkDestructiveChangeSet", () => {
 
     expect(mockCloudFormationSend).toHaveBeenCalledTimes(1)
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Allowing destructive change ResourceToRemove"))
-    expect(logSpy).toHaveBeenCalledWith("Change set cs for stack stack has no destructive changes.")
+    expect(logSpy).toHaveBeenCalledWith("Change set cs for stack stack has no destructive changes that are not waived.")
     expect(errorSpy).not.toHaveBeenCalled()
   })
 

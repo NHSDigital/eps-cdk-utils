@@ -142,7 +142,7 @@ export async function checkDestructiveChangeSet(
   })
 
   if (remainingChanges.length === 0) {
-    console.log(`Change set ${changeSetName} for stack ${stackName} has no destructive changes.`)
+    console.log(`Change set ${changeSetName} for stack ${stackName} has no destructive changes that are not waived.`)
     return
   }
 
