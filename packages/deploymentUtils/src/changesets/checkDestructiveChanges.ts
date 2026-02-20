@@ -1,20 +1,32 @@
-import {CloudFormationClient, DescribeChangeSetCommand} from "@aws-sdk/client-cloudformation"
+import {
+  CloudFormationClient,
+  DescribeChangeSetCommand,
+  DescribeChangeSetCommandOutput
+} from "@aws-sdk/client-cloudformation"
 
 export type ChangeRequiringAttention = {
-  logicalId: string;
-  physicalId: string;
-  resourceType: string;
-  reason: string;
+    logicalId: string;
+    physicalId: string;
+    resourceType: string;
+    reason: string;
+}
+
+export type AllowedDestructiveChange = {
+    LogicalResourceId: string;
+    PhysicalResourceId: string;
+    ResourceType: string;
+    ExpiryDate: string | Date;
+    AllowedReason: string;
 }
 
 type RawChange = {
-  ResourceChange?: {
-    LogicalResourceId?: string;
-    PhysicalResourceId?: string;
-    ResourceType?: string;
-    Replacement?: unknown;
-    Action?: string;
-  } | null;
+    ResourceChange?: {
+        LogicalResourceId?: string;
+        PhysicalResourceId?: string;
+        ResourceType?: string;
+        Replacement?: unknown;
+        Action?: string;
+    } | null;
 }
 
 const requiresReplacement = (replacement: unknown): boolean => {
@@ -27,7 +39,16 @@ const requiresReplacement = (replacement: unknown): boolean => {
 }
 
 type ChangeSet = {
-  Changes?: unknown;
+    Changes?: unknown;
+}
+
+const toDate = (value: Date | string | number | undefined | null): Date | undefined => {
+  if (value === undefined || value === null) {
+    return undefined
+  }
+
+  const date = value instanceof Date ? value : new Date(value)
+  return Number.isNaN(date.getTime()) ? undefined : date
 }
 
 export function checkDestructiveChanges(changeSet: ChangeSet | undefined | null): Array<ChangeRequiringAttention> {
@@ -68,7 +89,8 @@ export function checkDestructiveChanges(changeSet: ChangeSet | undefined | null)
 export async function checkDestructiveChangeSet(
   changeSetName: string,
   stackName: string,
-  region: string): Promise<void> {
+  region: string,
+  allowedChanges: Array<AllowedDestructiveChange> = []): Promise<void> {
   if (!changeSetName || !stackName || !region) {
     throw new Error("Change set name, stack name, and region are required")
   }
@@ -79,16 +101,48 @@ export async function checkDestructiveChangeSet(
     StackName: stackName
   })
 
-  const response = await client.send(command)
+  const response: DescribeChangeSetCommandOutput = await client.send(command)
   const destructiveChanges = checkDestructiveChanges(response)
+  const creationTime = toDate(response.CreationTime)
 
-  if (destructiveChanges.length === 0) {
+  const remainingChanges = destructiveChanges.filter(change => {
+    const waiver = allowedChanges.find(allowed =>
+      allowed.LogicalResourceId === change.logicalId &&
+            allowed.PhysicalResourceId === change.physicalId &&
+            allowed.ResourceType === change.resourceType
+    )
+
+    if (!waiver || !creationTime) {
+      return true
+    }
+
+    const expiryDate = toDate(waiver.ExpiryDate)
+    if (!expiryDate) {
+      return true
+    }
+
+    if (expiryDate.getTime() > creationTime.getTime()) {
+
+      console.log(
+        // eslint-disable-next-line max-len
+        `Allowing destructive change ${change.logicalId} (${change.resourceType}) until ${expiryDate.toISOString()} - ${waiver.AllowedReason}`
+      )
+      return false
+    }
+
+    console.error(
+      `Waiver for ${change.logicalId} (${change.resourceType}) expired on ${expiryDate.toISOString()}`
+    )
+    return true
+  })
+
+  if (remainingChanges.length === 0) {
     console.log(`Change set ${changeSetName} for stack ${stackName} has no destructive changes.`)
     return
   }
 
   console.error("Resources that require attention:")
-  destructiveChanges.forEach(({logicalId, physicalId, resourceType, reason}) => {
+  remainingChanges.forEach(({logicalId, physicalId, resourceType, reason}) => {
     console.error(`- LogicalId: ${logicalId}, PhysicalId: ${physicalId}, Type: ${resourceType}, Reason: ${reason}`)
   })
   throw new Error(`Change set ${changeSetName} contains destructive changes`)

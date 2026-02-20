@@ -8,7 +8,11 @@ import {
   test,
   vi
 } from "vitest"
-import {checkDestructiveChanges, checkDestructiveChangeSet} from "../../src/changesets/checkDestructiveChanges"
+import {
+  checkDestructiveChanges,
+  checkDestructiveChangeSet,
+  AllowedDestructiveChange
+} from "../../src/changesets/checkDestructiveChanges"
 
 const mockCloudFormationSend = vi.fn()
 
@@ -131,6 +135,91 @@ describe("checkDestructiveChangeSet", () => {
       expect(mockCloudFormationSend).toHaveBeenCalledTimes(1)
       expect(logSpy).not.toHaveBeenCalled()
       expect(errorSpy).toHaveBeenCalledWith("Resources that require attention:")
+    } finally {
+      logSpy.mockRestore()
+      errorSpy.mockRestore()
+    }
+  })
+
+  test("allows matching destructive changes when waiver is active", async () => {
+    const changeSet = {
+      CreationTime: "2026-02-20T11:54:17.083Z",
+      Changes: [
+        {
+          ResourceChange: {
+            LogicalResourceId: "ResourceToRemove",
+            PhysicalResourceId: "physical-id",
+            ResourceType: "AWS::S3::Bucket",
+            Action: "Remove"
+          }
+        }
+      ]
+    }
+    mockCloudFormationSend.mockResolvedValueOnce(changeSet)
+
+    const allowedChanges: Array<AllowedDestructiveChange> = [
+      {
+        LogicalResourceId: "ResourceToRemove",
+        PhysicalResourceId: "physical-id",
+        ResourceType: "AWS::S3::Bucket",
+        ExpiryDate: "2026-03-01T00:00:00Z",
+        AllowedReason: "Pending migration"
+      }
+    ]
+
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined)
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined)
+
+    try {
+      await expect(checkDestructiveChangeSet("cs", "stack", "eu-west-2", allowedChanges))
+        .resolves.toBeUndefined()
+
+      expect(mockCloudFormationSend).toHaveBeenCalledTimes(1)
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Allowing destructive change ResourceToRemove"))
+      expect(logSpy).toHaveBeenCalledWith("Change set cs for stack stack has no destructive changes.")
+      expect(errorSpy).not.toHaveBeenCalled()
+    } finally {
+      logSpy.mockRestore()
+      errorSpy.mockRestore()
+    }
+  })
+
+  test("throws when waiver expired before change set creation", async () => {
+    const changeSet = {
+      CreationTime: "2026-02-20T11:54:17.083Z",
+      Changes: [
+        {
+          ResourceChange: {
+            LogicalResourceId: "ResourceToRemove",
+            PhysicalResourceId: "physical-id",
+            ResourceType: "AWS::S3::Bucket",
+            Action: "Remove"
+          }
+        }
+      ]
+    }
+    mockCloudFormationSend.mockResolvedValueOnce(changeSet)
+
+    const allowedChanges: Array<AllowedDestructiveChange> = [
+      {
+        LogicalResourceId: "ResourceToRemove",
+        PhysicalResourceId: "physical-id",
+        ResourceType: "AWS::S3::Bucket",
+        ExpiryDate: "2026-02-01T00:00:00Z",
+        AllowedReason: "Expired waiver"
+      }
+    ]
+
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined)
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined)
+
+    try {
+      await expect(checkDestructiveChangeSet("cs", "stack", "eu-west-2", allowedChanges))
+        .rejects.toThrow("Change set cs contains destructive changes")
+
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Waiver for ResourceToRemove"))
+      expect(errorSpy).toHaveBeenCalledWith("Resources that require attention:")
+      expect(logSpy).not.toHaveBeenCalledWith("Change set cs for stack stack has no destructive changes.")
     } finally {
       logSpy.mockRestore()
       errorSpy.mockRestore()
