@@ -26,6 +26,7 @@ Available constructs and helpers include:
 - `TypescriptLambdaFunction` – A reusable construct for TypeScript Lambda functions
 - `createApp` – Helper for creating a CDK `App` pre-configured with standard EPS tags and stack props
 - `deleteUnusedStacks` – Helper functions for cleaning up superseded or PR-based CloudFormation stacks and their Route 53 records
+- `checkDestructiveChangeSet` – Describes a CloudFormation change set, filters out replacements and removals (optionally applying time-bound waivers) and throws if anything destructive remains.
 
 ### CDK app bootstrap (`createApp`)
 
@@ -63,22 +64,13 @@ These functions are designed to be invoked from scheduled jobs (for example, a n
 
 Refer to [packages/cdkConstructs/tests/stacks/deleteUnusedStacks.test.ts](packages/cdkConstructs/tests/stacks/deleteUnusedStacks.test.ts) for example scenarios.
 
-## Deployment utilities (`packages/deploymentUtils`)
-
-The [packages/deploymentUtils](packages/deploymentUtils) package contains utilities for working with OpenAPI specifications and Proxygen-based API deployments.
-
-It exposes the following main entry points via [packages/deploymentUtils/src/index.ts](packages/deploymentUtils/src/index.ts):
-
-- `deployApi` – Normalises an OpenAPI specification and deploys it via Proxygen Lambda functions, optionally performing blue/green deployments and publishing documentation to the appropriate catalogue.
-- `writeSchemas` – Writes JSON Schemas to disk, collapsing `examples` arrays into a single `example` value to be compatible with OAS.
-- `deleteProxygenDeployments` – Removes Proxygen PTL instances that correspond to closed GitHub pull requests for a given API.
-- Config helpers from `config/index` – used to resolve configuration and CloudFormation export values.
-- `checkDestructiveChangeSet` – Describes a CloudFormation change set, filters out replacements and removals (optionally applying time-bound waivers) and throws if anything destructive remains.
+### Check destructive change sets
+This is used for stateful stack deployments where we want confirmation before doing any potentially destructive changes.   
 
 `checkDestructiveChangeSet(changeSetName, stackName, region, allowedChanges?)` is useful in CI pipelines for blocking deployments that would recreate or delete infrastructure. The optional `allowedChanges` array lets you provide short-lived waivers, for example:
 
 ```ts
-import {checkDestructiveChangeSet} from "@nhsdigital/eps-deployment-utils"
+import {checkDestructiveChangeSet} from "@nhsdigital/eps-cdk-constructs"
 
 await checkDestructiveChangeSet(
 	process.env.CDK_CHANGE_SET_NAME,
@@ -98,6 +90,18 @@ await checkDestructiveChangeSet(
 ```
 
 Each waiver is effective only when the stack name, logical ID, physical ID, and resource type all match and the waiver’s `ExpiryDate` is later than the change set’s `CreationTime`. When no destructive changes remain, the helper logs a confirmation message; otherwise it prints the problematic resources and throws.
+
+
+## Deployment utilities (`packages/deploymentUtils`)
+
+The [packages/deploymentUtils](packages/deploymentUtils) package contains utilities for working with OpenAPI specifications and Proxygen-based API deployments.
+
+It exposes the following main entry points via [packages/deploymentUtils/src/index.ts](packages/deploymentUtils/src/index.ts):
+
+- `deployApi` – Normalises an OpenAPI specification and deploys it via Proxygen Lambda functions, optionally performing blue/green deployments and publishing documentation to the appropriate catalogue.
+- `writeSchemas` – Writes JSON Schemas to disk, collapsing `examples` arrays into a single `example` value to be compatible with OAS.
+- `deleteProxygenDeployments` – Removes Proxygen PTL instances that correspond to closed GitHub pull requests for a given API.
+- Config helpers from `config/index` – used to resolve configuration and CloudFormation export values.
 
 Typical usage pattern (pseudo-code):
 
