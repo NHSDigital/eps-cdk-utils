@@ -1,3 +1,5 @@
+import {CloudFormationClient, DescribeChangeSetCommand} from "@aws-sdk/client-cloudformation"
+
 export type ChangeRequiringAttention = {
   logicalId: string;
   physicalId: string;
@@ -61,4 +63,33 @@ export function checkDestructiveChanges(changeSet: ChangeSet | undefined | null)
       }
     })
     .filter((change): change is ChangeRequiringAttention => Boolean(change))
+}
+
+export async function checkDestructiveChangeSet(
+  changeSetName: string,
+  stackName: string,
+  region: string): Promise<void> {
+  if (!changeSetName || !stackName || !region) {
+    throw new Error("Change set name, stack name, and region are required")
+  }
+
+  const client = new CloudFormationClient({region})
+  const command = new DescribeChangeSetCommand({
+    ChangeSetName: changeSetName,
+    StackName: stackName
+  })
+
+  const response = await client.send(command)
+  const destructiveChanges = checkDestructiveChanges(response)
+
+  if (destructiveChanges.length === 0) {
+    console.log(`Change set ${changeSetName} for stack ${stackName} has no destructive changes.`)
+    return
+  }
+
+  console.error("Resources that require attention:")
+  destructiveChanges.forEach(({logicalId, physicalId, resourceType, reason}) => {
+    console.error(`- LogicalId: ${logicalId}, PhysicalId: ${physicalId}, Type: ${resourceType}, Reason: ${reason}`)
+  })
+  throw new Error(`Change set ${changeSetName} contains destructive changes`)
 }
