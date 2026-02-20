@@ -1,5 +1,3 @@
-import {readFileSync} from "node:fs"
-
 export type ChangeRequiringAttention = {
   logicalId: string;
   physicalId: string;
@@ -26,14 +24,17 @@ const requiresReplacement = (replacement: unknown): boolean => {
   return normalized === "True" || normalized === "Conditional"
 }
 
-export function checkDestructiveChanges(filePath: string): Array<ChangeRequiringAttention> {
-  if (!filePath) {
-    throw new Error("A change set file path must be provided")
+type ChangeSet = {
+  Changes?: unknown;
+}
+
+export function checkDestructiveChanges(changeSet: ChangeSet | undefined | null): Array<ChangeRequiringAttention> {
+  if (!changeSet || typeof changeSet !== "object") {
+    throw new Error("A change set object must be provided")
   }
 
-  const raw = readFileSync(filePath, "utf-8")
-  const data = JSON.parse(raw)
-  const changes = Array.isArray(data?.Changes) ? data.Changes : []
+  const {Changes} = changeSet as ChangeSet
+  const changes = Array.isArray(Changes) ? (Changes as Array<RawChange>) : []
 
   return changes
     .map((change: RawChange) => {

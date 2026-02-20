@@ -1,5 +1,4 @@
-import {mkdtempSync, writeFileSync} from "node:fs"
-import {tmpdir} from "node:os"
+import {readFileSync} from "node:fs"
 import {dirname, join} from "node:path"
 import {fileURLToPath} from "node:url"
 import {describe, expect, test} from "vitest"
@@ -9,8 +8,10 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const fixturesDir = join(__dirname, "examples")
 
-const destructiveChangeSet = join(fixturesDir, "destructive_changeset.json")
-const safeChangeSet = join(fixturesDir, "safe_changeset.json")
+const loadChangeSet = (filePath: string) => JSON.parse(readFileSync(filePath, "utf-8"))
+
+const destructiveChangeSet = loadChangeSet(join(fixturesDir, "destructive_changeset.json"))
+const safeChangeSet = loadChangeSet(join(fixturesDir, "safe_changeset.json"))
 
 describe("checkDestructiveChanges", () => {
   test("returns resources that require replacement", () => {
@@ -32,8 +33,6 @@ describe("checkDestructiveChanges", () => {
   })
 
   test("includes resources marked for removal", () => {
-    const tempDir = mkdtempSync(join(tmpdir(), "changeset-"))
-    const removalFixture = join(tempDir, "removal.json")
     const changeSet = {
       Changes: [
         {
@@ -47,9 +46,7 @@ describe("checkDestructiveChanges", () => {
         }
       ]
     }
-    writeFileSync(removalFixture, JSON.stringify(changeSet), "utf-8")
-
-    const replacements = checkDestructiveChanges(removalFixture)
+    const replacements = checkDestructiveChanges(changeSet)
 
     expect(replacements).toEqual([
       {
