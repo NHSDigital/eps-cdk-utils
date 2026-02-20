@@ -21,12 +21,12 @@
     "type": "module",
     "dependencies": {
         "@aws-sdk/client-cloudformation": "^3.993.0",
-        "@aws-sdk/client-route-53": "^3.987.0",
+        "@aws-sdk/client-route-53": "^3.993.0",
         "@aws-sdk/client-s3": "^3.993.0",
         "aws-cdk": "^2.1106.1",
         "aws-cdk-lib": "^2.238.0",
         "cdk-nag": "^2.37.52",
-        "constructs": "^10.4.5"
+        "constructs": "^10.5.1"
     },
     "bugs": {
         "url": "https://github.com/NHSDigital/eps-cdk-utils/issues"
