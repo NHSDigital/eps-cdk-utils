@@ -144,6 +144,7 @@ describe("checkDestructiveChangeSet", () => {
   test("allows matching destructive changes when waiver is active", async () => {
     const changeSet = {
       CreationTime: "2026-02-20T11:54:17.083Z",
+      StackName: "stack",
       Changes: [
         {
           ResourceChange: {
@@ -163,6 +164,7 @@ describe("checkDestructiveChangeSet", () => {
         PhysicalResourceId: "physical-id",
         ResourceType: "AWS::S3::Bucket",
         ExpiryDate: "2026-03-01T00:00:00Z",
+        StackName: "stack",
         AllowedReason: "Pending migration"
       }
     ]
@@ -187,6 +189,7 @@ describe("checkDestructiveChangeSet", () => {
   test("throws when waiver expired before change set creation", async () => {
     const changeSet = {
       CreationTime: "2026-02-20T11:54:17.083Z",
+      StackName: "stack",
       Changes: [
         {
           ResourceChange: {
@@ -206,6 +209,7 @@ describe("checkDestructiveChangeSet", () => {
         PhysicalResourceId: "physical-id",
         ResourceType: "AWS::S3::Bucket",
         ExpiryDate: "2026-02-01T00:00:00Z",
+        StackName: "stack",
         AllowedReason: "Expired waiver"
       }
     ]

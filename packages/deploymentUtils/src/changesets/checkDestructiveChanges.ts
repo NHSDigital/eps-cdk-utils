@@ -17,6 +17,7 @@ export type AllowedDestructiveChange = {
   PhysicalResourceId: string;
   ResourceType: string;
   ExpiryDate: string | Date;
+  StackName: string;
   AllowedReason: string;
 }
 
@@ -38,6 +39,12 @@ const toDate = (value: Date | string | number | undefined | null): Date | undefi
   return Number.isNaN(date.getTime()) ? undefined : date
 }
 
+/**
+ * Extracts the subset of CloudFormation changes that either require replacement or remove resources.
+ *
+ * @param changeSet - Raw change-set details returned from `DescribeChangeSet`.
+ * @returns Array of changes that need operator attention.
+ */
 export function checkDestructiveChanges(
   changeSet: DescribeChangeSetCommandOutput | undefined | null
 ): Array<ChangeRequiringAttention> {
@@ -75,6 +82,14 @@ export function checkDestructiveChanges(
     .filter((change): change is ChangeRequiringAttention => Boolean(change))
 }
 
+/**
+ * Describes a CloudFormation change set, applies waiver logic, and throws if destructive changes remain.
+ *
+ * @param changeSetName - Name or ARN of the change set.
+ * @param stackName - Name or ARN of the stack that owns the change set.
+ * @param region - AWS region where the stack resides.
+ * @param allowedChanges - Optional waivers that temporarily allow specific destructive changes.
+ */
 export async function checkDestructiveChangeSet(
   changeSetName: string,
   stackName: string,
@@ -93,6 +108,7 @@ export async function checkDestructiveChangeSet(
   const response: DescribeChangeSetCommandOutput = await client.send(command)
   const destructiveChanges = checkDestructiveChanges(response)
   const creationTime = toDate(response.CreationTime)
+  const changeSetStackName = response.StackName
 
   const remainingChanges = destructiveChanges.filter(change => {
     const waiver = allowedChanges.find(allowed =>
@@ -101,7 +117,7 @@ export async function checkDestructiveChangeSet(
       allowed.ResourceType === change.resourceType
     )
 
-    if (!waiver || !creationTime) {
+    if (!waiver || !creationTime || !changeSetStackName || waiver.StackName !== changeSetStackName) {
       return true
     }
 
