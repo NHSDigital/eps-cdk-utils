@@ -65,9 +65,8 @@ These functions are designed to be invoked from scheduled jobs (for example, a n
 Refer to [packages/cdkConstructs/tests/stacks/deleteUnusedStacks.test.ts](packages/cdkConstructs/tests/stacks/deleteUnusedStacks.test.ts) for example scenarios.
 
 ### Check destructive change sets
-This is used for stateful stack deployments where we want confirmation before doing any potentially destructive changes.   
-
-`checkDestructiveChangeSet(changeSetName, stackName, region, allowedChanges?)` is useful in CI pipelines for blocking deployments that would recreate or delete infrastructure. The optional `allowedChanges` array lets you provide short-lived waivers, for example:
+This is used for stateful stack deployments where we want to make sure we do not automatically deploy potentially destructive changes.   
+In a CI pipeline for stateful stacks, we should create a changeset initially, then pass the changeset details to checkDestructiveChangeSet, and an optional array of short-lived waivers, for example:
 
 ```ts
 import {checkDestructiveChangeSet} from "@nhsdigital/eps-cdk-constructs"
