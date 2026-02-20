@@ -1,32 +1,23 @@
 import {
   CloudFormationClient,
   DescribeChangeSetCommand,
-  DescribeChangeSetCommandOutput
+  DescribeChangeSetCommandOutput,
+  Change as CloudFormationChange
 } from "@aws-sdk/client-cloudformation"
 
 export type ChangeRequiringAttention = {
-    logicalId: string;
-    physicalId: string;
-    resourceType: string;
-    reason: string;
+  logicalId: string;
+  physicalId: string;
+  resourceType: string;
+  reason: string;
 }
 
 export type AllowedDestructiveChange = {
-    LogicalResourceId: string;
-    PhysicalResourceId: string;
-    ResourceType: string;
-    ExpiryDate: string | Date;
-    AllowedReason: string;
-}
-
-type RawChange = {
-    ResourceChange?: {
-        LogicalResourceId?: string;
-        PhysicalResourceId?: string;
-        ResourceType?: string;
-        Replacement?: unknown;
-        Action?: string;
-    } | null;
+  LogicalResourceId: string;
+  PhysicalResourceId: string;
+  ResourceType: string;
+  ExpiryDate: string | Date;
+  AllowedReason: string;
 }
 
 const requiresReplacement = (replacement: unknown): boolean => {
@@ -38,10 +29,6 @@ const requiresReplacement = (replacement: unknown): boolean => {
   return normalized === "True" || normalized === "Conditional"
 }
 
-type ChangeSet = {
-    Changes?: unknown;
-}
-
 const toDate = (value: Date | string | number | undefined | null): Date | undefined => {
   if (value === undefined || value === null) {
     return undefined
@@ -51,16 +38,18 @@ const toDate = (value: Date | string | number | undefined | null): Date | undefi
   return Number.isNaN(date.getTime()) ? undefined : date
 }
 
-export function checkDestructiveChanges(changeSet: ChangeSet | undefined | null): Array<ChangeRequiringAttention> {
+export function checkDestructiveChanges(
+  changeSet: DescribeChangeSetCommandOutput | undefined | null
+): Array<ChangeRequiringAttention> {
   if (!changeSet || typeof changeSet !== "object") {
     throw new Error("A change set object must be provided")
   }
 
-  const {Changes} = changeSet as ChangeSet
-  const changes = Array.isArray(Changes) ? (Changes as Array<RawChange>) : []
+  const {Changes} = changeSet
+  const changes = Array.isArray(Changes) ? (Changes as Array<CloudFormationChange>) : []
 
   return changes
-    .map((change: RawChange) => {
+    .map((change: CloudFormationChange) => {
       const resourceChange = change?.ResourceChange
       if (!resourceChange) {
         return undefined
@@ -108,8 +97,8 @@ export async function checkDestructiveChangeSet(
   const remainingChanges = destructiveChanges.filter(change => {
     const waiver = allowedChanges.find(allowed =>
       allowed.LogicalResourceId === change.logicalId &&
-            allowed.PhysicalResourceId === change.physicalId &&
-            allowed.ResourceType === change.resourceType
+      allowed.PhysicalResourceId === change.physicalId &&
+      allowed.ResourceType === change.resourceType
     )
 
     if (!waiver || !creationTime) {
