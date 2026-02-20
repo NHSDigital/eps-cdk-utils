@@ -6,7 +6,8 @@ import {
   describe,
   expect,
   test,
-  vi
+  vi,
+  afterEach
 } from "vitest"
 import {
   checkDestructiveChanges,
@@ -102,43 +103,34 @@ describe("checkDestructiveChanges", () => {
 })
 
 describe("checkDestructiveChangeSet", () => {
+  const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined)
+  const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined)
+  afterEach(() => {
+    logSpy.mockReset()
+    errorSpy.mockReset()
+  })
+
   test("logs success when no destructive changes are present", async () => {
     mockCloudFormationSend.mockResolvedValueOnce(safeChangeSet)
 
-    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined)
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined)
+    await expect(checkDestructiveChangeSet("cs", "stack", "eu-west-2")).resolves.toBeUndefined()
 
-    try {
-      await expect(checkDestructiveChangeSet("cs", "stack", "eu-west-2")).resolves.toBeUndefined()
-
-      expect(mockCloudFormationSend).toHaveBeenCalledTimes(1)
-      const command = mockCloudFormationSend.mock.calls[0][0] as { input: { ChangeSetName: string; StackName: string } }
-      expect(command.input).toEqual({ChangeSetName: "cs", StackName: "stack"})
-      expect(logSpy).toHaveBeenCalledWith("Change set cs for stack stack has no destructive changes.")
-      expect(errorSpy).not.toHaveBeenCalled()
-    } finally {
-      logSpy.mockRestore()
-      errorSpy.mockRestore()
-    }
+    expect(mockCloudFormationSend).toHaveBeenCalledTimes(1)
+    const command = mockCloudFormationSend.mock.calls[0][0] as { input: { ChangeSetName: string; StackName: string } }
+    expect(command.input).toEqual({ChangeSetName: "cs", StackName: "stack"})
+    expect(logSpy).toHaveBeenCalledWith("Change set cs for stack stack has no destructive changes.")
+    expect(errorSpy).not.toHaveBeenCalled()
   })
 
   test("logs details and throws when destructive changes exist", async () => {
     mockCloudFormationSend.mockResolvedValueOnce(destructiveChangeSet)
 
-    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined)
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined)
+    await expect(checkDestructiveChangeSet("cs", "stack", "eu-west-2"))
+      .rejects.toThrow("Change set cs contains destructive changes")
 
-    try {
-      await expect(checkDestructiveChangeSet("cs", "stack", "eu-west-2"))
-        .rejects.toThrow("Change set cs contains destructive changes")
-
-      expect(mockCloudFormationSend).toHaveBeenCalledTimes(1)
-      expect(logSpy).not.toHaveBeenCalled()
-      expect(errorSpy).toHaveBeenCalledWith("Resources that require attention:")
-    } finally {
-      logSpy.mockRestore()
-      errorSpy.mockRestore()
-    }
+    expect(mockCloudFormationSend).toHaveBeenCalledTimes(1)
+    expect(logSpy).not.toHaveBeenCalled()
+    expect(errorSpy).toHaveBeenCalledWith("Resources that require attention:")
   })
 
   test("allows matching destructive changes when waiver is active", async () => {
@@ -169,21 +161,13 @@ describe("checkDestructiveChangeSet", () => {
       }
     ]
 
-    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined)
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined)
+    await expect(checkDestructiveChangeSet("cs", "stack", "eu-west-2", allowedChanges))
+      .resolves.toBeUndefined()
 
-    try {
-      await expect(checkDestructiveChangeSet("cs", "stack", "eu-west-2", allowedChanges))
-        .resolves.toBeUndefined()
-
-      expect(mockCloudFormationSend).toHaveBeenCalledTimes(1)
-      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Allowing destructive change ResourceToRemove"))
-      expect(logSpy).toHaveBeenCalledWith("Change set cs for stack stack has no destructive changes.")
-      expect(errorSpy).not.toHaveBeenCalled()
-    } finally {
-      logSpy.mockRestore()
-      errorSpy.mockRestore()
-    }
+    expect(mockCloudFormationSend).toHaveBeenCalledTimes(1)
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Allowing destructive change ResourceToRemove"))
+    expect(logSpy).toHaveBeenCalledWith("Change set cs for stack stack has no destructive changes.")
+    expect(errorSpy).not.toHaveBeenCalled()
   })
 
   test("throws when waiver expired before change set creation", async () => {
@@ -214,19 +198,11 @@ describe("checkDestructiveChangeSet", () => {
       }
     ]
 
-    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined)
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined)
+    await expect(checkDestructiveChangeSet("cs", "stack", "eu-west-2", allowedChanges))
+      .rejects.toThrow("Change set cs contains destructive changes")
 
-    try {
-      await expect(checkDestructiveChangeSet("cs", "stack", "eu-west-2", allowedChanges))
-        .rejects.toThrow("Change set cs contains destructive changes")
-
-      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Waiver for ResourceToRemove"))
-      expect(errorSpy).toHaveBeenCalledWith("Resources that require attention:")
-      expect(logSpy).not.toHaveBeenCalledWith("Change set cs for stack stack has no destructive changes.")
-    } finally {
-      logSpy.mockRestore()
-      errorSpy.mockRestore()
-    }
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Waiver for ResourceToRemove"))
+    expect(errorSpy).toHaveBeenCalledWith("Resources that require attention:")
+    expect(logSpy).not.toHaveBeenCalledWith("Change set cs for stack stack has no destructive changes.")
   })
 })
