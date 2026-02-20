@@ -26,6 +26,7 @@ Available constructs and helpers include:
 - `TypescriptLambdaFunction` – A reusable construct for TypeScript Lambda functions
 - `createApp` – Helper for creating a CDK `App` pre-configured with standard EPS tags and stack props
 - `deleteUnusedStacks` – Helper functions for cleaning up superseded or PR-based CloudFormation stacks and their Route 53 records
+- `checkDestructiveChangeSet` – Describes a CloudFormation change set, filters out replacements and removals (optionally applying time-bound waivers) and throws if anything destructive remains.
 
 ### CDK app bootstrap (`createApp`)
 
@@ -62,6 +63,33 @@ These functions are designed to be invoked from scheduled jobs (for example, a n
 - Route 53 APIs to enumerate and delete CNAME records associated with the stacks.
 
 Refer to [packages/cdkConstructs/tests/stacks/deleteUnusedStacks.test.ts](packages/cdkConstructs/tests/stacks/deleteUnusedStacks.test.ts) for example scenarios.
+
+### Check destructive change sets
+This is used for stateful stack deployments where we want to make sure we do not automatically deploy potentially destructive changes.   
+In a CI pipeline for stateful stacks, we should create a changeset initially, then pass the changeset details to checkDestructiveChangeSet, and an optional array of short-lived waivers, for example:
+
+```ts
+import {checkDestructiveChangeSet} from "@nhsdigital/eps-cdk-constructs"
+
+await checkDestructiveChangeSet(
+	process.env.CDK_CHANGE_SET_NAME,
+	process.env.STACK_NAME,
+	process.env.AWS_REGION,
+	[
+		{
+			LogicalResourceId: "MyAlarm",
+			PhysicalResourceId: "monitoring-alarm",
+			ResourceType: "AWS::CloudWatch::Alarm",
+			StackName: "monitoring",
+			ExpiryDate: "2026-03-01T00:00:00Z",
+			AllowedReason: "Pending rename rollout"
+		}
+	]
+)
+```
+
+Each waiver is effective only when the stack name, logical ID, physical ID, and resource type all match and the waiver’s `ExpiryDate` is later than the change set’s `CreationTime`. When no destructive changes remain, the helper logs a confirmation message; otherwise it prints the problematic resources and throws.
+
 
 ## Deployment utilities (`packages/deploymentUtils`)
 
