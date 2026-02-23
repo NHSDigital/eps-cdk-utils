@@ -5,6 +5,16 @@ import {
   Change as CloudFormationChange
 } from "@aws-sdk/client-cloudformation"
 
+const isConditionalCdkMetadataChange = (resourceChange: CloudFormationChange["ResourceChange"]): boolean => {
+  if (!resourceChange) {
+    return false
+  }
+
+  return resourceChange.LogicalResourceId === "CDKMetadata" &&
+    resourceChange.ResourceType === "AWS::CDK::Metadata" &&
+    String(resourceChange.Replacement ?? "") === "Conditional"
+}
+
 export type ChangeRequiringAttention = {
   logicalId: string;
   physicalId: string;
@@ -65,6 +75,10 @@ export function checkDestructiveChanges(
       const replacementNeeded = requiresReplacement(resourceChange.Replacement)
       const action = resourceChange.Action
       const isRemoval = action === "Remove"
+
+      if (replacementNeeded && isConditionalCdkMetadataChange(resourceChange)) {
+        return undefined
+      }
 
       if (!replacementNeeded && !isRemoval) {
         return undefined
