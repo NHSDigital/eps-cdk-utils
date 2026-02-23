@@ -3,8 +3,6 @@ FROM ubuntu:24.04
 ARG TARGETARCH
 ENV TARGETARCH=${TARGETARCH}
 
-ARG ASDF_VERSION
-COPY .tool-versions.asdf /tmp/.tool-versions.asdf
 
 ARG VERSION
 
@@ -26,7 +24,7 @@ RUN if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" == "aarch64" ]; then \
     rm /tmp/awscliv2.zip && rm -rf /tmp/aws-cli
 
 # Install ASDF
-RUN ASDF_VERSION=$(awk '!/^#/ && NF {print $1; exit}' /tmp/.tool-versions.asdf) && \
+RUN ASDF_VERSION=0.18.0 && \
     if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "aarch64" ]; then \
     wget -O /tmp/asdf.tar.gz https://github.com/asdf-vm/asdf/releases/download/v${ASDF_VERSION}/asdf-v${ASDF_VERSION}-linux-arm64.tar.gz; \
     else \
