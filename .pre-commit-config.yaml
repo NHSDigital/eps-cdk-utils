@@ -26,7 +26,7 @@ repos:
       - id: lint-githubactions
         name: Lint github actions
         entry: make
-        args: ["lint-githubactions"]
+        args: ["actionlint"]
         language: system
         files: ^.github
         types_or: [yaml]
@@ -35,7 +35,7 @@ repos:
       - id: lint-githubaction-scripts
         name: Lint github action scripts
         entry: make
-        args: ["lint-githubaction-scripts"]
+        args: ["shellcheck"]
         language: system
         files: ^.github/scripts
         types_or: [sh, shell]
@@ -58,6 +58,17 @@ repos:
         files: ^packages\/deploymentUtils
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
+
+  - repo: local
+    hooks:
+      - id: git-secrets
+        name: Git Secrets
+        description: git-secrets scans commits, commit messages, and --no-ff merges to prevent adding secrets into your git repositories.
+        entry: bash
+        args:
+          - -c
+          - "git-secrets --pre_commit_hook"
+        language: system
 
 fail_fast: true
 default_stages: [pre-commit]
