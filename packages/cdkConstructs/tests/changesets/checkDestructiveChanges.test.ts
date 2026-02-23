@@ -100,6 +100,25 @@ describe("checkDestructiveChanges", () => {
       }
     ])
   })
+
+  test("ignores conditional CDK metadata replacements", () => {
+    const changeSet = {
+      Changes: [
+        {
+          ResourceChange: {
+            LogicalResourceId: "CDKMetadata",
+            PhysicalResourceId: "metadata-id",
+            ResourceType: "AWS::CDK::Metadata",
+            Replacement: "Conditional"
+          }
+        }
+      ]
+    }
+
+    const replacements = checkDestructiveChanges(changeSet)
+
+    expect(replacements).toEqual([])
+  })
 })
 
 describe("checkDestructiveChangeSet", () => {
