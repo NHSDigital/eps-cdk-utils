@@ -65,7 +65,9 @@ describe("checkDestructiveChanges", () => {
       logicalId: "AlarmsAccountLambdaConcurrencyAlarm8AF49AD8",
       physicalId: "monitoring-Account_Lambda_Concurrency",
       resourceType: "AWS::CloudWatch::Alarm",
-      reason: "Replacement: True"
+      policyAction: "ReplaceAndDelete",
+      action: "Modify",
+      replacement: "True"
     })
   })
 
@@ -80,6 +82,7 @@ describe("checkDestructiveChanges", () => {
       Changes: [
         {
           ResourceChange: {
+            PolicyAction: "Delete",
             LogicalResourceId: "ResourceToRemove",
             PhysicalResourceId: "physical-id",
             ResourceType: "AWS::S3::Bucket",
@@ -96,19 +99,82 @@ describe("checkDestructiveChanges", () => {
         logicalId: "ResourceToRemove",
         physicalId: "physical-id",
         resourceType: "AWS::S3::Bucket",
-        reason: "Action: Remove"
+        policyAction: "Delete",
+        action: "Remove",
+        replacement: "False"
       }
     ])
   })
 
-  test("ignores conditional CDK metadata replacements", () => {
+  test("marks changes with Delete policy action as destructive even without removal", () => {
     const changeSet = {
       Changes: [
         {
           ResourceChange: {
-            LogicalResourceId: "CDKMetadata",
-            PhysicalResourceId: "metadata-id",
-            ResourceType: "AWS::CDK::Metadata",
+            PolicyAction: "Delete",
+            LogicalResourceId: "PolicyOnly",
+            PhysicalResourceId: "policy-only",
+            ResourceType: "Custom::Thing",
+            Action: "Modify",
+            Replacement: "False"
+          }
+        }
+      ]
+    }
+
+    const replacements = checkDestructiveChanges(changeSet)
+
+    expect(replacements).toEqual([
+      {
+        logicalId: "PolicyOnly",
+        physicalId: "policy-only",
+        resourceType: "Custom::Thing",
+        policyAction: "Delete",
+        action: "Modify",
+        replacement: "False"
+      }
+    ])
+  })
+
+  test("marks changes with ReplaceAndDelete policy action as destructive even when replacement is false", () => {
+    const changeSet = {
+      Changes: [
+        {
+          ResourceChange: {
+            PolicyAction: "ReplaceAndDelete",
+            LogicalResourceId: "PolicyReplace",
+            PhysicalResourceId: "policy-replace",
+            ResourceType: "Custom::Thing",
+            Action: "Modify",
+            Replacement: "False"
+          }
+        }
+      ]
+    }
+
+    const replacements = checkDestructiveChanges(changeSet)
+
+    expect(replacements).toEqual([
+      {
+        logicalId: "PolicyReplace",
+        physicalId: "policy-replace",
+        resourceType: "Custom::Thing",
+        policyAction: "ReplaceAndDelete",
+        action: "Modify",
+        replacement: "False"
+      }
+    ])
+  })
+
+  test("does not mark conditional replacements as destructive when no other indicator is present", () => {
+    const changeSet = {
+      Changes: [
+        {
+          ResourceChange: {
+            LogicalResourceId: "Conditional",
+            PhysicalResourceId: "conditional",
+            ResourceType: "Custom::Thing",
+            Action: "Modify",
             Replacement: "Conditional"
           }
         }
@@ -162,6 +228,7 @@ describe("checkDestructiveChangeSet", () => {
             LogicalResourceId: "ResourceToRemove",
             PhysicalResourceId: "physical-id",
             ResourceType: "AWS::S3::Bucket",
+            PolicyAction: "Delete",
             Action: "Remove"
           }
         }
@@ -174,6 +241,9 @@ describe("checkDestructiveChangeSet", () => {
         LogicalResourceId: "ResourceToRemove",
         PhysicalResourceId: "physical-id",
         ResourceType: "AWS::S3::Bucket",
+        PolicyAction: "Delete",
+        Action: "Remove",
+        Replacement: null,
         ExpiryDate: "2026-03-01T00:00:00Z",
         StackName: "stack",
         AllowedReason: "Pending migration"
@@ -199,6 +269,7 @@ describe("checkDestructiveChangeSet", () => {
             LogicalResourceId: "ResourceToRemove",
             PhysicalResourceId: "physical-id",
             ResourceType: "AWS::S3::Bucket",
+            PolicyAction: "Delete",
             Action: "Remove"
           }
         }
@@ -211,6 +282,9 @@ describe("checkDestructiveChangeSet", () => {
         LogicalResourceId: "ResourceToRemove",
         PhysicalResourceId: "physical-id",
         ResourceType: "AWS::S3::Bucket",
+        PolicyAction: "Delete",
+        Action: "Remove",
+        Replacement: null,
         ExpiryDate: "2026-02-01T00:00:00Z",
         StackName: "stack",
         AllowedReason: "Expired waiver"
@@ -223,5 +297,43 @@ describe("checkDestructiveChangeSet", () => {
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Waiver for ResourceToRemove"))
     expect(errorSpy).toHaveBeenCalledWith("Resources that require attention:")
     expect(logSpy).not.toHaveBeenCalledWith("Change set cs for stack stack has no destructive changes.")
+  })
+
+  test("does not allow waivers that mismatch policy or action", async () => {
+    const changeSet = {
+      CreationTime: "2026-02-20T11:54:17.083Z",
+      StackName: "stack",
+      Changes: [
+        {
+          ResourceChange: {
+            LogicalResourceId: "ResourceToRemove",
+            PhysicalResourceId: "physical-id",
+            ResourceType: "AWS::S3::Bucket",
+            PolicyAction: "Delete",
+            Action: "Remove"
+          }
+        }
+      ]
+    }
+    mockCloudFormationSend.mockResolvedValueOnce(changeSet)
+
+    const allowedChanges: Array<AllowedDestructiveChange> = [
+      {
+        LogicalResourceId: "ResourceToRemove",
+        PhysicalResourceId: "physical-id",
+        ResourceType: "AWS::S3::Bucket",
+        PolicyAction: "ReplaceAndDelete",
+        Action: "Remove",
+        Replacement: null,
+        ExpiryDate: "2026-03-01T00:00:00Z",
+        StackName: "stack",
+        AllowedReason: "Incorrect policy"
+      }
+    ]
+
+    await expect(checkDestructiveChangeSet("cs", "stack", "eu-west-2", allowedChanges))
+      .rejects.toThrow("Change set cs contains destructive changes")
+
+    expect(errorSpy).toHaveBeenCalledWith("Resources that require attention:")
   })
 })

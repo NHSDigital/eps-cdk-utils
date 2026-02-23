@@ -5,39 +5,44 @@ import {
   Change as CloudFormationChange
 } from "@aws-sdk/client-cloudformation"
 
-const isConditionalCdkMetadataChange = (resourceChange: CloudFormationChange["ResourceChange"]): boolean => {
-  if (!resourceChange) {
-    return false
+const normalizeToString = (value: unknown): string | undefined => {
+  if (value === undefined || value === null) {
+    return undefined
   }
 
-  return resourceChange.LogicalResourceId === "CDKMetadata" &&
-    resourceChange.ResourceType === "AWS::CDK::Metadata" &&
-    String(resourceChange.Replacement ?? "") === "Conditional"
+  return String(value)
+}
+
+const isDestructiveChange = (
+  policyAction: string | undefined,
+  action: string | undefined,
+  replacement: string | undefined
+): boolean => {
+  return policyAction === "Delete" ||
+    policyAction === "ReplaceAndDelete" ||
+    action === "Remove" ||
+    replacement === "True"
 }
 
 export type ChangeRequiringAttention = {
   logicalId: string;
   physicalId: string;
   resourceType: string;
-  reason: string;
+  policyAction: string;
+  action: string;
+  replacement: string;
 }
 
 export type AllowedDestructiveChange = {
   LogicalResourceId: string;
   PhysicalResourceId: string;
   ResourceType: string;
+  PolicyAction?: string | null;
+  Action?: string | null;
+  Replacement?: string | null;
   ExpiryDate: string | Date;
   StackName: string;
   AllowedReason: string;
-}
-
-const requiresReplacement = (replacement: unknown): boolean => {
-  if (replacement === undefined || replacement === null) {
-    return false
-  }
-
-  const normalized = String(replacement)
-  return normalized === "True" || normalized === "Conditional"
 }
 
 const toDate = (value: Date | string | number | undefined | null): Date | undefined => {
@@ -72,15 +77,11 @@ export function checkDestructiveChanges(
         return undefined
       }
 
-      const replacementNeeded = requiresReplacement(resourceChange.Replacement)
-      const action = resourceChange.Action
-      const isRemoval = action === "Remove"
+      const policyAction = normalizeToString(resourceChange.PolicyAction)
+      const action = normalizeToString(resourceChange.Action)
+      const replacement = normalizeToString(resourceChange.Replacement)
 
-      if (replacementNeeded && isConditionalCdkMetadataChange(resourceChange)) {
-        return undefined
-      }
-
-      if (!replacementNeeded && !isRemoval) {
+      if (!isDestructiveChange(policyAction, action, replacement)) {
         return undefined
       }
 
@@ -88,12 +89,25 @@ export function checkDestructiveChanges(
         logicalId: resourceChange.LogicalResourceId ?? "<unknown logical id>",
         physicalId: resourceChange.PhysicalResourceId ?? "<unknown physical id>",
         resourceType: resourceChange.ResourceType ?? "<unknown type>",
-        reason: replacementNeeded
-          ? `Replacement: ${String(resourceChange.Replacement)}`
-          : `Action: ${action ?? "<unknown action>"}`
+        policyAction,
+        action,
+        replacement
       }
     })
     .filter((change): change is ChangeRequiringAttention => Boolean(change))
+}
+
+const matchesAllowedChange = (change: ChangeRequiringAttention, allowed: AllowedDestructiveChange): boolean => {
+  const allowedPolicyAction = normalizeToString(allowed.PolicyAction)
+  const allowedAction = normalizeToString(allowed.Action)
+  const allowedReplacement = normalizeToString(allowed.Replacement)
+
+  return allowed.LogicalResourceId === change.logicalId &&
+    allowed.PhysicalResourceId === change.physicalId &&
+    allowed.ResourceType === change.resourceType &&
+    allowedPolicyAction === change.policyAction &&
+    allowedAction === change.action &&
+    allowedReplacement === change.replacement
 }
 
 /**
@@ -125,11 +139,7 @@ export async function checkDestructiveChangeSet(
   const changeSetStackName = response.StackName
 
   const remainingChanges = destructiveChanges.filter(change => {
-    const waiver = allowedChanges.find(allowed =>
-      allowed.LogicalResourceId === change.logicalId &&
-      allowed.PhysicalResourceId === change.physicalId &&
-      allowed.ResourceType === change.resourceType
-    )
+    const waiver = allowedChanges.find(allowed => matchesAllowedChange(change, allowed))
 
     if (!waiver || !creationTime || !changeSetStackName || waiver.StackName !== changeSetStackName) {
       return true
@@ -161,8 +171,11 @@ export async function checkDestructiveChangeSet(
   }
 
   console.error("Resources that require attention:")
-  remainingChanges.forEach(({logicalId, physicalId, resourceType, reason}) => {
-    console.error(`- LogicalId: ${logicalId}, PhysicalId: ${physicalId}, Type: ${resourceType}, Reason: ${reason}`)
+  remainingChanges.forEach(({logicalId, physicalId, resourceType, policyAction, action, replacement}) => {
+    console.error(
+      // eslint-disable-next-line max-len
+      `- LogicalId: ${logicalId}, PhysicalId: ${physicalId}, Type: ${resourceType}, PolicyAction: ${policyAction ?? "<none>"}, Action: ${action ?? "<unknown>"}, Replacement: ${replacement ?? "<none>"}`
+    )
   })
   throw new Error(`Change set ${changeSetName} contains destructive changes`)
 }
