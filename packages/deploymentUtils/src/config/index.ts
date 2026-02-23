@@ -22,6 +22,7 @@ export async function getCloudFormationExports(region: string = "eu-west-2"): Pr
   const cfnClient = new CloudFormationClient({region})
   const listExportsCommand = new ListExportsCommand({})
   const exports: Record<string, string> = {}
+  // eslint-disable-next-line no-useless-assignment
   let nextToken: string | undefined = undefined
 
   do {
