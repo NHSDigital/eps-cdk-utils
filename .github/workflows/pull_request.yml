@@ -8,36 +8,26 @@ env:
   BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
 
 jobs:
+  get_config_values:
+    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@8404cf6e3a61ac8de4d1644e175e288aa4965815
+    with:
+      verify_published_from_main_image: false
   dependabot-auto-approve-and-merge:
     needs: quality_checks
-    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@9791a77de7b005056b4ddfb9789306f5179f53da
+    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@d215f841eb18b803e339e4ed597ed1f30e086e17
     secrets:
       AUTOMERGE_APP_ID: ${{ secrets.AUTOMERGE_APP_ID }}
       AUTOMERGE_PEM: ${{ secrets.AUTOMERGE_PEM }}
-  get_asdf_version:
-    runs-on: ubuntu-22.04
-    outputs:
-      asdf_version: ${{ steps.asdf-version.outputs.version }}
-      tag_format: ${{ steps.load-config.outputs.TAG_FORMAT }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
-
-      - name: Get asdf version
-        id: asdf-version
-        run: echo "version=$(awk '!/^#/ && NF {print $1; exit}' .tool-versions.asdf)" >> "$GITHUB_OUTPUT"
-      - name: Load config value
-        id: load-config
-        run: |
-          TAG_FORMAT=$(yq '.TAG_FORMAT' .github/config/settings.yml)
-          echo "TAG_FORMAT=$TAG_FORMAT" >> "$GITHUB_OUTPUT"
   pr_title_format_check:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@9791a77de7b005056b4ddfb9789306f5179f53da
+    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@d215f841eb18b803e339e4ed597ed1f30e086e17
   quality_checks:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks.yml@9791a77de7b005056b4ddfb9789306f5179f53da
-    needs: [get_asdf_version, get_commit_id]
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@8404cf6e3a61ac8de4d1644e175e288aa4965815
+    needs: [get_config_values, get_commit_id]
     with:
-      asdfVersion: ${{ needs.get_asdf_version.outputs.asdf_version }}
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
+      run_docker_scan: true
+      docker_images: "eps-cdk-utils"
+
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -74,7 +64,7 @@ jobs:
       sha_short: ${{ steps.commit_id.outputs.sha_short }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: ${{ env.BRANCH_NAME }}
 
@@ -85,18 +75,22 @@ jobs:
           echo "sha_short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
   package_docker_image:
-    needs: [get_issue_number, quality_checks, get_commit_id]
+    needs: [get_issue_number, quality_checks, get_commit_id, get_config_values]
     uses: ./.github/workflows/docker_image_build.yml
     with:
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
 
   package_npm_code:
-    needs: [quality_checks, get_commit_id]
+    needs: [quality_checks, get_commit_id, get_config_values]
     uses: ./.github/workflows/package_npm_code.yml
+    with:
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
 
   release_docker_image:
-    needs: [get_issue_number, package_docker_image, get_commit_id]
+    needs:
+      [get_issue_number, package_docker_image, get_commit_id, get_config_values]
     uses: ./.github/workflows/docker_image_upload.yml
     with:
       AWS_ENVIRONMENT: dev
@@ -104,16 +98,17 @@ jobs:
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
       TAG_LATEST: false
       DOCKER_IMAGE_TAG: PR-${{ needs.get_issue_number.outputs.issue_number }}-${{ needs.get_commit_id.outputs.sha_short }}
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
     secrets:
       CDK_PUSH_IMAGE_ROLE: ${{ secrets.DEV_CDK_PUSH_IMAGE_ROLE }}
 
   tag_release:
-    needs: [get_commit_id, get_asdf_version]
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@9791a77de7b005056b4ddfb9789306f5179f53da
+    needs: [get_commit_id, get_config_values]
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@8404cf6e3a61ac8de4d1644e175e288aa4965815
     with:
       dry_run: true
-      asdfVersion: ${{ needs.get_asdf_version.outputs.asdf_version }}
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       branch_name: ${{ github.event.pull_request.head.ref }}
-      publish_package: true
-      tag_format: ${{ needs.get_asdf_version.outputs.tag_format }}
+      publish_packages: packages/cdkConstructs,packages/deploymentUtils
+      tag_format: ${{ needs.get_config_values.outputs.tag_format }}
     secrets: inherit

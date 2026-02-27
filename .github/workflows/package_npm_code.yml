@@ -2,55 +2,28 @@ name: docker image build
 
 on:
     workflow_call:
+        inputs:
+            pinned_image:
+                type: string
+                required: true
 
 jobs:
-    get_asdf_version:
-        runs-on: ubuntu-22.04
-        outputs:
-            asdf_version: ${{ steps.asdf-version.outputs.version }}
-            tag_format: ${{ steps.load-config.outputs.TAG_FORMAT }}
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
-
-            - name: Get asdf version
-              id: asdf-version
-              run: echo "version=$(awk '!/^#/ && NF {print $1; exit}' .tool-versions.asdf)" >> "$GITHUB_OUTPUT"
-            - name: Load config value
-              id: load-config
-              run: |
-                  TAG_FORMAT=$(yq '.TAG_FORMAT' .github/config/settings.yml)
-                  echo "TAG_FORMAT=$TAG_FORMAT" >> "$GITHUB_OUTPUT"
     package_npm_code:
         runs-on: ubuntu-22.04
-        needs: [get_asdf_version]
+        container:
+            image: ${{ inputs.pinned_image }}
+            options: --user 1001:1001 --group-add 128
+        defaults:
+            run:
+                shell: bash
         steps:
+            - name: copy .tool-versions
+              run: |
+                  cp /home/vscode/.tool-versions "$HOME/.tool-versions"
             - name: Checkout code
-              uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
                   ref: ${{ env.BRANCH_NAME }}
-
-            # using git commit sha for version of action to ensure we have stable version
-            - name: Install asdf
-              uses: asdf-vm/actions/setup@b7bcd026f18772e44fe1026d729e1611cc435d47
-              with:
-                  asdf_version: ${{ needs.get_asdf_version.outputs.asdf_version }}
-
-            - name: Cache asdf
-              uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb
-              with:
-                  path: |
-                      ~/.asdf
-                  key: ${{ runner.os }}-asdf-${{ hashFiles('**/.tool-versions') }}
-                  restore-keys: |
-                      ${{ runner.os }}-asdf-${{ hashFiles('**/.tool-versions') }}
-
-            - name: Install asdf dependencies in .tool-versions
-              uses: asdf-vm/actions/install@b7bcd026f18772e44fe1026d729e1611cc435d47
-              with:
-                  asdf_version: ${{ needs.get_asdf_version.outputs.asdf_version }}
-              env:
-                  PYTHON_CONFIGURE_OPTS: --enable-shared
 
             - name: Install dependencies
               run: |

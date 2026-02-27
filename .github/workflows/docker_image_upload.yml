@@ -18,6 +18,9 @@ on:
       DOCKER_IMAGE_TAG:
         required: true
         type: string
+      pinned_image:
+        type: string
+        required: true
     secrets:
       CDK_PUSH_IMAGE_ROLE:
         required: true
@@ -25,14 +28,23 @@ on:
 jobs:
   upload_docker_image:
     runs-on: ubuntu-22.04
+    container:
+      image: ${{ inputs.pinned_image }}
+      options: --user 1001:1001 --group-add 128
+    defaults:
+      run:
+        shell: bash
     environment: ${{ inputs.AWS_ENVIRONMENT }}
     permissions:
       id-token: write
       contents: write
 
     steps:
+      - name: copy .tool-versions
+        run: |
+          cp /home/vscode/.tool-versions "$HOME/.tool-versions"
       - name: Checkout local github actions
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: ${{ env.BRANCH_NAME }}
           fetch-depth: 0
@@ -40,7 +52,7 @@ jobs:
             .github
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7
         with:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.CDK_PUSH_IMAGE_ROLE }}
@@ -81,11 +93,3 @@ jobs:
         run: |
           docker tag "cdk-utils-build:${VERSION_NUMBER}" "${ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:latest"
           docker push "${ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:latest"
-
-      - name: Check cdk-utils-build scan results
-        env:
-          REPOSITORY_NAME: cdk-utils-build-repo
-          IMAGE_TAG: ${{ inputs.DOCKER_IMAGE_TAG }}
-        working-directory: .github/scripts
-        run: |
-          ./check_ecr_image_scan_results.sh

@@ -18,7 +18,7 @@ describe("RestApiGateway without mTLS", () => {
   beforeAll(() => {
     app = new App()
     stack = new Stack(app, "RestApiGatewayStack")
-    
+
     const testPolicy = new ManagedPolicy(stack, "TestPolicy", {
       description: "test execution policy",
       statements: [
@@ -40,7 +40,7 @@ describe("RestApiGateway without mTLS", () => {
 
     // Add a dummy method to satisfy API Gateway validation
     apiGateway.api.root.addMethod("GET")
-    
+
     template = Template.fromStack(stack)
   })
 
@@ -159,7 +159,7 @@ describe("RestApiGateway without mTLS", () => {
     const stages = template.findResources("AWS::ApiGateway::Stage")
     const stageKeys = Object.keys(stages)
     expect(stageKeys.length).toBeGreaterThan(0)
-    
+
     const stage = stages[stageKeys[0]]
     expect(stage.Metadata).toBeDefined()
     expect(stage.Metadata.guard).toBeDefined()
@@ -175,7 +175,7 @@ describe("RestApiGateway with CSOC logs", () => {
   beforeAll(() => {
     app = new App()
     stack = new Stack(app, "RestApiGatewayStack")
-    
+
     const testPolicy = new ManagedPolicy(stack, "TestPolicy", {
       description: "test execution policy",
       statements: [
@@ -197,7 +197,7 @@ describe("RestApiGateway with CSOC logs", () => {
 
     // Add a dummy method to satisfy API Gateway validation
     apiGateway.api.root.addMethod("GET")
-    
+
     template = Template.fromStack(stack)
   })
 
@@ -223,7 +223,7 @@ describe("RestApiGateway with mTLS", () => {
   beforeAll(() => {
     app = new App()
     stack = new Stack(app, "RestApiGatewayStack")
-    
+
     const testPolicy = new ManagedPolicy(stack, "TestPolicy", {
       description: "test execution policy",
       statements: [
@@ -245,7 +245,7 @@ describe("RestApiGateway with mTLS", () => {
 
     // Add a dummy method to satisfy API Gateway validation
     apiGateway.api.root.addMethod("GET")
-    
+
     template = Template.fromStack(stack)
   })
 
@@ -258,18 +258,29 @@ describe("RestApiGateway with mTLS", () => {
   })
 
   test("creates trust store deployment policy with S3 permissions", () => {
+    interface PolicyResource {
+      Properties?: {
+        PolicyDocument?: {
+          Statement?: Array<{Action?: Array<string>}>
+        }
+      }
+    }
+    interface Statement {
+      Action?: Array<string>
+    }
+
     const policies = template.findResources("AWS::IAM::ManagedPolicy")
-    const trustStorePolicy = Object.values(policies).find((p: any) => 
-      p.Properties?.PolicyDocument?.Statement?.some((s: any) => 
+    const trustStorePolicy = Object.values(policies).find((p: PolicyResource) =>
+      p.Properties?.PolicyDocument?.Statement?.some((s: Statement) =>
         s.Action?.includes("s3:ListBucket")
       )
-    )
+    ) as PolicyResource
     expect(trustStorePolicy).toBeDefined()
-    const statements = (trustStorePolicy as any).Properties.PolicyDocument.Statement
-    expect(statements.some((s: any) => s.Action?.includes("s3:ListBucket"))).toBe(true)
-    expect(statements.some((s: any) => s.Action?.includes("s3:GetObject"))).toBe(true)
-    expect(statements.some((s: any) => s.Action?.includes("kms:Decrypt"))).toBe(true)
-    expect(statements.some((s: any) => s.Action?.includes("logs:CreateLogStream"))).toBe(true)
+    const statements = trustStorePolicy.Properties?.PolicyDocument?.Statement ?? []
+    expect(statements.some((s: Statement) => s.Action?.includes("s3:ListBucket"))).toBe(true)
+    expect(statements.some((s: Statement) => s.Action?.includes("s3:GetObject"))).toBe(true)
+    expect(statements.some((s: Statement) => s.Action?.includes("kms:Decrypt"))).toBe(true)
+    expect(statements.some((s: Statement) => s.Action?.includes("logs:CreateLogStream"))).toBe(true)
   })
 
   test("creates trust store deployment role", () => {
@@ -302,8 +313,16 @@ describe("RestApiGateway with mTLS", () => {
   })
 
   test("configures mTLS on domain name", () => {
+    interface DomainNameResource {
+      Properties: {
+        MutualTlsAuthentication: {
+          TruststoreUri: unknown
+        }
+      }
+    }
+
     const domainNames = template.findResources("AWS::ApiGateway::DomainName")
-    const domainName = Object.values(domainNames)[0] as any
+    const domainName = Object.values(domainNames)[0] as DomainNameResource
     expect(domainName.Properties.MutualTlsAuthentication).toBeDefined()
     expect(domainName.Properties.MutualTlsAuthentication.TruststoreUri).toBeDefined()
   })

@@ -9,6 +9,10 @@ env:
   BRANCH_NAME: ${{ github.ref_name }}
 
 jobs:
+  get_config_values:
+    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@8404cf6e3a61ac8de4d1644e175e288aa4965815
+    with:
+      verify_published_from_main_image: true
   get_commit_id:
     runs-on: ubuntu-22.04
     outputs:
@@ -17,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: ${{ env.BRANCH_NAME }}
 
@@ -27,53 +31,40 @@ jobs:
           #  echo "commit_id=${{ github.sha }}" >> "$GITHUB_ENV"
           echo "commit_id=${{ github.sha }}" >> "$GITHUB_OUTPUT"
           echo "sha_short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
-  get_asdf_version:
-    runs-on: ubuntu-22.04
-    outputs:
-      asdf_version: ${{ steps.asdf-version.outputs.version }}
-      tag_format: ${{ steps.load-config.outputs.TAG_FORMAT }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
-
-      - name: Get asdf version
-        id: asdf-version
-        run: echo "version=$(awk '!/^#/ && NF {print $1; exit}' .tool-versions.asdf)" >> "$GITHUB_OUTPUT"
-      - name: Load config value
-        id: load-config
-        run: |
-          TAG_FORMAT=$(yq '.TAG_FORMAT' .github/config/settings.yml)
-          echo "TAG_FORMAT=$TAG_FORMAT" >> "$GITHUB_OUTPUT"
   quality_checks:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks.yml@9791a77de7b005056b4ddfb9789306f5179f53da
-    needs: [get_asdf_version, get_commit_id]
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@8404cf6e3a61ac8de4d1644e175e288aa4965815
+    needs: [get_config_values, get_commit_id]
     with:
-      asdfVersion: ${{ needs.get_asdf_version.outputs.asdf_version }}
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
+      run_docker_scan: true
+      docker_images: "eps-cdk-utils"
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   tag_release:
-    needs: [quality_checks, get_commit_id, get_asdf_version]
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@9791a77de7b005056b4ddfb9789306f5179f53da
+    needs: [quality_checks, get_commit_id, get_config_values]
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@8404cf6e3a61ac8de4d1644e175e288aa4965815
     with:
       dry_run: false
-      asdfVersion: ${{ needs.get_asdf_version.outputs.asdf_version }}
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       branch_name: main
-      publish_package: true
-      tag_format: ${{ needs.get_asdf_version.outputs.tag_format }}
+      publish_packages: packages/cdkConstructs,packages/deploymentUtils
+      tag_format: ${{ needs.get_config_values.outputs.tag_format }}
     secrets: inherit
 
   package_code:
-    needs: [tag_release, quality_checks, get_commit_id]
+    needs: [tag_release, quality_checks, get_commit_id, get_config_values]
     uses: ./.github/workflows/docker_image_build.yml
     with:
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
 
   release_dev:
-    needs: [tag_release, package_code, get_commit_id]
+    needs: [tag_release, package_code, get_commit_id, get_config_values]
     uses: ./.github/workflows/docker_image_upload.yml
     with:
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       AWS_ENVIRONMENT: dev
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
@@ -83,9 +74,11 @@ jobs:
       CDK_PUSH_IMAGE_ROLE: ${{ secrets.DEV_CDK_PUSH_IMAGE_ROLE }}
 
   release_qa:
-    needs: [tag_release, release_dev, package_code, get_commit_id]
+    needs:
+      [tag_release, release_dev, package_code, get_commit_id, get_config_values]
     uses: ./.github/workflows/docker_image_upload.yml
     with:
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       AWS_ENVIRONMENT: qa
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
@@ -95,9 +88,11 @@ jobs:
       CDK_PUSH_IMAGE_ROLE: ${{ secrets.QA_CDK_PUSH_IMAGE_ROLE }}
 
   release_ref:
-    needs: [tag_release, release_dev, package_code, get_commit_id]
+    needs:
+      [tag_release, release_dev, package_code, get_commit_id, get_config_values]
     uses: ./.github/workflows/docker_image_upload.yml
     with:
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       AWS_ENVIRONMENT: ref
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
@@ -107,9 +102,11 @@ jobs:
       CDK_PUSH_IMAGE_ROLE: ${{ secrets.REF_CDK_PUSH_IMAGE_ROLE }}
 
   release_int:
-    needs: [tag_release, release_qa, package_code, get_commit_id]
+    needs:
+      [tag_release, release_qa, package_code, get_commit_id, get_config_values]
     uses: ./.github/workflows/docker_image_upload.yml
     with:
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       AWS_ENVIRONMENT: int
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
@@ -119,9 +116,11 @@ jobs:
       CDK_PUSH_IMAGE_ROLE: ${{ secrets.INT_CDK_PUSH_IMAGE_ROLE }}
 
   release_prod:
-    needs: [tag_release, release_int, package_code, get_commit_id]
+    needs:
+      [tag_release, release_int, package_code, get_commit_id, get_config_values]
     uses: ./.github/workflows/docker_image_upload.yml
     with:
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       AWS_ENVIRONMENT: prod
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}

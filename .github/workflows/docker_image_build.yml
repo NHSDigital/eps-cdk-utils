@@ -9,17 +9,29 @@ on:
       COMMIT_ID:
         required: true
         type: string
+      pinned_image:
+        type: string
+        required: true
 
 jobs:
   docker_image_build:
     runs-on: ubuntu-22.04
+    container:
+      image: ${{ inputs.pinned_image }}
+      options: --user 1001:1001 --group-add 128
+    defaults:
+      run:
+        shell: bash
     permissions:
       id-token: write
       contents: read
       packages: read
     steps:
+      - name: copy .tool-versions
+        run: |
+          cp /home/vscode/.tool-versions "$HOME/.tool-versions"
       - name: Checkout code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: ${{ env.BRANCH_NAME }}
 
