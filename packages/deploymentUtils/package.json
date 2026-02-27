@@ -21,7 +21,7 @@
     "type": "module",
     "dependencies": {
         "@aws-sdk/client-cloudformation": "^3.994.0",
-        "@aws-sdk/client-lambda": "^3.994.0",
+        "@aws-sdk/client-lambda": "^3.999.0",
         "json-schema-to-ts": "^3.1.1"
     },
     "bugs": {
