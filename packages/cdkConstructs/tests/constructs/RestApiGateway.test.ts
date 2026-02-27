@@ -24,7 +24,7 @@ describe("RestApiGateway without mTLS", () => {
       statements: [
         new PolicyStatement({
           actions: ["lambda:InvokeFunction"],
-          resources: ["*"]
+          resources: ["arn:aws:lambda:eu-west-2:123456789012:function:test-function"]
         })
       ]
     })
@@ -181,7 +181,7 @@ describe("RestApiGateway with CSOC logs", () => {
       statements: [
         new PolicyStatement({
           actions: ["lambda:InvokeFunction"],
-          resources: ["*"]
+          resources: ["arn:aws:lambda:eu-west-2:123456789012:function:test-function"]
         })
       ]
     })
@@ -229,7 +229,7 @@ describe("RestApiGateway with mTLS", () => {
       statements: [
         new PolicyStatement({
           actions: ["lambda:InvokeFunction"],
-          resources: ["*"]
+          resources: ["arn:aws:lambda:eu-west-2:123456789012:function:test-function"]
         })
       ]
     })
