@@ -59,3 +59,6 @@ vulnerabilities:
   - id: CVE-2026-27606
     statement: Minimatch subdependency needed for aws-cdk-lib and jest.
     expired_at: 2026-06-01
+  - id: CVE-2026-29786
+    statement: node-tar requrired dependency, and not a relelveant attack vector
+    expired_at: 2026-06-01
