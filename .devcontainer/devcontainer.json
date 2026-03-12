@@ -1,5 +1,5 @@
 {
-  "name": "Ubuntu",
+  "name": "eps-cdk-utils",
   "build": {
     "dockerfile": "Dockerfile",
     "context": "..",
