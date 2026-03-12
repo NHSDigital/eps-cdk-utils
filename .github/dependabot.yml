@@ -10,22 +10,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "friday"
+      day: "thursday"
       time: "18:00" #UTC
-    commit-message:
-      prefix: "Upgrade: [dependabot] - "
-
-  ###################################
-  # NPM workspace  ##################
-  ###################################
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "friday"
-      time: "18:00" #UTC
-    versioning-strategy: increase
-    open-pull-requests-limit: 20
     commit-message:
       prefix: "Upgrade: [dependabot] - "
 
@@ -36,8 +22,22 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "friday"
-      time: "18:00" #UTC
+      day: "thursday"
+      time: "20:00" #UTC
     versioning-strategy: increase
+    commit-message:
+      prefix: "Upgrade: [dependabot] - "
+
+  ###################################
+  # NPM workspace  ##################
+  ###################################
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "thursday"
+      time: "22:00" #UTC
+    versioning-strategy: increase
+    open-pull-requests-limit: 20
     commit-message:
       prefix: "Upgrade: [dependabot] - "
