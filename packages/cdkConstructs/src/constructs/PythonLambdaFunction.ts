@@ -80,6 +80,17 @@ export interface PythonLambdaFunctionProps {
    * @default Architecture.X86_64
    */
   readonly architecture?: Architecture
+   /**
+   * Any files to exclude from the Lambda asset bundle.
+   * Defaults to these files
+   * "tests",
+   * "pytest.ini",
+   * ".vscode",
+   * "__pycache__",
+   * "*.pyc"
+   */
+  readonly excludeFromAsset?: Array<string>
+
 }
 
 export class PythonLambdaFunction extends Construct {
@@ -167,7 +178,14 @@ export class PythonLambdaFunction extends Construct {
       layers = [], // Default to empty array
       timeoutInSeconds = 50,
       runtime = Runtime.PYTHON_3_14,
-      architecture = Architecture.X86_64
+      architecture = Architecture.X86_64,
+      excludeFromAsset = [
+        "tests",
+        "pytest.ini",
+        ".vscode",
+        "__pycache__",
+        "*.pyc"
+      ]
     } = props
 
     const {logGroup, role, insightsLayer} = createSharedLambdaResources(this, {
@@ -196,7 +214,9 @@ export class PythonLambdaFunction extends Construct {
       functionName: functionName,
       architecture,
       handler: handler,
-      code: Code.fromAsset(join(projectBaseDir, packageBasePath)),
+      code: Code.fromAsset(join(projectBaseDir, packageBasePath), {
+        exclude: excludeFromAsset
+      }),
       role,
       environment: {
         ...environmentVariables,
