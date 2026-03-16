@@ -71,3 +71,9 @@ vulnerabilities:
   - id: CVE-2026-27142
     statement: asdf go stdlib
     expired_at: 2026-06-01
+  - id: CVE-2026-27142
+    statement: asdf go stdlib
+    expired_at: 2026-06-01
+  - id: CVE-2026-32141
+    statement: flatted
+    expired_at: 2026-06-01
