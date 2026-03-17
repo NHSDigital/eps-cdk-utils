@@ -4,7 +4,8 @@ import {
   ManagedPolicy,
   PolicyStatement,
   Role,
-  IManagedPolicy
+  IManagedPolicy,
+  IRole
 } from "aws-cdk-lib/aws-iam"
 import {
   Architecture,
@@ -18,6 +19,8 @@ import {
 import {join} from "node:path"
 import {createSharedLambdaResources} from "./lambdaSharedResources"
 import {addSuppressions} from "../utils/helpers"
+import {IKey} from "aws-cdk-lib/aws-kms"
+import {CfnDeliveryStream} from "aws-cdk-lib/aws-kinesisfirehose"
 
 export interface PythonLambdaFunctionProps {
   /**
@@ -42,7 +45,7 @@ export interface PythonLambdaFunctionProps {
   /**
    * A map of environment variables to set for the lambda function.
    */
-  readonly environmentVariables?: {[key: string]: string}
+  readonly environmentVariables?: { [key: string]: string }
   /**
    * Optional additional IAM policies to attach to role the lambda executes as.
    */
@@ -80,16 +83,45 @@ export interface PythonLambdaFunctionProps {
    * @default Architecture.X86_64
    */
   readonly architecture?: Architecture
-   /**
-   * Any files to exclude from the Lambda asset bundle.
-   * Defaults to these files
-   * "tests",
-   * "pytest.ini",
-   * ".vscode",
-   * "__pycache__",
-   * "*.pyc"
-   */
+  /**
+  * Any files to exclude from the Lambda asset bundle.
+  * Defaults to these files
+  * "tests",
+  * "pytest.ini",
+  * ".vscode",
+  * "__pycache__",
+  * "*.pyc"
+  */
   readonly excludeFromAsset?: Array<string>
+  /**
+   * Optional KMS key for encrypting CloudWatch Logs.
+   * If not provided, the value is imported from account resources export.
+   */
+  readonly cloudWatchLogsKmsKey?: IKey
+  /**
+   * Optional IAM policy for allowing CloudWatch to use the KMS key for encrypting logs.
+   * If not provided, the value is imported from account resources export.
+   */
+  readonly cloudwatchEncryptionKMSPolicy?: IManagedPolicy
+  /**
+   * Optional firehose delivery stream for forwarding logs to Splunk.
+   * If not provided, the value is imported from account resources export.
+   */
+  readonly splunkDeliveryStream?: CfnDeliveryStream
+  /**
+   * Optional IAM role for the subscription filter that forwards logs to Splunk.
+   * If not provided, the value is imported from account resources export.
+   */
+  readonly splunkSubscriptionFilterRole?: IRole
+  /**
+   * Optional IAM policy for allowing lambdas to use Lambda Insights log groups and streams.
+   * If not provided, the value is imported from account resources export.
+   */
+  readonly lambdaInsightsLogGroupPolicy?: IManagedPolicy
+  /**
+   * Whether to create a subscription filter on the Lambda log group to forward logs to Splunk. Defaults to true.
+   */
+  readonly addSplunkSubscriptionFilter?: boolean
 
 }
 
@@ -185,14 +217,26 @@ export class PythonLambdaFunction extends Construct {
         ".vscode",
         "__pycache__",
         "*.pyc"
-      ]
+      ],
+      cloudWatchLogsKmsKey,
+      cloudwatchEncryptionKMSPolicy,
+      splunkDeliveryStream,
+      splunkSubscriptionFilterRole,
+      lambdaInsightsLogGroupPolicy,
+      addSplunkSubscriptionFilter
     } = props
 
     const {logGroup, role, insightsLayer} = createSharedLambdaResources(this, {
       functionName,
       logRetentionInDays,
       additionalPolicies,
-      architecture
+      architecture,
+      cloudWatchLogsKmsKey,
+      cloudwatchEncryptionKMSPolicy,
+      splunkDeliveryStream,
+      splunkSubscriptionFilterRole,
+      lambdaInsightsLogGroupPolicy,
+      addSplunkSubscriptionFilter
     })
 
     const layersToAdd = [insightsLayer]

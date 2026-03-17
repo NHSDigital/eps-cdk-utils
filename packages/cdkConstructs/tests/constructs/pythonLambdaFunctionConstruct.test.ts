@@ -1,6 +1,11 @@
 import {App, assertions, Stack} from "aws-cdk-lib"
 import {Template, Match} from "aws-cdk-lib/assertions"
-import {ManagedPolicy, PolicyStatement, Role} from "aws-cdk-lib/aws-iam"
+import {
+  ManagedPolicy,
+  PolicyStatement,
+  Role,
+  ServicePrincipal
+} from "aws-cdk-lib/aws-iam"
 import {LogGroup} from "aws-cdk-lib/aws-logs"
 import {
   Architecture,
@@ -17,6 +22,8 @@ import {
 } from "vitest"
 
 import {PythonLambdaFunction} from "../../src/constructs/PythonLambdaFunction"
+import {CfnDeliveryStream} from "aws-cdk-lib/aws-kinesisfirehose"
+import {Key} from "aws-cdk-lib/aws-kms"
 
 describe("pythonFunctionConstruct works correctly", () => {
   let stack: Stack
@@ -371,6 +378,153 @@ describe("pythonFunctionConstruct works correctly with different architecture", 
     template.hasResourceProperties("AWS::Lambda::Function", {
       Architectures: ["arm64"],
       Layers: ["arn:aws:lambda:eu-west-2:580247275435:layer:LambdaInsightsExtension-Arm64:31"]
+    })
+  })
+})
+
+describe("pythonFunctionConstruct works correctly with addSplunkSubscriptionFilter set to false", () => {
+  let stack: Stack
+  let app: App
+  let template: assertions.Template
+
+  beforeAll(() => {
+    app = new App()
+    stack = new Stack(app, "pythonLambdaConstructStack")
+    new PythonLambdaFunction(stack, "dummyPythonFunction", {
+      functionName: "testPythonLambda",
+      projectBaseDir: resolve(__dirname, "../../../.."),
+      packageBasePath: "packages/cdkConstructs",
+      handler: "index.handler",
+      environmentVariables: {foo: "bar"},
+      logRetentionInDays: 30,
+      logLevel: "DEBUG",
+      addSplunkSubscriptionFilter: false
+    })
+    template = Template.fromStack(stack)
+  })
+
+  test("it does not have a subscription filter", () => {
+    template.resourceCountIs("AWS::Logs::SubscriptionFilter", 0)
+  })
+})
+
+describe("pythonFunctionConstruct works correctly when not using imports", () => {
+  let stack: Stack
+  let app: App
+  let template: assertions.Template
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let lambdaLogGroupResource: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let cloudWatchLogsKmsKeyResource: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let lambdaInsightsLogGroupPolicyResource: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let cloudwatchEncryptionKMSPolicyResource: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let splunkSubscriptionFilterRoleResource: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let splunkDeliveryStreamResource: any
+
+  beforeAll(() => {
+    app = new App()
+    stack = new Stack(app, "pythonLambdaConstructStack")
+    const cloudWatchLogsKmsKey = new Key(stack, "cloudWatchLogsKmsKey")
+    const cloudwatchEncryptionKMSPolicy = new ManagedPolicy(stack, "cloudwatchEncryptionKMSPolicy", {
+      description: "cloudwatch encryption KMS policy",
+      statements: [
+        new PolicyStatement({
+          actions: [
+            "kms:Decrypt",
+            "kms:Encrypt",
+            "kms:GenerateDataKey*",
+            "kms:ReEncrypt*"
+          ],
+          resources: ["*"]
+        })]
+    })
+    const splunkDeliveryStream = new CfnDeliveryStream(stack, "SplunkDeliveryStream", {
+      deliveryStreamName: "SplunkDeliveryStream",
+      s3DestinationConfiguration: {
+        bucketArn: "arn:aws:s3:::my-bucket",
+        roleArn: "arn:aws:iam::123456789012:role/my-role"
+      }
+    })
+    const splunkSubscriptionFilterRole = new Role(stack, "SplunkSubscriptionFilterRole", {
+      assumedBy: new ServicePrincipal("logs.amazonaws.com")
+    })
+    const lambdaInsightsLogGroupPolicy = new ManagedPolicy(stack, "LambdaInsightsLogGroupPolicy", {
+      description: "permissions to create log group and set retention policy for Lambda Insights",
+      statements: [
+        new PolicyStatement({
+          actions: [
+            "logs:CreateLogStream",
+            "logs:PutLogEvents"
+          ],
+          resources: [
+            "*"
+          ]
+        })
+      ]
+    })
+
+    const functionConstruct = new PythonLambdaFunction(stack, "dummyPythonFunction", {
+      functionName: "testPythonLambda",
+      projectBaseDir: resolve(__dirname, "../../../.."),
+      packageBasePath: "packages/cdkConstructs",
+      handler: "index.handler",
+      environmentVariables: {},
+      logRetentionInDays: 30,
+      logLevel: "INFO",
+      cloudWatchLogsKmsKey: cloudWatchLogsKmsKey,
+      cloudwatchEncryptionKMSPolicy: cloudwatchEncryptionKMSPolicy,
+      splunkDeliveryStream: splunkDeliveryStream,
+      splunkSubscriptionFilterRole: splunkSubscriptionFilterRole,
+      lambdaInsightsLogGroupPolicy: lambdaInsightsLogGroupPolicy
+    })
+    template = Template.fromStack(stack)
+    const lambdaLogGroup = functionConstruct.node.tryFindChild("LambdaLogGroup") as LogGroup
+    lambdaLogGroupResource = stack.resolve(lambdaLogGroup.logGroupName)
+    cloudWatchLogsKmsKeyResource = stack.resolve(cloudWatchLogsKmsKey.keyId)
+    lambdaInsightsLogGroupPolicyResource = stack.resolve(lambdaInsightsLogGroupPolicy.managedPolicyArn)
+    cloudwatchEncryptionKMSPolicyResource = stack.resolve(cloudwatchEncryptionKMSPolicy.managedPolicyArn)
+    splunkSubscriptionFilterRoleResource = stack.resolve(splunkSubscriptionFilterRole.roleName)
+    splunkDeliveryStreamResource = stack.resolve(splunkDeliveryStream.ref)
+  })
+
+  test("it has the correct cloudWatchLogsKmsKey", () => {
+    template.hasResourceProperties("AWS::Logs::LogGroup", {
+      LogGroupName: "/aws/lambda/testPythonLambda",
+      KmsKeyId: {"Fn::GetAtt": [cloudWatchLogsKmsKeyResource.Ref, "Arn"]},
+      RetentionInDays: 30
+    })
+  })
+
+  test("it has the correct cloudwatchEncryptionKMSPolicy and lambdaInsightsLogGroupPolicy", () => {
+    template.hasResourceProperties("AWS::IAM::Role", {
+      "AssumeRolePolicyDocument": {
+        "Statement": [
+          {
+            "Action": "sts:AssumeRole",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "lambda.amazonaws.com"
+            }
+          }
+        ],
+        "Version": "2012-10-17"
+      },
+      "ManagedPolicyArns": Match.arrayWith([
+        {"Ref": lambdaInsightsLogGroupPolicyResource.Ref},
+        {"Ref": cloudwatchEncryptionKMSPolicyResource.Ref}
+      ])
+    })
+  })
+  test("it has the correct subscription filter", () => {
+    template.hasResourceProperties("AWS::Logs::SubscriptionFilter", {
+      LogGroupName: {"Ref": lambdaLogGroupResource.Ref},
+      FilterPattern: "",
+      RoleArn: {"Fn::GetAtt": [splunkSubscriptionFilterRoleResource.Ref, "Arn"]},
+      DestinationArn: {"Fn::GetAtt": [splunkDeliveryStreamResource.Ref, "Arn"]}
     })
   })
 })

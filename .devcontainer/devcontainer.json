@@ -32,7 +32,9 @@
         "github.vscode-pull-request-github",
         "streetsidesoftware.code-spell-checker",
         "timonwong.shellcheck",
-        "github.vscode-github-actions"
+        "github.vscode-github-actions",
+        "dbaeumer.vscode-eslint",
+        "vitest.explorer"
       ],
       "settings": {
         "cSpell.words": [
