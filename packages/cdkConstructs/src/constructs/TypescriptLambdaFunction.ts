@@ -16,6 +16,8 @@ import {Construct} from "constructs"
 import {join} from "node:path"
 import {createSharedLambdaResources} from "./lambdaSharedResources"
 import {addSuppressions} from "../utils/helpers"
+import {Key} from "aws-cdk-lib/aws-kms"
+import {CfnDeliveryStream} from "aws-cdk-lib/aws-kinesisfirehose"
 
 export interface TypescriptLambdaFunctionProps {
   /**
@@ -84,6 +86,35 @@ export interface TypescriptLambdaFunctionProps {
    * @default Architecture.X86_64
    */
   readonly architecture?: Architecture
+  /**
+   * Optional KMS key for encrypting CloudWatch Logs.
+   * If not provided, the value is imported from account resources export.
+   */
+  readonly cloudWatchLogsKmsKey?: Key
+  /**
+   * Optional IAM policy for allowing CloudWatch to use the KMS key for encrypting logs.
+   * If not provided, the value is imported from account resources export.
+   */
+  readonly cloudwatchEncryptionKMSPolicy?: ManagedPolicy
+  /**
+   * Optional Kinesis stream for forwarding logs to Splunk.
+   * If not provided, the value is imported from account resources export.
+   */
+  readonly splunkDeliveryStream?: CfnDeliveryStream
+  /**
+   * Optional IAM role for the subscription filter that forwards logs to Splunk.
+   * If not provided, the value is imported from account resources export.
+   */
+  readonly splunkSubscriptionFilterRole?: Role
+  /**
+   * Optional IAM policy for allowing lambdas to use Lambda Insights log groups and streams.
+   * If not provided, the value is imported from account resources export.
+   */
+  readonly lambdaInsightsLogGroupPolicy?: ManagedPolicy
+  /**
+   * Whether to create a subscription filter on the Lambda log group to forward logs to Splunk. Defaults to true.
+   */
+  readonly addSplunkSubscriptionFilter?: boolean
 }
 
 const getDefaultLambdaOptions = (
@@ -202,14 +233,26 @@ export class TypescriptLambdaFunction extends Construct {
       projectBaseDir,
       timeoutInSeconds = 50,
       runtime = Runtime.NODEJS_24_X,
-      architecture = Architecture.X86_64
+      architecture = Architecture.X86_64,
+      cloudWatchLogsKmsKey,
+      cloudwatchEncryptionKMSPolicy,
+      splunkDeliveryStream,
+      splunkSubscriptionFilterRole,
+      lambdaInsightsLogGroupPolicy,
+      addSplunkSubscriptionFilter
     } = props
 
     const {logGroup, role, insightsLayer} = createSharedLambdaResources(this, {
       functionName,
       logRetentionInDays,
       additionalPolicies,
-      architecture
+      architecture,
+      cloudWatchLogsKmsKey,
+      cloudwatchEncryptionKMSPolicy,
+      splunkDeliveryStream,
+      splunkSubscriptionFilterRole,
+      lambdaInsightsLogGroupPolicy,
+      addSplunkSubscriptionFilter
     })
 
     const lambdaFunction = new NodejsFunction(this, functionName, {

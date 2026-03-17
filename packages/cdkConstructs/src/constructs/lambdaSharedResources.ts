@@ -2,7 +2,6 @@ import {Construct} from "constructs"
 import {Fn, RemovalPolicy} from "aws-cdk-lib"
 import {Architecture, ILayerVersion, LayerVersion} from "aws-cdk-lib/aws-lambda"
 import {Key} from "aws-cdk-lib/aws-kms"
-import {Stream} from "aws-cdk-lib/aws-kinesis"
 import {CfnLogGroup, CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
 import {
   IManagedPolicy,
@@ -14,12 +13,19 @@ import {
 import {NagSuppressions} from "cdk-nag"
 import {LAMBDA_INSIGHTS_LAYER_ARNS} from "../config"
 import {addSuppressions} from "../utils/helpers"
+import {CfnDeliveryStream} from "aws-cdk-lib/aws-kinesisfirehose"
 
 export interface SharedLambdaResourceProps {
   readonly functionName: string
   readonly logRetentionInDays: number
   readonly additionalPolicies: Array<IManagedPolicy>
   readonly architecture: Architecture
+  readonly cloudWatchLogsKmsKey?: Key
+  readonly cloudwatchEncryptionKMSPolicy?: ManagedPolicy
+  readonly splunkDeliveryStream?: CfnDeliveryStream
+  readonly splunkSubscriptionFilterRole?: Role
+  readonly lambdaInsightsLogGroupPolicy?: ManagedPolicy
+  readonly addSplunkSubscriptionFilter?: boolean
 }
 
 export interface SharedLambdaResources {
@@ -30,28 +36,25 @@ export interface SharedLambdaResources {
 
 export const createSharedLambdaResources = (
   scope: Construct,
-  {
+  props: SharedLambdaResourceProps
+): SharedLambdaResources => {
+  const {
     functionName,
     logRetentionInDays,
     additionalPolicies,
-    architecture
-  }: SharedLambdaResourceProps
-): SharedLambdaResources => {
-  const cloudWatchLogsKmsKey = Key.fromKeyArn(
-    scope, "cloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
-
-  const cloudwatchEncryptionKMSPolicy = ManagedPolicy.fromManagedPolicyArn(
-    scope, "cloudwatchEncryptionKMSPolicyArn", Fn.importValue("account-resources:CloudwatchEncryptionKMSPolicyArn"))
-
-  const splunkDeliveryStream = Stream.fromStreamArn(
-    scope, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
-
-  const splunkSubscriptionFilterRole = Role.fromRoleArn(
-    scope, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"))
-
-  const lambdaInsightsLogGroupPolicy = ManagedPolicy.fromManagedPolicyArn(
-    scope, "lambdaInsightsLogGroupPolicy", Fn.importValue("lambda-resources:LambdaInsightsLogGroupPolicy"))
-
+    architecture,
+    cloudWatchLogsKmsKey = Key.fromKeyArn(
+      scope, "cloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")),
+    cloudwatchEncryptionKMSPolicy = ManagedPolicy.fromManagedPolicyArn(
+      scope, "cloudwatchEncryptionKMSPolicyArn", Fn.importValue("account-resources:CloudwatchEncryptionKMSPolicyArn")),
+    splunkDeliveryStream = CfnDeliveryStream.fromDeliveryStreamArn(
+      scope, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream")),
+    splunkSubscriptionFilterRole = Role.fromRoleArn(
+      scope, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole")),
+    lambdaInsightsLogGroupPolicy = ManagedPolicy.fromManagedPolicyArn(
+      scope, "lambdaInsightsLogGroupPolicy", Fn.importValue("lambda-resources:LambdaInsightsLogGroupPolicy")),
+    addSplunkSubscriptionFilter = true
+  } = props
   const insightsLambdaLayerArn = architecture === Architecture.ARM_64
     ? LAMBDA_INSIGHTS_LAYER_ARNS.arm64
     : LAMBDA_INSIGHTS_LAYER_ARNS.x64
@@ -68,12 +71,14 @@ export const createSharedLambdaResources = (
   const cfnlogGroup = logGroup.node.defaultChild as CfnLogGroup
   addSuppressions([cfnlogGroup], ["CW_LOGGROUP_RETENTION_PERIOD_CHECK"])
 
-  new CfnSubscriptionFilter(scope, "LambdaLogsSplunkSubscriptionFilter", {
-    destinationArn: splunkDeliveryStream.streamArn,
-    filterPattern: "",
-    logGroupName: logGroup.logGroupName,
-    roleArn: splunkSubscriptionFilterRole.roleArn
-  })
+  if (addSplunkSubscriptionFilter) {
+    new CfnSubscriptionFilter(scope, "LambdaLogsSplunkSubscriptionFilter", {
+      destinationArn: splunkDeliveryStream.deliveryStreamRef.deliveryStreamArn,
+      filterPattern: "",
+      logGroupName: logGroup.logGroupName,
+      roleArn: splunkSubscriptionFilterRole.roleArn
+    })
+  }
 
   const putLogsManagedPolicy = new ManagedPolicy(scope, "LambdaPutLogsManagedPolicy", {
     description: `write to ${functionName} logs`,

@@ -374,3 +374,29 @@ describe("pythonFunctionConstruct works correctly with different architecture", 
     })
   })
 })
+
+describe("pythonFunctionConstruct works correctly with addSplunkSubscriptionFilter set to false", () => {
+  let stack: Stack
+  let app: App
+  let template: assertions.Template
+
+  beforeAll(() => {
+    app = new App()
+    stack = new Stack(app, "pythonLambdaConstructStack")
+    new PythonLambdaFunction(stack, "dummyPythonFunction", {
+      functionName: "testPythonLambda",
+      projectBaseDir: resolve(__dirname, "../../../.."),
+      packageBasePath: "packages/cdkConstructs",
+      handler: "index.handler",
+      environmentVariables: {foo: "bar"},
+      logRetentionInDays: 30,
+      logLevel: "DEBUG",
+      addSplunkSubscriptionFilter: false
+    })
+    template = Template.fromStack(stack)
+  })
+
+  test("it does not have a subscription filter", () => {
+    template.resourceCountIs("AWS::Logs::SubscriptionFilter", 0)
+  })
+})
