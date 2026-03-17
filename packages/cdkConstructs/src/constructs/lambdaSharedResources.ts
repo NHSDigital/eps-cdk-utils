@@ -14,6 +14,7 @@ import {NagSuppressions} from "cdk-nag"
 import {LAMBDA_INSIGHTS_LAYER_ARNS} from "../config"
 import {addSuppressions} from "../utils/helpers"
 import {CfnDeliveryStream} from "aws-cdk-lib/aws-kinesisfirehose"
+import {Stream} from "aws-cdk-lib/aws-kinesis"
 
 export interface SharedLambdaResourceProps {
   readonly functionName: string
@@ -47,8 +48,7 @@ export const createSharedLambdaResources = (
       scope, "cloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")),
     cloudwatchEncryptionKMSPolicy = ManagedPolicy.fromManagedPolicyArn(
       scope, "cloudwatchEncryptionKMSPolicyArn", Fn.importValue("account-resources:CloudwatchEncryptionKMSPolicyArn")),
-    splunkDeliveryStream = CfnDeliveryStream.fromDeliveryStreamArn(
-      scope, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream")),
+    splunkDeliveryStream,
     splunkSubscriptionFilterRole = Role.fromRoleArn(
       scope, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole")),
     lambdaInsightsLogGroupPolicy = ManagedPolicy.fromManagedPolicyArn(
@@ -72,12 +72,23 @@ export const createSharedLambdaResources = (
   addSuppressions([cfnlogGroup], ["CW_LOGGROUP_RETENTION_PERIOD_CHECK"])
 
   if (addSplunkSubscriptionFilter) {
-    new CfnSubscriptionFilter(scope, "LambdaLogsSplunkSubscriptionFilter", {
-      destinationArn: splunkDeliveryStream.deliveryStreamRef.deliveryStreamArn,
-      filterPattern: "",
-      logGroupName: logGroup.logGroupName,
-      roleArn: splunkSubscriptionFilterRole.roleArn
-    })
+    if (splunkDeliveryStream) {
+      new CfnSubscriptionFilter(scope, "LambdaLogsSplunkSubscriptionFilter", {
+        destinationArn: splunkDeliveryStream?.attrArn,
+        filterPattern: "",
+        logGroupName: logGroup.logGroupName,
+        roleArn: splunkSubscriptionFilterRole.roleArn
+      })
+    } else {
+      const splunkDeliveryStreamImport = Stream.fromStreamArn(
+        scope, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
+      new CfnSubscriptionFilter(scope, "LambdaLogsSplunkSubscriptionFilter", {
+        destinationArn: splunkDeliveryStreamImport.streamArn,
+        filterPattern: "",
+        logGroupName: logGroup.logGroupName,
+        roleArn: splunkSubscriptionFilterRole.roleArn
+      })
+    }
   }
 
   const putLogsManagedPolicy = new ManagedPolicy(scope, "LambdaPutLogsManagedPolicy", {
