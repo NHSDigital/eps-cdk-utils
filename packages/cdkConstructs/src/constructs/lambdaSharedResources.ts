@@ -72,9 +72,11 @@ export const createSharedLambdaResources = (
   addSuppressions([cfnlogGroup], ["CW_LOGGROUP_RETENTION_PERIOD_CHECK"])
 
   if (addSplunkSubscriptionFilter) {
+    // This is in an if statement to ensure correct value is used
+    // importing and coercing to cfnDeliveryStream causes issues
     if (splunkDeliveryStream) {
       new CfnSubscriptionFilter(scope, "LambdaLogsSplunkSubscriptionFilter", {
-        destinationArn: splunkDeliveryStream?.attrArn,
+        destinationArn: splunkDeliveryStream.attrArn,
         filterPattern: "",
         logGroupName: logGroup.logGroupName,
         roleArn: splunkSubscriptionFilterRole.roleArn
