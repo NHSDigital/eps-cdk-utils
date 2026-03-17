@@ -1,6 +1,7 @@
 import {Duration} from "aws-cdk-lib"
 import {
   IManagedPolicy,
+  IRole,
   ManagedPolicy,
   PolicyStatement,
   Role
@@ -16,7 +17,7 @@ import {Construct} from "constructs"
 import {join} from "node:path"
 import {createSharedLambdaResources} from "./lambdaSharedResources"
 import {addSuppressions} from "../utils/helpers"
-import {Key} from "aws-cdk-lib/aws-kms"
+import {IKey} from "aws-cdk-lib/aws-kms"
 import {CfnDeliveryStream} from "aws-cdk-lib/aws-kinesisfirehose"
 
 export interface TypescriptLambdaFunctionProps {
@@ -90,14 +91,14 @@ export interface TypescriptLambdaFunctionProps {
    * Optional KMS key for encrypting CloudWatch Logs.
    * If not provided, the value is imported from account resources export.
    */
-  readonly cloudWatchLogsKmsKey?: Key
+  readonly cloudWatchLogsKmsKey?: IKey
   /**
    * Optional IAM policy for allowing CloudWatch to use the KMS key for encrypting logs.
    * If not provided, the value is imported from account resources export.
    */
-  readonly cloudwatchEncryptionKMSPolicy?: ManagedPolicy
+  readonly cloudwatchEncryptionKMSPolicy?: IManagedPolicy
   /**
-   * Optional Kinesis stream for forwarding logs to Splunk.
+   * Optional firehose delivery stream for forwarding logs to Splunk.
    * If not provided, the value is imported from account resources export.
    */
   readonly splunkDeliveryStream?: CfnDeliveryStream
@@ -105,12 +106,12 @@ export interface TypescriptLambdaFunctionProps {
    * Optional IAM role for the subscription filter that forwards logs to Splunk.
    * If not provided, the value is imported from account resources export.
    */
-  readonly splunkSubscriptionFilterRole?: Role
+  readonly splunkSubscriptionFilterRole?: IRole
   /**
    * Optional IAM policy for allowing lambdas to use Lambda Insights log groups and streams.
    * If not provided, the value is imported from account resources export.
    */
-  readonly lambdaInsightsLogGroupPolicy?: ManagedPolicy
+  readonly lambdaInsightsLogGroupPolicy?: IManagedPolicy
   /**
    * Whether to create a subscription filter on the Lambda log group to forward logs to Splunk. Defaults to true.
    */

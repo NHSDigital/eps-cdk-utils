@@ -1,10 +1,11 @@
 import {Construct} from "constructs"
 import {Fn, RemovalPolicy} from "aws-cdk-lib"
 import {Architecture, ILayerVersion, LayerVersion} from "aws-cdk-lib/aws-lambda"
-import {Key} from "aws-cdk-lib/aws-kms"
+import {IKey, Key} from "aws-cdk-lib/aws-kms"
 import {CfnLogGroup, CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
 import {
   IManagedPolicy,
+  IRole,
   ManagedPolicy,
   PolicyStatement,
   Role,
@@ -21,11 +22,11 @@ export interface SharedLambdaResourceProps {
   readonly logRetentionInDays: number
   readonly additionalPolicies: Array<IManagedPolicy>
   readonly architecture: Architecture
-  readonly cloudWatchLogsKmsKey?: Key
-  readonly cloudwatchEncryptionKMSPolicy?: ManagedPolicy
+  readonly cloudWatchLogsKmsKey?: IKey
+  readonly cloudwatchEncryptionKMSPolicy?: IManagedPolicy
   readonly splunkDeliveryStream?: CfnDeliveryStream
-  readonly splunkSubscriptionFilterRole?: Role
-  readonly lambdaInsightsLogGroupPolicy?: ManagedPolicy
+  readonly splunkSubscriptionFilterRole?: IRole
+  readonly lambdaInsightsLogGroupPolicy?: IManagedPolicy
   readonly addSplunkSubscriptionFilter?: boolean
 }
 
