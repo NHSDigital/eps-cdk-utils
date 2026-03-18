@@ -1,0 +1,1498 @@
+{
+    "Changes": [
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "ReplaceAndDelete",
+                "Action": "Modify",
+                "LogicalResourceId": "AlarmsAccountLambdaConcurrencyAlarm8AF49AD8",
+                "PhysicalResourceId": "monitoring-Account_Lambda_Concurrency",
+                "ResourceType": "AWS::CloudWatch::Alarm",
+                "Replacement": "True",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Threshold",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "ActionsEnabled",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "AlarmName",
+                            "RequiresRecreation": "Always"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "ReplaceAndDelete",
+                "Action": "Modify",
+                "LogicalResourceId": "AlarmsAccountLambdaConcurrencyWARNINGAlarm5C305BA1",
+                "PhysicalResourceId": "monitoring-Account_Lambda_Concurrency_WARNING",
+                "ResourceType": "AWS::CloudWatch::Alarm",
+                "Replacement": "True",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Threshold",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "ActionsEnabled",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "AlarmName",
+                            "RequiresRecreation": "Always"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "ReplaceAndDelete",
+                "Action": "Modify",
+                "LogicalResourceId": "AlarmsAccountLambdaErrorsAlarmC3513C53",
+                "PhysicalResourceId": "monitoring-Account_Lambda_Errors",
+                "ResourceType": "AWS::CloudWatch::Alarm",
+                "Replacement": "True",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "ActionsEnabled",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "AlarmName",
+                            "RequiresRecreation": "Always"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "ReplaceAndDelete",
+                "Action": "Modify",
+                "LogicalResourceId": "AlarmsAccountLambdaThrottlesAlarm12FF5DEF",
+                "PhysicalResourceId": "monitoring-Account_Lambda_Throttles",
+                "ResourceType": "AWS::CloudWatch::Alarm",
+                "Replacement": "True",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "ActionsEnabled",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "AlarmName",
+                            "RequiresRecreation": "Always"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "ReplaceAndDelete",
+                "Action": "Modify",
+                "LogicalResourceId": "AlarmsAccountStepFunctionErrorsAlarm737F0047",
+                "PhysicalResourceId": "monitoring-Account_StepFunction_Errors",
+                "ResourceType": "AWS::CloudWatch::Alarm",
+                "Replacement": "True",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "ActionsEnabled",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "AlarmName",
+                            "RequiresRecreation": "Always"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "ReplaceAndDelete",
+                "Action": "Modify",
+                "LogicalResourceId": "AlarmsAccountStepFunctionExecutionsAbortedAlarmADC4F811",
+                "PhysicalResourceId": "monitoring-Account_StepFunction_ExecutionsAborted",
+                "ResourceType": "AWS::CloudWatch::Alarm",
+                "Replacement": "True",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "ActionsEnabled",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "AlarmName",
+                            "RequiresRecreation": "Always"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "ReplaceAndDelete",
+                "Action": "Modify",
+                "LogicalResourceId": "AlarmsAccountStepFunctionExecutionsThrottledAlarmAFBE1044",
+                "PhysicalResourceId": "monitoring-Account_StepFunction_ExecutionsThrottled",
+                "ResourceType": "AWS::CloudWatch::Alarm",
+                "Replacement": "True",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "ActionsEnabled",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "AlarmName",
+                            "RequiresRecreation": "Always"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "ReplaceAndDelete",
+                "Action": "Modify",
+                "LogicalResourceId": "AlarmsAccountStepFunctionExecutionsTimedOutAlarm207042BA",
+                "PhysicalResourceId": "monitoring-Account_StepFunction_ExecutionsTimedOut",
+                "ResourceType": "AWS::CloudWatch::Alarm",
+                "Replacement": "True",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "ActionsEnabled",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "AlarmName",
+                            "RequiresRecreation": "Always"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "Action": "Modify",
+                "LogicalResourceId": "AlarmsalertSuppressions80C5A1E6",
+                "PhysicalResourceId": "monitoring-alertSuppressions",
+                "ResourceType": "AWS::SSM::Parameter",
+                "Replacement": "False",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "Action": "Modify",
+                "LogicalResourceId": "CDKMetadata",
+                "PhysicalResourceId": "a388b600-9eaa-11f0-949f-0294dec6a941",
+                "ResourceType": "AWS::CDK::Metadata",
+                "Replacement": "Conditional",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Analytics",
+                            "RequiresRecreation": "Conditionally"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "Action": "Modify",
+                "LogicalResourceId": "FunctionsReadAlertSuppressionsPolicy8AAF0540",
+                "PhysicalResourceId": "arn:aws:iam::591291862413:policy/monitoring-FunctionsReadAlertSuppressionsPolicy8AAF0540-PrwqQQw8uF1w",
+                "ResourceType": "AWS::IAM::ManagedPolicy",
+                "Replacement": "False",
+                "Scope": [
+                    "Metadata",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "Action": "Modify",
+                "LogicalResourceId": "FunctionsReportAlertSuppressionsLambdaExecuteLambdaManagedPolicyDC695E63",
+                "PhysicalResourceId": "arn:aws:iam::591291862413:policy/monitoring-FunctionsReportAlertSuppressionsLambdaExecuteLambdaManagedPolicyDC695E63-B3ADk82vDRAx",
+                "ResourceType": "AWS::IAM::ManagedPolicy",
+                "Replacement": "False",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "PolicyDocument",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Dynamic",
+                        "ChangeSource": "ResourceAttribute",
+                        "CausingEntity": "FunctionsReportAlertSuppressionsLambdamonitoringsuppressionreporter4CD52F81.Arn"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "Action": "Modify",
+                "LogicalResourceId": "FunctionsReportAlertSuppressionsLambdaLambdaLogGroup46AB865A",
+                "PhysicalResourceId": "/aws/lambda/monitoring-suppression-reporter",
+                "ResourceType": "AWS::Logs::LogGroup",
+                "Replacement": "False",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "Action": "Modify",
+                "LogicalResourceId": "FunctionsReportAlertSuppressionsLambdaLambdaLogsSplunkSubscriptionFilterE77EBC49",
+                "PhysicalResourceId": "monitoring-FunctionsReportAlertSuppressionsLambdaLambdaLogsSplunkSubscriptionFilterE77EBC49-0j4ME9nInfhl",
+                "ResourceType": "AWS::Logs::SubscriptionFilter",
+                "Replacement": "False",
+                "Scope": [
+                    "Metadata",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "Action": "Modify",
+                "LogicalResourceId": "FunctionsReportAlertSuppressionsLambdaLambdaPutLogsManagedPolicy04D0828F",
+                "PhysicalResourceId": "arn:aws:iam::591291862413:policy/monitoring-FunctionsReportAlertSuppressionsLambdaLambdaPutLogsManagedPolicy04D0828F-SElFtd0RvV64",
+                "ResourceType": "AWS::IAM::ManagedPolicy",
+                "Replacement": "False",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "PolicyDocument",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Dynamic",
+                        "ChangeSource": "ResourceAttribute",
+                        "CausingEntity": "FunctionsReportAlertSuppressionsLambdaLambdaLogGroup46AB865A.Arn"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "Action": "Modify",
+                "LogicalResourceId": "FunctionsReportAlertSuppressionsLambdaLambdaRoleD6821958",
+                "PhysicalResourceId": "monitoring-FunctionsReportAlertSuppressionsLambdaLa-DJLPbMaRc2H6",
+                "ResourceType": "AWS::IAM::Role",
+                "Replacement": "False",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "Action": "Modify",
+                "LogicalResourceId": "FunctionsReportAlertSuppressionsLambdamonitoringsuppressionreporter4CD52F81",
+                "PhysicalResourceId": "monitoring-suppression-reporter",
+                "ResourceType": "AWS::Lambda::Function",
+                "Replacement": "False",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Code",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Environment",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Layers",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Role",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Dynamic",
+                        "ChangeSource": "ResourceAttribute",
+                        "CausingEntity": "FunctionsReportAlertSuppressionsLambdaLambdaRoleD6821958.Arn"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202135515E3CA4405",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/5ee25a89e4426417",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE20213551679EE0A49",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/26e02d8ae24ed11a",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202135517B0EA5CEE",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/6ec959ea4e072a03",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE20213609057B3EB0F",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/433108e635ed5c29",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE20224288994453378",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/b2f88d44bc8d2f7b",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE2023240571EE2F86B",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/55a848a1bcb671b2",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202328465C5880459",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/327106688b971118",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202329764CE608FD",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/0bd529a435103ed4",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE2024452940F364610",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/78d391b96733b97f",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202451132A67BF53B",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/2d3bdada1cf70940",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202452007BA433847",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/c19b23172257cef2",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE2024558879CA46A81",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/88fe30aebb61eac4",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202521587A8EEC6CA",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/5a749058ef10666a",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202522871D27C72C0",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/229c3c0734e533d7",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE2025307494C95FAE8",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/9d7569bc780acd76",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202547907377693AF",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/d9ce69db8e33da00",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202550059DE603B11",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/40f4475b5a36e5fc",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202550106004945A2",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/f52c27b32003ff89",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202558187E821BDAF",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/78351e7452353fe8",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE2025581883F0401C5",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/56de086700002631",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE2025617237FCAF774",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/54b111738b23a35c",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE2025617250E71BB06",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/72ee9313afe4b41a",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE2025617293FC93AFD",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/d0f7179b23ad76aa",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202564756C11EFAD9",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/0b603116ab31c4f5",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202569420101BF792",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/cfc1086ce35bc50a",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE20259230E37B1FB8",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/f5b2682ad28ba254",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202623745A5B68F13",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/ae73a1280ca9a627",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202623950F9799C0B",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/bb51b98b7568d81d",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE20262404986DE9D80",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/0d9f7761cc79eece",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "InspectorFiltersSuppressCVE202624842FB264968",
+                "PhysicalResourceId": "arn:aws:inspector2:eu-west-2:591291862413:owner/591291862413/filter/093c5e7f8d05a8eb",
+                "ResourceType": "AWS::InspectorV2::Filter",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "ReportAlertSuppressionsScheduleRoleDefaultPolicy1DDE3593",
+                "PhysicalResourceId": "monit-Repor-J2fb2PaUKrut",
+                "ResourceType": "AWS::IAM::Policy",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "Action": "Modify",
+                "LogicalResourceId": "ReportAlertSuppressionsScheduleRoleED08C397",
+                "PhysicalResourceId": "monitoring-ReportAlertSuppressionsScheduleRoleED08C-UZSXaZOPlZfK",
+                "ResourceType": "AWS::IAM::Role",
+                "Replacement": "False",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "Action": "Modify",
+                "LogicalResourceId": "WeeklyScheduleRule1CC9B0E6",
+                "PhysicalResourceId": "monitoring-WeeklyScheduleRule1CC9B0E6-qJw8GFGHLyPe",
+                "ResourceType": "AWS::Events::Rule",
+                "Replacement": "False",
+                "Scope": [
+                    "Metadata",
+                    "Properties",
+                    "Tags"
+                ],
+                "Details": [
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "RoleArn",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Dynamic",
+                        "ChangeSource": "ResourceAttribute",
+                        "CausingEntity": "ReportAlertSuppressionsScheduleRoleED08C397.Arn"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Metadata",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Targets",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Dynamic",
+                        "ChangeSource": "ResourceAttribute",
+                        "CausingEntity": "FunctionsReportAlertSuppressionsLambdamonitoringsuppressionreporter4CD52F81.Arn"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static"
+                    },
+                    {
+                        "Target": {
+                            "Attribute": "Properties",
+                            "Name": "Tags",
+                            "RequiresRecreation": "Never"
+                        },
+                        "Evaluation": "Static",
+                        "ChangeSource": "DirectModification"
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "Action": "Add",
+                "LogicalResourceId": "WeeklyScheduleRuleAllowEventRuleMonitoringFunctionsReportAlertSuppressionsLambdamonitoringsuppressionreporter1B7A78C5462BD8DF",
+                "ResourceType": "AWS::Lambda::Permission",
+                "Scope": [],
+                "Details": []
+            }
+        },
+        {
+            "Type": "Resource",
+            "ResourceChange": {
+                "PolicyAction": "Delete",
+                "Action": "Remove",
+                "LogicalResourceId": "WeeklyScheduleRuleAllowEventRuleMonitoringStackFunctionsReportAlertSuppressionsLambdamonitoringsuppressionreporter4C6D6F0C6068F8CF",
+                "PhysicalResourceId": "monitoring-WeeklyScheduleRuleAllowEventRuleMonitoringStackFunctionsReportAlertSuppressi-ENFKKYUJ3Cfb",
+                "ResourceType": "AWS::Lambda::Permission",
+                "Scope": [],
+                "Details": []
+            }
+        }
+    ],
+    "ChangeSetName": "DESTRUCTIVE-monitoring-changeset-pr-1988-1771588444",
+    "ChangeSetId": "arn:aws:cloudformation:eu-west-2:591291862413:changeSet/DESTRUCTIVE-monitoring-changeset-pr-1988-1771588444/3ef115a1-a7d6-4e0b-af8a-b97e2aaad7e8",
+    "StackId": "arn:aws:cloudformation:eu-west-2:591291862413:stack/monitoring/a388b600-9eaa-11f0-949f-0294dec6a941",
+    "StackName": "monitoring",
+    "Description": "CDK Changeset for execution a97b7d1e-e1c2-42f3-b04e-1f645853becc",
+    "Parameters": [
+        {
+            "ParameterKey": "BootstrapVersion",
+            "ParameterValue": "/cdk-bootstrap/hnb659fds/version",
+            "ResolvedValue": "30"
+        }
+    ],
+    "CreationTime": "2026-02-20T11:54:17.083000+00:00",
+    "ExecutionStatus": "AVAILABLE",
+    "Status": "CREATE_COMPLETE",
+    "StatusReason": null,
+    "NotificationARNs": [],
+    "RollbackConfiguration": {},
+    "Capabilities": [
+        "CAPABILITY_IAM",
+        "CAPABILITY_NAMED_IAM",
+        "CAPABILITY_AUTO_EXPAND"
+    ],
+    "Tags": [
+        {
+            "Key": "PublicFacing",
+            "Value": "Y"
+        },
+        {
+            "Key": "Owner",
+            "Value": "england.epssupport@nhs.net"
+        },
+        {
+            "Key": "ServiceCategory",
+            "Value": "Platinum"
+        },
+        {
+            "Key": "Customer",
+            "Value": "NHS England"
+        },
+        {
+            "Key": "repo",
+            "Value": "electronic-prescription-service-account-resources"
+        },
+        {
+            "Key": "commit",
+            "Value": "6661fabc0f4b8c79cd7f5e197fe6e57e0756aef0"
+        },
+        {
+            "Key": "stackName",
+            "Value": "monitoring"
+        },
+        {
+            "Key": "DeploymentTool",
+            "Value": "CDK"
+        },
+        {
+            "Key": "Product",
+            "Value": "Account Resources"
+        },
+        {
+            "Key": "version",
+            "Value": "pr-1988"
+        },
+        {
+            "Key": "OnOffPattern",
+            "Value": "AlwaysOn"
+        },
+        {
+            "Key": "Programme",
+            "Value": "EPS"
+        },
+        {
+            "Key": "data_classification",
+            "Value": "5"
+        },
+        {
+            "Key": "TagVersion",
+            "Value": "1"
+        },
+        {
+            "Key": "cdkApp",
+            "Value": "AccountResourcesApp"
+        },
+        {
+            "Key": "ProjectType",
+            "Value": "Production"
+        },
+        {
+            "Key": "DataType",
+            "Value": "PII"
+        },
+        {
+            "Key": "Environment",
+            "Value": "dev-account"
+        },
+        {
+            "Key": "cfnDriftDetectionGroup",
+            "Value": "account-resources"
+        },
+        {
+            "Key": "CostCentre",
+            "Value": "128997"
+        }
+    ],
+    "ParentChangeSetId": null,
+    "IncludeNestedStacks": false,
+    "RootChangeSetId": null,
+    "OnStackFailure": null,
+    "ImportExistingResources": false,
+    "StackDriftStatus": null,
+    "DeploymentMode": null
+}
