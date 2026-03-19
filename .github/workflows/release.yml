@@ -32,7 +32,7 @@ jobs:
           echo "commit_id=${{ github.sha }}" >> "$GITHUB_OUTPUT"
           echo "sha_short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
   quality_checks:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@383f3f9eaf3cb553ebcd74897bfed4d5e387629e
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@3ce609c510fc4cf1e8cda1a8b59eb937ff57c79d
     needs: [get_config_values, get_commit_id]
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
