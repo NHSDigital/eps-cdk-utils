@@ -36,7 +36,7 @@ export interface SsmParametersConstructProps {
   /**
    * Prefix used in SSM parameter names and CloudFormation export names.
    */
-  readonly stackName: string
+  readonly namePrefix: string
   /**
    * List of SSM parameters to create.
    */
@@ -70,7 +70,7 @@ export class SsmParametersConstruct extends Construct {
     super(scope, id)
 
     const {
-      stackName,
+      namePrefix: stackName,
       parameters,
       readPolicyDescription = "Allows reading SSM parameters",
       readPolicyOutputDescription = "Access to the parameters used by the integration",
@@ -83,9 +83,24 @@ export class SsmParametersConstruct extends Construct {
 
     const createdParameters: Record<string, StringParameter> = {}
 
+    const seenIds = new Set<string>()
+    const seenNames = new Set<string>()
+
     for (const parameter of parameters) {
-      const ssmParameter = new StringParameter(this, `${parameter.id}Parameter`, {
-        parameterName: `${stackName}-${parameter.nameSuffix}`,
+      const parameterId = `${parameter.id}Parameter`
+      if (seenIds.has(parameterId)) {
+        throw new Error(`Duplicate parameter id detected: ${parameter.id}.`)
+      }
+      seenIds.add(parameterId)
+
+      const parameterName = `${stackName}-${parameter.nameSuffix}`
+      if (seenNames.has(parameterName)) {
+        throw new Error(`Duplicate parameter name detected: ${parameterName}.`)
+      }
+      seenNames.add(parameterName)
+
+      const ssmParameter = new StringParameter(this, parameterId, {
+        parameterName,
         description: parameter.description,
         stringValue: parameter.value
       })

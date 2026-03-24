@@ -18,7 +18,7 @@ describe("SsmParametersConstruct", () => {
     const stack = new Stack(app, "parameterStack")
 
     const params = new SsmParametersConstruct(stack, "TestingParameters", {
-      stackName: "mock-stack",
+      namePrefix: "mock-stack",
       parameters: [
         {
           id: "MockParam1",
@@ -125,5 +125,60 @@ describe("SsmParametersConstruct", () => {
     expect(descriptions).toContain("Name of the SSM parameter holding MockParam2")
     expect(descriptions).toContain("Name of the SSM parameter holding MockParam3")
     expect(descriptions).toContain("Mock read policy output description")
+  })
+})
+
+describe("SsmParametersConstruct validation", () => {
+  test("throws when parameters array is empty", () => {
+    const app = new App()
+    const stack = new Stack(app, "emptyParamStack")
+    expect(() => new SsmParametersConstruct(stack, "EmptyParameters", {
+      namePrefix: "mock-stack",
+      parameters: []
+    })).toThrow("SsmParametersConstruct requires at least one parameter definition")
+  })
+
+  test("throws when duplicate parameter ids are detected", () => {
+    const app = new App()
+    const stack = new Stack(app, "duplicateIdStack")
+    expect(() => new SsmParametersConstruct(stack, "DuplicateIdParameters", {
+      namePrefix: "mock-stack",
+      parameters: [
+        {
+          id: "MockParam1",
+          nameSuffix: "MockParam1",
+          description: "Description for mock parameter 1",
+          value: "mock-value-1"
+        },
+        {
+          id: "MockParam1",
+          nameSuffix: "MockParam1Different",
+          description: "Description for duplicate id parameter",
+          value: "mock-value-2"
+        }
+      ]
+    })).toThrow("Duplicate parameter id detected: MockParam1.")
+  })
+
+  test("throws when duplicate parameter names are detected", () => {
+    const app = new App()
+    const stack = new Stack(app, "duplicateNameStack")
+    expect(() => new SsmParametersConstruct(stack, "DuplicateNameParameters", {
+      namePrefix: "mock-stack",
+      parameters: [
+        {
+          id: "MockParam1",
+          nameSuffix: "SharedSuffix",
+          description: "Description for mock parameter 1",
+          value: "mock-value-1"
+        },
+        {
+          id: "MockParam2",
+          nameSuffix: "SharedSuffix",
+          description: "Description for duplicate name parameter",
+          value: "mock-value-2"
+        }
+      ]
+    })).toThrow("Duplicate parameter name detected: mock-stack-SharedSuffix.")
   })
 })
