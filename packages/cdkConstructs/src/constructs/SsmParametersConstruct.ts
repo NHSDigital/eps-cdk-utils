@@ -23,11 +23,12 @@ export interface SsmParameterDefinition {
   readonly value: string
   /**
    * Optional export suffix for the output containing the parameter name.
-   * Defaults to `${nameSuffix}Parameter`.
+   * Defaults to `nameSuffix`.
    */
   readonly outputExportSuffix?: string
   /**
    * Optional output description.
+   * Defaults to `description`.
    */
   readonly outputDescription?: string
 }
@@ -108,9 +109,9 @@ export class SsmParametersConstruct extends Construct {
       createdParameters[parameter.id] = ssmParameter
 
       new CfnOutput(this, `${parameter.id}ParameterNameOutput`, {
-        description: parameter.outputDescription ?? `Name of the SSM parameter holding ${parameter.nameSuffix}`,
+        description: parameter.outputDescription ?? parameter.description,
         value: ssmParameter.parameterName,
-        exportName: `${stackName}-${parameter.outputExportSuffix ?? `${parameter.nameSuffix}Parameter`}`
+        exportName: `${stackName}-${parameter.outputExportSuffix ?? parameter.nameSuffix}`
       })
     }
 

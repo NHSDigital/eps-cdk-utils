@@ -128,6 +128,35 @@ describe("SsmParametersConstruct", () => {
   })
 })
 
+describe("SsmParametersConstruct uses defaults when optional fields are omitted", () => {
+  test("outputDescription defaults to description and outputExportSuffix defaults to nameSuffix", () => {
+    const app = new App()
+    const stack = new Stack(app, "defaultsStack")
+    new SsmParametersConstruct(stack, "DefaultsParameters", {
+      namePrefix: "mock-stack",
+      parameters: [
+        {
+          id: "MockParam1",
+          nameSuffix: "MockParam1Suffix",
+          description: "Mock SSM parameter description",
+          value: "mock-value-1"
+          // outputDescription and outputExportSuffix intentionally omitted
+        }
+      ]
+    })
+    const template = Template.fromStack(stack)
+
+    const outputs = template.toJSON().Outputs as Record<string, {
+      Description?: string
+      Export?: {Name?: string}
+    }>
+
+    const outputValues = Object.values(outputs)
+    expect(outputValues.some((o) => o.Description === "Mock SSM parameter description")).toBe(true)
+    expect(outputValues.some((o) => o.Export?.Name === "mock-stack-MockParam1Suffix")).toBe(true)
+  })
+})
+
 describe("SsmParametersConstruct validation", () => {
   test("throws when parameters array is empty", () => {
     const app = new App()
