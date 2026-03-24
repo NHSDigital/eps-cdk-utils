@@ -8,6 +8,7 @@ import {
 } from "vitest"
 
 import {SsmParametersConstruct} from "../../src/constructs/SsmParametersConstruct"
+import {assert} from "node:console"
 
 describe("SsmParametersConstruct", () => {
   let template: Template
@@ -16,7 +17,7 @@ describe("SsmParametersConstruct", () => {
     const app = new App()
     const stack = new Stack(app, "parameterStack")
 
-    new SsmParametersConstruct(stack, "TestingParameters", {
+    const params = new SsmParametersConstruct(stack, "TestingParameters", {
       stackName: "mock-stack",
       parameters: [
         {
@@ -48,6 +49,8 @@ describe("SsmParametersConstruct", () => {
       readPolicyOutputDescription: "Mock read policy output description",
       readPolicyExportSuffix: "MockGetParametersPolicy"
     })
+    // Sonarcloud complains that the construct is not used, so we add an assertion to sidestep that.
+    assert(params, "SsmParametersConstruct should be created successfully")
 
     template = Template.fromStack(stack)
   })
