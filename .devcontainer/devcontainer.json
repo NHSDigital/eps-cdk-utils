@@ -34,7 +34,8 @@
         "timonwong.shellcheck",
         "github.vscode-github-actions",
         "dbaeumer.vscode-eslint",
-        "vitest.explorer"
+        "vitest.explorer",
+        "sonarsource.sonarlint-vscode"
       ],
       "settings": {
         "cSpell.words": [
