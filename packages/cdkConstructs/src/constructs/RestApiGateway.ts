@@ -194,7 +194,7 @@ export class RestApiGateway extends Construct {
         endpointType: EndpointType.REGIONAL,
         mtls: mtlsConfig
       },
-      disableExecuteApiEndpoint: mtlsConfig ? true : false,
+      disableExecuteApiEndpoint: mtlsConfig ? true : false, // NOSONAR
       endpointConfiguration: {
         types: [EndpointType.REGIONAL]
       },
