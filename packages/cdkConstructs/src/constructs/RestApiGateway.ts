@@ -44,6 +44,10 @@ export class RestApiGateway extends Construct {
   public constructor(scope: Construct, id: string, props: RestApiGatewayProps) {
     super(scope, id)
 
+    if (props.forwardCsocLogs && props.csocApiGatewayDestination === "") {
+      throw new Error("csocApiGatewayDestination must be provided when forwardCsocLogs is true")
+    }
+
     // Imports
     const cloudWatchLogsKmsKey = Key.fromKeyArn(
       this, "cloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
