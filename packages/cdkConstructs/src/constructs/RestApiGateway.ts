@@ -103,7 +103,7 @@ export class RestApiGateway extends Construct {
 
     if (props.mutualTlsTrustStoreKey) {
       const trustStoreKeyPrefix = `cpt-api/${props.stackName}-truststore`
-      const logGroup = new LogGroup(scope, "LambdaLogGroup", {
+      const logGroup = new LogGroup(this, "LambdaLogGroup", {
         encryptionKey: cloudWatchLogsKmsKey,
         logGroupName: `/aws/lambda/${props.stackName}-truststore-deployment`,
         retention: props.logRetentionInDays,
