@@ -73,7 +73,13 @@ describe("LambdaEndpoint construct", () => {
     template.hasResourceProperties("AWS::ApiGateway::Method", {
       HttpMethod: "GET",
       Integration: Match.objectLike({
-        Type: "AWS_PROXY"
+        Type: "AWS_PROXY",
+        Credentials: {
+          "Fn::GetAtt": [
+            Match.stringLikeRegexp("^ApiGwRole.*$"),
+            "Arn"
+          ]
+        }
       })
     })
   })
