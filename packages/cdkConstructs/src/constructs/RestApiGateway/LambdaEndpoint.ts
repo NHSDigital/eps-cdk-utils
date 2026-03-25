@@ -1,7 +1,6 @@
 import {IResource, LambdaIntegration} from "aws-cdk-lib/aws-apigateway"
 import {IRole} from "aws-cdk-lib/aws-iam"
-import {IFunction} from "aws-cdk-lib/aws-lambda"
-import {HttpMethod} from "aws-cdk-lib/aws-lambda"
+import {HttpMethod, IFunction} from "aws-cdk-lib/aws-lambda"
 import {Construct} from "constructs"
 
 export interface LambdaFunctionHolder {
