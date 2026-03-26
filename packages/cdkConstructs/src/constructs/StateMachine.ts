@@ -1,4 +1,4 @@
-import {Fn, RemovalPolicy} from "aws-cdk-lib"
+import {RemovalPolicy} from "aws-cdk-lib"
 import {
   IManagedPolicy,
   IRole,
@@ -20,6 +20,7 @@ import {
 } from "aws-cdk-lib/aws-stepfunctions"
 import {Construct} from "constructs"
 import {CfnDeliveryStream} from "aws-cdk-lib/aws-kinesisfirehose"
+import {ACCOUNT_RESOURCES, LAMBDA_RESOURCES} from "../constants"
 
 export interface StateMachineProps {
   /** Stack name, used as prefix for resource naming and DNS records. */
@@ -83,12 +84,12 @@ export class ExpressStateMachine extends Construct {
 
     const {
       cloudWatchLogsKmsKey = Key.fromKeyArn(
-        this, "CloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")),
+        this, "CloudWatchLogsKmsKey", ACCOUNT_RESOURCES.CloudwatchLogsKmsKeyArn),
       cloudwatchEncryptionKMSPolicy = ManagedPolicy.fromManagedPolicyArn(
-        this, "cloudwatchEncryptionKMSPolicy", Fn.importValue("account-resources:CloudwatchEncryptionKMSPolicyArn")),
+        this, "cloudwatchEncryptionKMSPolicy", ACCOUNT_RESOURCES.CloudwatchEncryptionKMSPolicyArn),
       splunkDeliveryStream,
       splunkSubscriptionFilterRole = Role.fromRoleArn(
-        this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole")),
+        this, "splunkSubscriptionFilterRole", LAMBDA_RESOURCES.SplunkSubscriptionFilterRole),
       addSplunkSubscriptionFilter = true
     } = props
 
@@ -118,7 +119,7 @@ export class ExpressStateMachine extends Construct {
         })
       } else {
         const splunkDeliveryStreamImport = Stream.fromStreamArn(
-          this, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
+          this, "SplunkDeliveryStream", LAMBDA_RESOURCES.SplunkDeliveryStream)
         new CfnSubscriptionFilter(this, "LambdaLogsSplunkSubscriptionFilter", {
           destinationArn: splunkDeliveryStreamImport.streamArn,
           filterPattern: "",
