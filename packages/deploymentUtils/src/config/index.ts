@@ -3,7 +3,7 @@ import {CloudFormationClient, ListExportsCommand} from "@aws-sdk/client-cloudfor
 export function getConfigFromEnvVar(varName: string, defaultValue: string | undefined = undefined): string {
   const value = process.env[varName]
   if (!value) {
-    if (defaultValue) {
+    if (defaultValue !== undefined) {
       return defaultValue
     }
     throw new Error(`Environment variable ${varName} is not set`)
