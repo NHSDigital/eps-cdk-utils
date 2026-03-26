@@ -48,7 +48,21 @@ export class RestApiGateway extends Construct {
   public readonly api: RestApi
   public readonly role: IRole
 
-  /** Builds API Gateway infrastructure and validates CSOC forwarding configuration. */
+  /**
+   * Builds API Gateway infrastructure and validates CSOC forwarding configuration.
+   * @example
+   * ```ts
+   * const api = new RestApiGateway(this, "MyApi", {
+   *   stackName: "my-service",
+   *   logRetentionInDays: 30,
+   *   mutualTlsTrustStoreKey: "truststore.pem",
+   *   forwardCsocLogs: true,
+   *   csocApiGatewayDestination: "arn:aws:logs:eu-west-2:123456789012:destination:csoc",
+   *   executionPolicies: [myLambdaInvokePolicy]
+   * })
+   * api.api.root.addResource("patients")
+   * ```
+   */
   public constructor(scope: Construct, id: string, props: RestApiGatewayProps) {
     super(scope, id)
 
