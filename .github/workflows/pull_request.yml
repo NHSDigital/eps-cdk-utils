@@ -9,7 +9,7 @@ env:
 
 jobs:
   get_config_values:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@3ce609c510fc4cf1e8cda1a8b59eb937ff57c79d
+    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@97059401fbec4c0914532277dfe8ce95dd3213fd
     with:
       verify_published_from_main_image: false
   dependabot-auto-approve-and-merge:
