@@ -1,4 +1,4 @@
-import {Fn, RemovalPolicy} from "aws-cdk-lib"
+import {RemovalPolicy} from "aws-cdk-lib"
 import {
   CfnStage,
   EndpointType,
@@ -27,6 +27,7 @@ import {BucketDeployment, Source} from "aws-cdk-lib/aws-s3-deployment"
 import {ARecord, HostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
 import {ApiGateway as ApiGatewayTarget} from "aws-cdk-lib/aws-route53-targets"
 import {NagSuppressions} from "cdk-nag"
+import {ACCOUNT_RESOURCES, LAMBDA_RESOURCES} from "../constants"
 
 export interface RestApiGatewayProps {
   /** Stack name, used as prefix for resource naming and DNS records. */
@@ -72,26 +73,26 @@ export class RestApiGateway extends Construct {
 
     // Imports
     const cloudWatchLogsKmsKey = Key.fromKeyArn(
-      this, "cloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
+      this, "cloudWatchLogsKmsKey", ACCOUNT_RESOURCES.CloudwatchLogsKmsKeyArn)
 
     const splunkDeliveryStream = Stream.fromStreamArn(
-      this, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
+      this, "SplunkDeliveryStream", LAMBDA_RESOURCES.SplunkDeliveryStream)
 
     const splunkSubscriptionFilterRole = Role.fromRoleArn(
-      this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"))
+      this, "splunkSubscriptionFilterRole", LAMBDA_RESOURCES.SplunkSubscriptionFilterRole)
 
     const trustStoreBucket = Bucket.fromBucketArn(
-      this, "TrustStoreBucket", Fn.importValue("account-resources:TrustStoreBucket"))
+      this, "TrustStoreBucket", ACCOUNT_RESOURCES.TrustStoreBucket)
 
     const trustStoreDeploymentBucket = Bucket.fromBucketArn(
-      this, "TrustStoreDeploymentBucket", Fn.importValue("account-resources:TrustStoreDeploymentBucket"))
+      this, "TrustStoreDeploymentBucket", ACCOUNT_RESOURCES.TrustStoreDeploymentBucket)
 
     const trustStoreBucketKmsKey = Key.fromKeyArn(
-      this, "TrustStoreBucketKmsKey", Fn.importValue("account-resources:TrustStoreBucketKMSKey"))
+      this, "TrustStoreBucketKmsKey", ACCOUNT_RESOURCES.TrustStoreBucketKMSKey)
 
-    const epsDomainName: string = Fn.importValue("eps-route53-resources:EPS-domain")
+    const epsDomainName: string = ACCOUNT_RESOURCES.EpsDomainName
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "HostedZone", {
-      hostedZoneId: Fn.importValue("eps-route53-resources:EPS-ZoneID"),
+      hostedZoneId: ACCOUNT_RESOURCES.EpsZoneId,
       zoneName: epsDomainName
     })
     const serviceDomainName = `${props.stackName}.${epsDomainName}`
