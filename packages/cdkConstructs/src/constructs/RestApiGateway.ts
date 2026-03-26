@@ -44,6 +44,10 @@ export class RestApiGateway extends Construct {
   public constructor(scope: Construct, id: string, props: RestApiGatewayProps) {
     super(scope, id)
 
+    if (props.forwardCsocLogs && props.csocApiGatewayDestination === "") {
+      throw new Error("csocApiGatewayDestination must be provided when forwardCsocLogs is true")
+    }
+
     // Imports
     const cloudWatchLogsKmsKey = Key.fromKeyArn(
       this, "cloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
@@ -103,7 +107,7 @@ export class RestApiGateway extends Construct {
 
     if (props.mutualTlsTrustStoreKey) {
       const trustStoreKeyPrefix = `cpt-api/${props.stackName}-truststore`
-      const logGroup = new LogGroup(scope, "LambdaLogGroup", {
+      const logGroup = new LogGroup(this, "LambdaLogGroup", {
         encryptionKey: cloudWatchLogsKmsKey,
         logGroupName: `/aws/lambda/${props.stackName}-truststore-deployment`,
         retention: props.logRetentionInDays,
@@ -190,7 +194,7 @@ export class RestApiGateway extends Construct {
         endpointType: EndpointType.REGIONAL,
         mtls: mtlsConfig
       },
-      disableExecuteApiEndpoint: mtlsConfig ? true : false,
+      disableExecuteApiEndpoint: mtlsConfig ? true : false, // NOSONAR
       endpointConfiguration: {
         types: [EndpointType.REGIONAL]
       },

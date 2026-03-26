@@ -2,14 +2,18 @@ import {App, Stack} from "aws-cdk-lib"
 import {RestApi} from "aws-cdk-lib/aws-apigateway"
 import {Role, ServicePrincipal} from "aws-cdk-lib/aws-iam"
 import {Template, Match} from "aws-cdk-lib/assertions"
-import {Architecture, Function as LambdaFunction, Runtime} from "aws-cdk-lib/aws-lambda"
+import {
+  Architecture,
+  Function as LambdaFunction,
+  HttpMethod,
+  Runtime
+} from "aws-cdk-lib/aws-lambda"
 import {
   describe,
   test,
   beforeAll,
   expect
 } from "vitest"
-import {HttpMethod} from "aws-cdk-lib/aws-lambda"
 
 import {LambdaEndpoint} from "../../../src/constructs/RestApiGateway/LambdaEndpoint.js"
 
@@ -73,7 +77,13 @@ describe("LambdaEndpoint construct", () => {
     template.hasResourceProperties("AWS::ApiGateway::Method", {
       HttpMethod: "GET",
       Integration: Match.objectLike({
-        Type: "AWS_PROXY"
+        Type: "AWS_PROXY",
+        Credentials: {
+          "Fn::GetAtt": [
+            Match.stringLikeRegexp("^ApiGwRole.*$"),
+            "Arn"
+          ]
+        }
       })
     })
   })

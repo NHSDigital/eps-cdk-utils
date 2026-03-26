@@ -327,3 +327,28 @@ describe("RestApiGateway with mTLS", () => {
     expect(domainName.Properties.MutualTlsAuthentication.TruststoreUri).toBeDefined()
   })
 })
+
+describe("RestApiGateway validation errors", () => {
+  test("throws when forwardCsocLogs is true and csocApiGatewayDestination is empty string", () => {
+    const app = new App()
+    const stack = new Stack(app, "ValidationStack1")
+    const testPolicy = new ManagedPolicy(stack, "TestPolicy", {
+      description: "test execution policy",
+      statements: [
+        new PolicyStatement({
+          actions: ["lambda:InvokeFunction"],
+          resources: ["arn:aws:lambda:eu-west-2:123456789012:function:test-function"]
+        })
+      ]
+    })
+
+    expect(() => new RestApiGateway(stack, "TestApiGateway", {
+      stackName: "test-stack",
+      logRetentionInDays: 30,
+      mutualTlsTrustStoreKey: undefined,
+      forwardCsocLogs: true,
+      csocApiGatewayDestination: "",
+      executionPolicies: [testPolicy]
+    })).toThrow("csocApiGatewayDestination must be provided when forwardCsocLogs is true")
+  })
+})
