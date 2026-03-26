@@ -3,6 +3,19 @@ import {Effect, ManagedPolicy, PolicyStatement} from "aws-cdk-lib/aws-iam"
 import {StringParameter} from "aws-cdk-lib/aws-ssm"
 import {Construct} from "constructs"
 
+/**
+ * Definition for a single SSM String parameter and its output export metadata.
+ *
+ * @property id Unique identifier used for construct and output logical IDs.
+ * @property nameSuffix Suffix appended to stackName to create the parameter name.
+ * The final SSM parameter name is `${stackName}-${nameSuffix}`.
+ * @property description Description stored with the SSM parameter.
+ * @property value Value stored in the SSM parameter.
+ * @property outputExportSuffix Optional export suffix for the output containing
+ * the parameter name. Defaults to `nameSuffix`.
+ * @property outputDescription Optional output description. Defaults to
+ * `description`.
+ */
 export interface SsmParameterDefinition {
   /**
    * Unique identifier used for construct and output logical IDs.
@@ -23,16 +36,29 @@ export interface SsmParameterDefinition {
   readonly value: string
   /**
    * Optional export suffix for the output containing the parameter name.
-   * Defaults to `nameSuffix`.
+   * @default nameSuffix value
    */
   readonly outputExportSuffix?: string
   /**
    * Optional output description.
-   * Defaults to `description`.
+   * @default description value
    */
   readonly outputDescription?: string
 }
 
+/**
+ * Properties used to configure {@link SsmParametersConstruct}.
+ *
+ * @property namePrefix Prefix used in SSM parameter names and CloudFormation
+ * export names.
+ * @property parameters List of SSM parameters to create.
+ * @property readPolicyDescription Description for the managed policy that grants
+ * read access. Defaults to "Allows reading SSM parameters".
+ * @property readPolicyOutputDescription Description for the output exporting the
+ * managed policy ARN. Defaults to "Access to the parameters used by the integration".
+ * @property readPolicyExportSuffix Export suffix for the output exporting the
+ * managed policy ARN.
+ */
 export interface SsmParametersConstructProps {
   /**
    * Prefix used in SSM parameter names and CloudFormation export names.
@@ -54,9 +80,8 @@ export interface SsmParametersConstructProps {
   readonly readPolicyOutputDescription?: string
   /**
    * Export suffix for the output exporting the managed policy ARN.
-   * @default "GetParametersPolicy"
    */
-  readonly readPolicyExportSuffix?: string
+  readonly readPolicyExportSuffix: string
 }
 
 /**
@@ -67,15 +92,24 @@ export class SsmParametersConstruct extends Construct {
   public readonly parameters: Record<string, StringParameter>
   public readonly readParametersPolicy: ManagedPolicy
 
+  /**
+   * Creates SSM String parameters, a managed read policy, and CloudFormation outputs.
+   *
+   * @param scope CDK construct scope.
+   * @param id Unique construct identifier.
+   * @param props Configuration for parameter names, values, and exported outputs.
+   * @throws {Error} Throws when no parameter definitions are provided.
+   * @throws {Error} Throws when duplicate parameter IDs or parameter names are detected.
+   */
   public constructor(scope: Construct, id: string, props: SsmParametersConstructProps) {
     super(scope, id)
 
     const {
       namePrefix: stackName,
       parameters,
+      readPolicyExportSuffix,
       readPolicyDescription = "Allows reading SSM parameters",
-      readPolicyOutputDescription = "Access to the parameters used by the integration",
-      readPolicyExportSuffix = "GetParametersPolicy"
+      readPolicyOutputDescription = "Access to the parameters used by the integration"
     } = props
 
     if (parameters.length === 0) {
