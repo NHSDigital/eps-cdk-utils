@@ -63,7 +63,21 @@ export class ExpressStateMachine extends Construct {
   public readonly executionPolicy: ManagedPolicy
   public readonly stateMachine: StateMachine
 
-  /** Provisions an Express Step Functions workflow with logging, tracing, and invoke permissions. */
+  /**
+   * Provisions an Express Step Functions workflow with logging, tracing, and invoke permissions.
+   * @example
+   * ```ts
+   * const sm = new ExpressStateMachine(this, "MyWorkflow", {
+   *   stackName: "my-service",
+   *   stateMachineName: "my-service-workflow",
+   *   definition: new Pass(this, "Start"),
+   *   logRetentionInDays: 30,
+   *   additionalPolicies: [myLambdaInvokePolicy]
+   * })
+   * // Attach the generated execution policy to an API Gateway role
+   * apiGatewayRole.addManagedPolicy(sm.executionPolicy)
+   * ```
+   */
   public constructor(scope: Construct, id: string, props: StateMachineProps) {
     super(scope, id)
 
