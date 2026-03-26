@@ -26,9 +26,12 @@ const severErrorOperationOutcome = `{% $string(
   }
 ) %}`
 
+/** Produces a fixed 500 FHIR OperationOutcome payload for unhandled workflow failures. */
 export class CatchAllErrorPass extends Construct {
+  /** Pass state returned by this construct for chaining in state machine definitions. */
   public readonly state
 
+  /** Creates a terminal-style error response payload without exposing internal exception detail. */
   public constructor(scope: Construct, id: string) {
     super(scope, id)
 

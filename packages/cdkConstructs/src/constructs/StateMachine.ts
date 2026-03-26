@@ -22,10 +22,15 @@ import {Construct} from "constructs"
 import {CfnDeliveryStream} from "aws-cdk-lib/aws-kinesisfirehose"
 
 export interface StateMachineProps {
+  /** Stack name, used as prefix for resource naming and DNS records. */
   readonly stackName: string
+  /** Friendly state machine name used for both AWS resource and log naming. */
   readonly stateMachineName: string
+  /** Workflow definition chain rendered as the state machine definition body. */
   readonly definition: IChainable
+  /** Extra managed policies merged into the execution role when required. */
   readonly additionalPolicies?: Array<IManagedPolicy>
+  /** Retention period applied to the workflow CloudWatch log group. */
   readonly logRetentionInDays: number
   /**
    * Optional KMS key for encrypting CloudWatch Logs.
@@ -58,6 +63,7 @@ export class ExpressStateMachine extends Construct {
   public readonly executionPolicy: ManagedPolicy
   public readonly stateMachine: StateMachine
 
+  /** Provisions an Express Step Functions workflow with logging, tracing, and invoke permissions. */
   public constructor(scope: Construct, id: string, props: StateMachineProps) {
     super(scope, id)
 
