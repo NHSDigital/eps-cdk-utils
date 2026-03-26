@@ -29,18 +29,26 @@ import {ApiGateway as ApiGatewayTarget} from "aws-cdk-lib/aws-route53-targets"
 import {NagSuppressions} from "cdk-nag"
 
 export interface RestApiGatewayProps {
+  /** Stack name, used as prefix for resource naming and DNS records. */
   readonly stackName: string
+  /** Shared retention period for API and deployment-related log groups. */
   readonly logRetentionInDays: number
+  /** Truststore object key to enable mTLS; leave undefined to disable mTLS. */
   readonly mutualTlsTrustStoreKey: string | undefined
+  /** Enables creation of a second subscription filter to forward logs to CSOC. */
   readonly forwardCsocLogs: boolean
+  /** Destination ARN used by the optional CSOC subscription filter. */
   readonly csocApiGatewayDestination: string
+  /** Managed policies attached to the API Gateway execution role. */
   readonly executionPolicies: Array<IManagedPolicy>
 }
 
+/** Creates a regional REST API with standard logging, DNS, and optional mTLS/CSOC integration. */
 export class RestApiGateway extends Construct {
   public readonly api: RestApi
   public readonly role: IRole
 
+  /** Builds API Gateway infrastructure and validates CSOC forwarding configuration. */
   public constructor(scope: Construct, id: string, props: RestApiGatewayProps) {
     super(scope, id)
 
