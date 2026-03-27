@@ -10,7 +10,7 @@ env:
 
 jobs:
   get_config_values:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@97059401fbec4c0914532277dfe8ce95dd3213fd
+    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@b0172dbdb3af4ae232873106553c316d79d784fc
     with:
       verify_published_from_main_image: true
   get_commit_id:
