@@ -119,7 +119,7 @@ export class ExpressStateMachine extends Construct {
 
     if (addSplunkSubscriptionFilter) {
       if (splunkDeliveryStream) {
-        new CfnSubscriptionFilter(this, "LambdaLogsSplunkSubscriptionFilter", {
+        new CfnSubscriptionFilter(this, "StateMachineLogsSplunkSubscriptionFilter", {
           destinationArn: splunkDeliveryStream.attrArn,
           filterPattern: "",
           logGroupName: logGroup.logGroupName,
@@ -128,7 +128,7 @@ export class ExpressStateMachine extends Construct {
       } else {
         const splunkDeliveryStreamImport = Stream.fromStreamArn(
           this, "SplunkDeliveryStream", LAMBDA_RESOURCES.SplunkDeliveryStream)
-        new CfnSubscriptionFilter(this, "LambdaLogsSplunkSubscriptionFilter", {
+        new CfnSubscriptionFilter(this, "StateMachineLogsSplunkSubscriptionFilter", {
           destinationArn: splunkDeliveryStreamImport.streamArn,
           filterPattern: "",
           logGroupName: logGroup.logGroupName,
