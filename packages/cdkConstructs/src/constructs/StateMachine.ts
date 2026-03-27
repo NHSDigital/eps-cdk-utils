@@ -147,7 +147,7 @@ export class ExpressStateMachine extends Construct {
           ],
           resources: [
             logGroup.logGroupArn,
-            `${logGroup.logGroupArn}:log-stream`
+            `${logGroup.logGroupArn}:log-stream:*`
           ]
         }),
         new PolicyStatement({
