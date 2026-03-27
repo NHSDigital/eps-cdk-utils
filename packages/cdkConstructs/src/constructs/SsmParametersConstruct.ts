@@ -105,7 +105,7 @@ export class SsmParametersConstruct extends Construct {
     super(scope, id)
 
     const {
-      namePrefix: stackName,
+      namePrefix,
       parameters,
       readPolicyExportSuffix,
       readPolicyDescription = "Allows reading SSM parameters",
@@ -128,7 +128,7 @@ export class SsmParametersConstruct extends Construct {
       }
       seenIds.add(parameterId)
 
-      const parameterName = `${stackName}-${parameter.nameSuffix}`
+      const parameterName = `${namePrefix}-${parameter.nameSuffix}`
       if (seenNames.has(parameterName)) {
         throw new Error(`Duplicate parameter name detected: ${parameterName}.`)
       }
@@ -145,7 +145,7 @@ export class SsmParametersConstruct extends Construct {
       new CfnOutput(this, `${parameter.id}ParameterNameOutput`, {
         description: parameter.outputDescription ?? parameter.description,
         value: ssmParameter.parameterName,
-        exportName: `${stackName}-${parameter.outputExportSuffix ?? parameter.nameSuffix}`
+        exportName: `${namePrefix}-${parameter.outputExportSuffix ?? parameter.nameSuffix}`
       })
     }
 
@@ -163,7 +163,7 @@ export class SsmParametersConstruct extends Construct {
     new CfnOutput(this, "ReadParametersPolicyOutput", {
       description: readPolicyOutputDescription,
       value: readParametersPolicy.managedPolicyArn,
-      exportName: `${stackName}-${readPolicyExportSuffix}`
+      exportName: `${namePrefix}-${readPolicyExportSuffix}`
     })
 
     this.parameters = createdParameters
