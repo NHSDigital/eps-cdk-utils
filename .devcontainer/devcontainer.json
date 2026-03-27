@@ -11,7 +11,9 @@
       "USER_GID": "${localEnv:GROUP_ID:}"
     }
   },
-  "postAttachCommand": "git-secrets --register-aws; git-secrets --add-provider -- cat /usr/share/secrets-scanner/nhsd-rules-deny.txt",
+  // Conditionally register git-secrets to avoid failures when it is already configured
+  // but continue to fail in the case of genuine unexpected errors
+  "postCreateCommand": "bash -lc 'if ! git config --get-all secrets.patterns | grep -Fq AKIA; then git-secrets --register-aws; fi; if ! git config --get-all secrets.providers | grep -Fxq \"cat /usr/share/secrets-scanner/nhsd-rules-deny.txt\"; then git-secrets --add-provider -- cat /usr/share/secrets-scanner/nhsd-rules-deny.txt; fi'",
   "mounts": [
     "source=${env:HOME}${env:USERPROFILE}/.aws,target=/home/vscode/.aws,type=bind",
     "source=${env:HOME}${env:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind",
