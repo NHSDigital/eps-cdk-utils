@@ -3,11 +3,13 @@ import {IRole} from "aws-cdk-lib/aws-iam"
 import {HttpMethod, IFunction} from "aws-cdk-lib/aws-lambda"
 import {Construct} from "constructs"
 
+/** Lambda container shape consumed by endpoint integration wiring. */
 export interface LambdaFunctionHolder {
   /** Lambda invoked by this API resource method. */
   readonly function: IFunction
 }
 
+/** Parameters used to create an API resource and attach a Lambda integration. */
 export interface LambdaEndpointProps {
   /** Parent API resource under which this endpoint path is created. */
   parentResource: IResource
@@ -23,9 +25,12 @@ export interface LambdaEndpointProps {
 
 /** Adds a child API resource and wires it to a Lambda integration with explicit credentials. */
 export class LambdaEndpoint extends Construct {
+  /** API resource created by this construct. */
   resource: IResource
 
-  /** Creates the resource/method pair and stores the resulting API resource handle. */
+  /**
+   * Creates the resource/method pair and stores the resulting API resource handle.
+   */
   public constructor(scope: Construct, id: string, props: LambdaEndpointProps) {
     super(scope, id)
 

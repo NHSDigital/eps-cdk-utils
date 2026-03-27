@@ -1,7 +1,9 @@
 import {AccessLogFormat} from "aws-cdk-lib/aws-apigateway"
 
-/** Returns the structured API Gateway access log schema expected by platform observability pipelines. */
-export const accessLogFormat = () => {
+/**
+ * @returns Access-log formatter configured with the package standard schema.
+ */
+export const accessLogFormat = (): AccessLogFormat => {
   return AccessLogFormat.custom(JSON.stringify({
     requestId: "$context.requestId",
     ip: "$context.identity.sourceIp",
