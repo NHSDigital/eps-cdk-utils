@@ -29,6 +29,7 @@ import {ApiGateway as ApiGatewayTarget} from "aws-cdk-lib/aws-route53-targets"
 import {NagSuppressions} from "cdk-nag"
 import {ACCOUNT_RESOURCES, LAMBDA_RESOURCES} from "../constants"
 
+/** Configuration for creating a REST API with optional mTLS and log forwarding integrations. */
 export interface RestApiGatewayProps {
   /** Stack name, used as prefix for resource naming and DNS records. */
   readonly stackName: string
@@ -46,7 +47,10 @@ export interface RestApiGatewayProps {
 
 /** Creates a regional REST API with standard logging, DNS, and optional mTLS/CSOC integration. */
 export class RestApiGateway extends Construct {
+  /** Created API Gateway instance. */
   public readonly api: RestApi
+
+  /** IAM role assumed by API Gateway integrations. */
   public readonly role: IRole
 
   /**
