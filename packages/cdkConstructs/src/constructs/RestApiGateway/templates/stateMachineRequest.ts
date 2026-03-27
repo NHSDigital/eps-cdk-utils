@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 /**
+ * @param stateMachineArn Target workflow ARN used by API Gateway StartExecution.
  * @returns API Gateway request mapping template for StartExecution payloads.
  */
 export const stateMachineRequestTemplate = (stateMachineArn: string) => {

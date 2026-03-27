@@ -58,6 +58,7 @@ const getOperationOutcome = (status: string) => {
 }
 
 /**
+ * @param status HTTP status code string used to select the mapped OperationOutcome shape.
  * @returns VTL response template that maps workflow failures to FHIR OperationOutcome payloads.
  */
 export const stateMachineErrorResponseTemplate = (status: string) => `#set($context.responseOverride.header["Content-Type"] ="application/fhir+json")

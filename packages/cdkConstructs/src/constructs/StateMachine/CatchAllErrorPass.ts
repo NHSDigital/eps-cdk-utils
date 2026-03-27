@@ -31,7 +31,14 @@ export class CatchAllErrorPass extends Construct {
   /** Pass state returned by this construct for chaining in state machine definitions. */
   public readonly state: Pass
 
-  /** Creates a terminal-style error response payload without exposing internal exception detail. */
+  /**
+   * Creates a terminal-style error response payload without exposing internal exception detail.
+   * @example
+   * ```ts
+   * const catchAll = new CatchAllErrorPass(this, 'CatchAllError')
+   * definition.addCatch(catchAll.state)
+   * ```
+   */
   public constructor(scope: Construct, id: string) {
     super(scope, id)
 

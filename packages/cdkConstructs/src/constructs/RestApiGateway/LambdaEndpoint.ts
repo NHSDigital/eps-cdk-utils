@@ -30,6 +30,17 @@ export class LambdaEndpoint extends Construct {
 
   /**
    * Creates the resource/method pair and stores the resulting API resource handle.
+   * @example
+   * ```ts
+   * const endpoint = new LambdaEndpoint(this, 'HealthEndpoint', {
+   *   parentResource: api.root,
+   *   resourceName: 'health',
+   *   method: HttpMethod.GET,
+   *   restApiGatewayRole: apiRole,
+   *   lambdaFunction: {function: healthLambda}
+   * })
+   * endpoint.resource
+   * ```
    */
   public constructor(scope: Construct, id: string, props: LambdaEndpointProps) {
     super(scope, id)

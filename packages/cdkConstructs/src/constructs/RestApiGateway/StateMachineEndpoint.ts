@@ -25,7 +25,20 @@ export class StateMachineEndpoint extends Construct {
   /** API resource created by this construct. */
   resource: IResource
 
-  /** Wires request and response mapping templates for JSON and FHIR payload flows. */
+  /**
+   * Wires request and response mapping templates for JSON and FHIR payload flows.
+   * @example
+   * ```ts
+   * const endpoint = new StateMachineEndpoint(this, 'PrescriptionsEndpoint', {
+   *   parentResource: api.root,
+   *   resourceName: 'prescriptions',
+   *   method: HttpMethod.POST,
+   *   restApiGatewayRole: apiRole,
+   *   stateMachine: prescriptionStateMachine
+   * })
+   * endpoint.resource
+   * ```
+   */
   public constructor(scope: Construct, id: string, props: StateMachineEndpointProps) {
     super(scope, id)
 
