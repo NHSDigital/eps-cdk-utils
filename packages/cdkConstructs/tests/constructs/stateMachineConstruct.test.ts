@@ -111,13 +111,14 @@ describe("ExpressStateMachine construct", () => {
 
 describe("ExpressStateMachine with Splunk disabled", () => {
   let template: Template
+  let construct: ExpressStateMachine
 
   beforeAll(() => {
     const app = new App()
     const stack = new Stack(app, "StateMachineNoSplunkStack")
     const dummyState = new Pass(stack, "DummyState")
 
-    new ExpressStateMachine(stack, "TestStateMachine", {
+    construct = new ExpressStateMachine(stack, "TestStateMachine", {
       stackName: "test-stack",
       stateMachineName: "test-state-machine",
       definition: dummyState,
@@ -131,6 +132,11 @@ describe("ExpressStateMachine with Splunk disabled", () => {
   test("does not create a subscription filter when addSplunkSubscriptionFilter is false", () => {
     const filters = template.findResources("AWS::Logs::SubscriptionFilter")
     expect(Object.keys(filters).length).toBe(0)
+  })
+
+  test("exposes executionPolicy and stateMachine as public properties", () => {
+    expect(construct.executionPolicy).toBeDefined()
+    expect(construct.stateMachine).toBeDefined()
   })
 })
 

@@ -72,8 +72,8 @@ describe("StateMachineEndpoint construct", () => {
         IntegrationHttpMethod: "POST",
         IntegrationResponses: Match.arrayWith([
           Match.objectLike({StatusCode: "200"}),
-          Match.objectLike({StatusCode: "400", SelectionPattern: "^4\\d{2}.*"}),
-          Match.objectLike({StatusCode: "500", SelectionPattern: "^5\\d{2}.*"})
+          Match.objectLike({StatusCode: "400", SelectionPattern: String.raw`^4\d{2}.*`}),
+          Match.objectLike({StatusCode: "500", SelectionPattern: String.raw`^5\d{2}.*`})
         ])
       })
     })
