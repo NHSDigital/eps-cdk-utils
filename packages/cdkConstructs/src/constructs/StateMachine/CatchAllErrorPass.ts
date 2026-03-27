@@ -1,7 +1,7 @@
 import {Pass} from "aws-cdk-lib/aws-stepfunctions"
 import {Construct} from "constructs"
 
-const severErrorOperationOutcome = `{% $string(
+const errorOperationOutcome = `{% $string(
   {
     "ResourceType": "OperationOutcome",
     "meta": {
@@ -26,9 +26,12 @@ const severErrorOperationOutcome = `{% $string(
   }
 ) %}`
 
+/** Produces a fixed 500 FHIR OperationOutcome payload for unhandled workflow failures. */
 export class CatchAllErrorPass extends Construct {
-  public readonly state
+  /** Pass state returned by this construct for chaining in state machine definitions. */
+  public readonly state: Pass
 
+  /** Creates a terminal-style error response payload without exposing internal exception detail. */
   public constructor(scope: Construct, id: string) {
     super(scope, id)
 
@@ -38,9 +41,9 @@ export class CatchAllErrorPass extends Construct {
           statusCode: 500,
           headers: {
             "Content-Type": "application/fhir+json",
-            "Cache-Control": "co-cache"
+            "Cache-Control": "no-cache"
           },
-          body: severErrorOperationOutcome
+          body: errorOperationOutcome
         }
       }
     })

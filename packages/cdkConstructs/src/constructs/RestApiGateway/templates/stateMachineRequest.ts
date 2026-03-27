@@ -1,6 +1,9 @@
 /* eslint-disable max-len */
+/**
+ * @returns API Gateway request mapping template for StartExecution payloads.
+ */
 export const stateMachineRequestTemplate = (stateMachineArn: string) => {
-  return `## Velocity Template used for API Gateway request mapping template
+    return `## Velocity Template used for API Gateway request mapping template
 ## "@@" is used here as a placeholder for '"' to avoid using escape characters.
 
 #set($includeHeaders = true)

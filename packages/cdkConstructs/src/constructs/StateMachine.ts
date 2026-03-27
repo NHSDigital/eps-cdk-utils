@@ -1,4 +1,4 @@
-import {Fn, RemovalPolicy} from "aws-cdk-lib"
+import {RemovalPolicy} from "aws-cdk-lib"
 import {
   IManagedPolicy,
   IRole,
@@ -20,12 +20,22 @@ import {
 } from "aws-cdk-lib/aws-stepfunctions"
 import {Construct} from "constructs"
 import {CfnDeliveryStream} from "aws-cdk-lib/aws-kinesisfirehose"
+import {ACCOUNT_RESOURCES, LAMBDA_RESOURCES} from "../constants"
 
+/**
+ * Configuration for provisioning an Express Step Functions state machine
+ * with logging and optional Splunk forwarding.
+ */
 export interface StateMachineProps {
+  /** Stack name, used as prefix for resource naming and DNS records. */
   readonly stackName: string
+  /** Friendly state machine name used for both AWS resource and log naming. */
   readonly stateMachineName: string
+  /** Workflow definition chain rendered as the state machine definition body. */
   readonly definition: IChainable
+  /** Extra managed policies merged into the execution role when required. */
   readonly additionalPolicies?: Array<IManagedPolicy>
+  /** Retention period applied to the workflow CloudWatch log group. */
   readonly logRetentionInDays: number
   /**
    * Optional KMS key for encrypting CloudWatch Logs.
@@ -54,21 +64,40 @@ export interface StateMachineProps {
   readonly addSplunkSubscriptionFilter?: boolean
 }
 
+/** Creates an Express Step Functions workflow with CloudWatch logging and invoke permissions. */
 export class ExpressStateMachine extends Construct {
+  /** Managed policy that grants permission to start this workflow. */
   public readonly executionPolicy: ManagedPolicy
+
+  /** Created Step Functions state machine resource. */
   public readonly stateMachine: StateMachine
 
+  /**
+   * Provisions an Express Step Functions workflow with logging, tracing, and invoke permissions.
+   * @example
+   * ```ts
+   * const sm = new ExpressStateMachine(this, "MyWorkflow", {
+   *   stackName: "my-service",
+   *   stateMachineName: "my-service-workflow",
+   *   definition: new Pass(this, "Start"),
+   *   logRetentionInDays: 30,
+   *   additionalPolicies: [myLambdaInvokePolicy]
+   * })
+   * // Attach the generated execution policy to an API Gateway role
+   * apiGatewayRole.addManagedPolicy(sm.executionPolicy)
+   * ```
+   */
   public constructor(scope: Construct, id: string, props: StateMachineProps) {
     super(scope, id)
 
     const {
       cloudWatchLogsKmsKey = Key.fromKeyArn(
-        this, "CloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")),
+        this, "CloudWatchLogsKmsKey", ACCOUNT_RESOURCES.CloudwatchLogsKmsKeyArn),
       cloudwatchEncryptionKMSPolicy = ManagedPolicy.fromManagedPolicyArn(
-        this, "cloudwatchEncryptionKMSPolicy", Fn.importValue("account-resources:CloudwatchEncryptionKMSPolicyArn")),
+        this, "cloudwatchEncryptionKMSPolicy", ACCOUNT_RESOURCES.CloudwatchEncryptionKMSPolicyArn),
       splunkDeliveryStream,
       splunkSubscriptionFilterRole = Role.fromRoleArn(
-        this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole")),
+        this, "splunkSubscriptionFilterRole", LAMBDA_RESOURCES.SplunkSubscriptionFilterRole),
       addSplunkSubscriptionFilter = true
     } = props
 
@@ -90,7 +119,7 @@ export class ExpressStateMachine extends Construct {
 
     if (addSplunkSubscriptionFilter) {
       if (splunkDeliveryStream) {
-        new CfnSubscriptionFilter(this, "LambdaLogsSplunkSubscriptionFilter", {
+        new CfnSubscriptionFilter(this, "StateMachineLogsSplunkSubscriptionFilter", {
           destinationArn: splunkDeliveryStream.attrArn,
           filterPattern: "",
           logGroupName: logGroup.logGroupName,
@@ -98,8 +127,8 @@ export class ExpressStateMachine extends Construct {
         })
       } else {
         const splunkDeliveryStreamImport = Stream.fromStreamArn(
-          this, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
-        new CfnSubscriptionFilter(this, "LambdaLogsSplunkSubscriptionFilter", {
+          this, "SplunkDeliveryStream", LAMBDA_RESOURCES.SplunkDeliveryStream)
+        new CfnSubscriptionFilter(this, "StateMachineLogsSplunkSubscriptionFilter", {
           destinationArn: splunkDeliveryStreamImport.streamArn,
           filterPattern: "",
           logGroupName: logGroup.logGroupName,
@@ -118,7 +147,7 @@ export class ExpressStateMachine extends Construct {
           ],
           resources: [
             logGroup.logGroupArn,
-            `${logGroup.logGroupArn}:log-stream`
+            `${logGroup.logGroupArn}:log-stream:*`
           ]
         }),
         new PolicyStatement({

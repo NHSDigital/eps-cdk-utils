@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+/** VTL response template that unwraps successful workflow output and forwards status and headers. */
 export const stateMachine200ResponseTemplate = `#set($payload = $util.parseJson($input.path('$.output')))
 #set($context.responseOverride.status = $payload.Payload.statusCode)
 #set($allHeaders = $payload.Payload.headers)
@@ -41,7 +42,7 @@ const getOperationOutcome = (status: string) => {
       {
         code: errorMap[status].code,
         severity: errorMap[status].severity,
-        diagnostics: errorMap[status],
+        diagnostics: errorMap[status].diagnostics,
         details: {
           coding: [
             {
@@ -56,5 +57,8 @@ const getOperationOutcome = (status: string) => {
   })
 }
 
+/**
+ * @returns VTL response template that maps workflow failures to FHIR OperationOutcome payloads.
+ */
 export const stateMachineErrorResponseTemplate = (status: string) => `#set($context.responseOverride.header["Content-Type"] ="application/fhir+json")
 ${getOperationOutcome(status)}`
