@@ -42,7 +42,7 @@ const getOperationOutcome = (status: string) => {
       {
         code: errorMap[status].code,
         severity: errorMap[status].severity,
-        diagnostics: errorMap[status],
+        diagnostics: errorMap[status].diagnostics,
         details: {
           coding: [
             {
