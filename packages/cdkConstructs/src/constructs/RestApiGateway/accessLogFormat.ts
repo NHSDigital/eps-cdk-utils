@@ -1,6 +1,9 @@
 import {AccessLogFormat} from "aws-cdk-lib/aws-apigateway"
 
-export const accessLogFormat = () => {
+/**
+ * @returns Access-log formatter configured with the package standard schema.
+ */
+export const accessLogFormat = (): AccessLogFormat => {
   return AccessLogFormat.custom(JSON.stringify({
     requestId: "$context.requestId",
     ip: "$context.identity.sourceIp",

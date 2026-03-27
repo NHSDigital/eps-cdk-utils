@@ -12,5 +12,3 @@ RUN if [ -n "${DOCKER_GID}" ]; then \
     fi && \
     usermod -aG docker vscode; \
     fi
-
-RUN apt-get update && apt-get install -y --no-install-recommends git-secrets && rm -rf /var/lib/apt/lists/*

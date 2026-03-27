@@ -9,19 +9,19 @@ env:
 
 jobs:
   get_config_values:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@3ce609c510fc4cf1e8cda1a8b59eb937ff57c79d
+    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@b0172dbdb3af4ae232873106553c316d79d784fc
     with:
       verify_published_from_main_image: false
   dependabot-auto-approve-and-merge:
     needs: quality_checks
-    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@3ce609c510fc4cf1e8cda1a8b59eb937ff57c79d
+    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@352f15f692c23b18f67215ad858f27b06a878717
     secrets:
       AUTOMERGE_APP_ID: ${{ secrets.AUTOMERGE_APP_ID }}
       AUTOMERGE_PEM: ${{ secrets.AUTOMERGE_PEM }}
   pr_title_format_check:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@3ce609c510fc4cf1e8cda1a8b59eb937ff57c79d
+    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@b0172dbdb3af4ae232873106553c316d79d784fc
   quality_checks:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@3ce609c510fc4cf1e8cda1a8b59eb937ff57c79d
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@352f15f692c23b18f67215ad858f27b06a878717
     needs: [get_config_values, get_commit_id]
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
@@ -104,7 +104,7 @@ jobs:
 
   tag_release:
     needs: [get_commit_id, get_config_values]
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@3ce609c510fc4cf1e8cda1a8b59eb937ff57c79d
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@352f15f692c23b18f67215ad858f27b06a878717
     with:
       dry_run: true
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}

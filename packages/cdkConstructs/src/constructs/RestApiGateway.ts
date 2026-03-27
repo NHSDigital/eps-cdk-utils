@@ -1,4 +1,4 @@
-import {Fn, RemovalPolicy} from "aws-cdk-lib"
+import {RemovalPolicy} from "aws-cdk-lib"
 import {
   CfnStage,
   EndpointType,
@@ -27,20 +27,47 @@ import {BucketDeployment, Source} from "aws-cdk-lib/aws-s3-deployment"
 import {ARecord, HostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
 import {ApiGateway as ApiGatewayTarget} from "aws-cdk-lib/aws-route53-targets"
 import {NagSuppressions} from "cdk-nag"
+import {ACCOUNT_RESOURCES, LAMBDA_RESOURCES} from "../constants"
 
+/** Configuration for creating a REST API with optional mTLS and log forwarding integrations. */
 export interface RestApiGatewayProps {
+  /** Stack name, used as prefix for resource naming and DNS records. */
   readonly stackName: string
+  /** Shared retention period for API and deployment-related log groups. */
   readonly logRetentionInDays: number
+  /** Truststore object key to enable mTLS; leave undefined to disable mTLS. */
   readonly mutualTlsTrustStoreKey: string | undefined
+  /** Enables creation of a second subscription filter to forward logs to CSOC. */
   readonly forwardCsocLogs: boolean
+  /** Destination ARN used by the optional CSOC subscription filter. */
   readonly csocApiGatewayDestination: string
+  /** Managed policies attached to the API Gateway execution role. */
   readonly executionPolicies: Array<IManagedPolicy>
 }
 
+/** Creates a regional REST API with standard logging, DNS, and optional mTLS/CSOC integration. */
 export class RestApiGateway extends Construct {
+  /** Created API Gateway instance. */
   public readonly api: RestApi
+
+  /** IAM role assumed by API Gateway integrations. */
   public readonly role: IRole
 
+  /**
+   * Builds API Gateway infrastructure and validates CSOC forwarding configuration.
+   * @example
+   * ```ts
+   * const api = new RestApiGateway(this, "MyApi", {
+   *   stackName: "my-service",
+   *   logRetentionInDays: 30,
+   *   mutualTlsTrustStoreKey: "truststore.pem",
+   *   forwardCsocLogs: true,
+   *   csocApiGatewayDestination: "arn:aws:logs:eu-west-2:123456789012:destination:csoc",
+   *   executionPolicies: [myLambdaInvokePolicy]
+   * })
+   * api.api.root.addResource("patients")
+   * ```
+   */
   public constructor(scope: Construct, id: string, props: RestApiGatewayProps) {
     super(scope, id)
 
@@ -50,26 +77,26 @@ export class RestApiGateway extends Construct {
 
     // Imports
     const cloudWatchLogsKmsKey = Key.fromKeyArn(
-      this, "cloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
+      this, "cloudWatchLogsKmsKey", ACCOUNT_RESOURCES.CloudwatchLogsKmsKeyArn)
 
     const splunkDeliveryStream = Stream.fromStreamArn(
-      this, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
+      this, "SplunkDeliveryStream", LAMBDA_RESOURCES.SplunkDeliveryStream)
 
     const splunkSubscriptionFilterRole = Role.fromRoleArn(
-      this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"))
+      this, "splunkSubscriptionFilterRole", LAMBDA_RESOURCES.SplunkSubscriptionFilterRole)
 
     const trustStoreBucket = Bucket.fromBucketArn(
-      this, "TrustStoreBucket", Fn.importValue("account-resources:TrustStoreBucket"))
+      this, "TrustStoreBucket", ACCOUNT_RESOURCES.TrustStoreBucket)
 
     const trustStoreDeploymentBucket = Bucket.fromBucketArn(
-      this, "TrustStoreDeploymentBucket", Fn.importValue("account-resources:TrustStoreDeploymentBucket"))
+      this, "TrustStoreDeploymentBucket", ACCOUNT_RESOURCES.TrustStoreDeploymentBucket)
 
     const trustStoreBucketKmsKey = Key.fromKeyArn(
-      this, "TrustStoreBucketKmsKey", Fn.importValue("account-resources:TrustStoreBucketKMSKey"))
+      this, "TrustStoreBucketKmsKey", ACCOUNT_RESOURCES.TrustStoreBucketKMSKey)
 
-    const epsDomainName: string = Fn.importValue("eps-route53-resources:EPS-domain")
+    const epsDomainName: string = ACCOUNT_RESOURCES.EpsDomainName
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "HostedZone", {
-      hostedZoneId: Fn.importValue("eps-route53-resources:EPS-ZoneID"),
+      hostedZoneId: ACCOUNT_RESOURCES.EpsZoneId,
       zoneName: epsDomainName
     })
     const serviceDomainName = `${props.stackName}.${epsDomainName}`

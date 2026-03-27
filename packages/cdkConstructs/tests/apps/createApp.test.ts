@@ -11,7 +11,7 @@
  *
  * Note: The getBooleanConfigFromEnvVar function uses Boolean() which converts
  * any non-empty string (including "false", "0", etc.) to true. Tests account
- * for this behavior.
+ * for this behaviour.
  */
 import {App, Aspects, Tags} from "aws-cdk-lib"
 import {

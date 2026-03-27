@@ -6,12 +6,12 @@
     "args": {
       "DOCKER_GID": "${env:DOCKER_GID:}",
       "IMAGE_NAME": "node_24_python_3_14",
-      "IMAGE_VERSION": "v1.0.7",
+      "IMAGE_VERSION": "v1.2.0",
       "USER_UID": "${localEnv:USER_ID:}",
       "USER_GID": "${localEnv:GROUP_ID:}"
     }
   },
-  "postAttachCommand": "git-secrets --register-aws; git-secrets --add-provider -- cat /usr/share/secrets-scanner/nhsd-rules-deny.txt",
+  "postCreateCommand": "bash -lc 'if ! git config --get-all secrets.patterns | grep -Fq AKIA; then git-secrets --register-aws; fi; if ! git config --get-all secrets.providers | grep -Fxq \"cat /usr/share/secrets-scanner/nhsd-rules-deny.txt\"; then git-secrets --add-provider -- cat /usr/share/secrets-scanner/nhsd-rules-deny.txt; fi'",
   "mounts": [
     "source=${env:HOME}${env:USERPROFILE}/.aws,target=/home/vscode/.aws,type=bind",
     "source=${env:HOME}${env:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind",

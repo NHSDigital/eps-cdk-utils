@@ -1,5 +1,5 @@
 import {Construct} from "constructs"
-import {Fn, RemovalPolicy} from "aws-cdk-lib"
+import {RemovalPolicy} from "aws-cdk-lib"
 import {Architecture, ILayerVersion, LayerVersion} from "aws-cdk-lib/aws-lambda"
 import {IKey, Key} from "aws-cdk-lib/aws-kms"
 import {CfnLogGroup, CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
@@ -13,6 +13,7 @@ import {
 } from "aws-cdk-lib/aws-iam"
 import {NagSuppressions} from "cdk-nag"
 import {LAMBDA_INSIGHTS_LAYER_ARNS} from "../config"
+import {ACCOUNT_RESOURCES, LAMBDA_RESOURCES} from "../constants"
 import {addSuppressions} from "../utils/helpers"
 import {CfnDeliveryStream} from "aws-cdk-lib/aws-kinesisfirehose"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
@@ -46,14 +47,17 @@ export const createSharedLambdaResources = (
     additionalPolicies,
     architecture,
     cloudWatchLogsKmsKey = Key.fromKeyArn(
-      scope, "cloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")),
+      scope, "cloudWatchLogsKmsKey", ACCOUNT_RESOURCES.CloudwatchLogsKmsKeyArn),
     cloudwatchEncryptionKMSPolicy = ManagedPolicy.fromManagedPolicyArn(
-      scope, "cloudwatchEncryptionKMSPolicyArn", Fn.importValue("account-resources:CloudwatchEncryptionKMSPolicyArn")),
+      scope,
+      "cloudwatchEncryptionKMSPolicyArn",
+      ACCOUNT_RESOURCES.CloudwatchEncryptionKMSPolicyArn
+    ),
     splunkDeliveryStream,
     splunkSubscriptionFilterRole = Role.fromRoleArn(
-      scope, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole")),
+      scope, "splunkSubscriptionFilterRole", LAMBDA_RESOURCES.SplunkSubscriptionFilterRole),
     lambdaInsightsLogGroupPolicy = ManagedPolicy.fromManagedPolicyArn(
-      scope, "lambdaInsightsLogGroupPolicy", Fn.importValue("lambda-resources:LambdaInsightsLogGroupPolicy")),
+      scope, "lambdaInsightsLogGroupPolicy", LAMBDA_RESOURCES.LambdaInsightsLogGroupPolicy),
     addSplunkSubscriptionFilter = true
   } = props
   const insightsLambdaLayerArn = architecture === Architecture.ARM_64
@@ -84,7 +88,7 @@ export const createSharedLambdaResources = (
       })
     } else {
       const splunkDeliveryStreamImport = Stream.fromStreamArn(
-        scope, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
+        scope, "SplunkDeliveryStream", LAMBDA_RESOURCES.SplunkDeliveryStream)
       new CfnSubscriptionFilter(scope, "LambdaLogsSplunkSubscriptionFilter", {
         destinationArn: splunkDeliveryStreamImport.streamArn,
         filterPattern: "",
