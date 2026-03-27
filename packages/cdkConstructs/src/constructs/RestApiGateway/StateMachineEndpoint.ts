@@ -6,6 +6,7 @@ import {stateMachineRequestTemplate} from "./templates/stateMachineRequest.js"
 import {stateMachine200ResponseTemplate, stateMachineErrorResponseTemplate} from "./templates/stateMachineResponses.js"
 import {ExpressStateMachine} from "../StateMachine.js"
 
+/** Parameters used to create an API endpoint backed by a Step Functions Express workflow. */
 export interface StateMachineEndpointProps {
   /** Parent API resource under which the state machine endpoint is added. */
   parentResource: IResource
@@ -21,6 +22,7 @@ export interface StateMachineEndpointProps {
 
 /** Adds an API Gateway resource/method that starts an Express Step Functions execution. */
 export class StateMachineEndpoint extends Construct {
+  /** API resource created by this construct. */
   resource: IResource
 
   /** Wires request and response mapping templates for JSON and FHIR payload flows. */

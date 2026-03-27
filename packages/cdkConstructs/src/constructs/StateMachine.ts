@@ -22,6 +22,10 @@ import {Construct} from "constructs"
 import {CfnDeliveryStream} from "aws-cdk-lib/aws-kinesisfirehose"
 import {ACCOUNT_RESOURCES, LAMBDA_RESOURCES} from "../constants"
 
+/**
+ * Configuration for provisioning an Express Step Functions state machine
+ * with logging and optional Splunk forwarding.
+ */
 export interface StateMachineProps {
   /** Stack name, used as prefix for resource naming and DNS records. */
   readonly stackName: string
@@ -60,8 +64,12 @@ export interface StateMachineProps {
   readonly addSplunkSubscriptionFilter?: boolean
 }
 
+/** Creates an Express Step Functions workflow with CloudWatch logging and invoke permissions. */
 export class ExpressStateMachine extends Construct {
+  /** Managed policy that grants permission to start this workflow. */
   public readonly executionPolicy: ManagedPolicy
+
+  /** Created Step Functions state machine resource. */
   public readonly stateMachine: StateMachine
 
   /**
