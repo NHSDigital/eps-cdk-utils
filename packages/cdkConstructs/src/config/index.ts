@@ -2,21 +2,36 @@ import {CloudFormationClient, DescribeStacksCommand} from "@aws-sdk/client-cloud
 import {S3Client, HeadObjectCommand} from "@aws-sdk/client-s3"
 import {StandardStackProps} from "../apps/createApp"
 
-export function getConfigFromEnvVar(varName: string, prefix: string = "CDK_CONFIG_"): string {
+export function getConfigFromEnvVar(
+  varName: string,
+  prefix: string = "CDK_CONFIG_",
+  defaultValue: string | undefined
+): string {
   const value = process.env[prefix + varName]
   if (!value) {
+    if (defaultValue !== undefined) {
+      return defaultValue
+    }
     throw new Error(`Environment variable ${prefix}${varName} is not set`)
   }
   return value
 }
 
-export function getBooleanConfigFromEnvVar(varName: string, prefix: string = "CDK_CONFIG_"): boolean {
-  const value = getConfigFromEnvVar(varName, prefix)
+export function getBooleanConfigFromEnvVar(
+  varName: string,
+  prefix: string = "CDK_CONFIG_",
+  defaultValue: string | undefined
+): boolean {
+  const value = getConfigFromEnvVar(varName, prefix, defaultValue)
   return value.toLowerCase().trim() === "true"
 }
 
-export function getNumberConfigFromEnvVar(varName: string, prefix: string = "CDK_CONFIG_"): number {
-  const value = getConfigFromEnvVar(varName, prefix)
+export function getNumberConfigFromEnvVar(
+  varName: string,
+  prefix: string = "CDK_CONFIG_",
+  defaultValue: string | undefined
+): number {
+  const value = getConfigFromEnvVar(varName, prefix, defaultValue)
   return Number(value)
 }
 

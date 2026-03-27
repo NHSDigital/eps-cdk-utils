@@ -102,6 +102,12 @@ describe("config helpers", () => {
       .toThrow("Environment variable MISSING is not set")
   })
 
+  test("getConfigFromEnvVar uses the default value when provided", () => {
+    delete process.env.OPTIONAL
+
+    expect(getConfigFromEnvVar("OPTIONAL", "defaultValue")).toBe("defaultValue")
+  })
+
   test("getBooleanConfigFromEnvVar maps string booleans", () => {
     process.env.FEATURE_FLAG = "true"
     process.env.OTHER_FLAG = "false"

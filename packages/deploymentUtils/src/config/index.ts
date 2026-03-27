@@ -1,20 +1,23 @@
 import {CloudFormationClient, ListExportsCommand} from "@aws-sdk/client-cloudformation"
 
-export function getConfigFromEnvVar(varName: string): string {
+export function getConfigFromEnvVar(varName: string, defaultValue: string | undefined = undefined): string {
   const value = process.env[varName]
   if (!value) {
+    if (defaultValue !== undefined) {
+      return defaultValue
+    }
     throw new Error(`Environment variable ${varName} is not set`)
   }
   return value
 }
 
-export function getBooleanConfigFromEnvVar(varName: string): boolean {
-  const value = getConfigFromEnvVar(varName)
+export function getBooleanConfigFromEnvVar(varName: string, defaultValue: string | undefined = undefined): boolean {
+  const value = getConfigFromEnvVar(varName, defaultValue)
   return value.toLowerCase() === "true"
 }
 
-export function getNumberConfigFromEnvVar(varName: string): number {
-  const value = getConfigFromEnvVar(varName)
+export function getNumberConfigFromEnvVar(varName: string, defaultValue: string | undefined = undefined): number {
+  const value = getConfigFromEnvVar(varName, defaultValue)
   return Number(value)
 }
 

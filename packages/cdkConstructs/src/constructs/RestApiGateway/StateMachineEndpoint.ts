@@ -63,9 +63,9 @@ export class StateMachineEndpoint extends Construct {
       ]
     }), {
       methodResponses: [
-        { statusCode: "200" },
-        { statusCode: "400" },
-        { statusCode: "500" }
+        {statusCode: "200"},
+        {statusCode: "400"},
+        {statusCode: "500"}
       ]
     })
 

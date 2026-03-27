@@ -93,6 +93,12 @@ describe("config helpers", () => {
     expect(getConfigFromEnvVar("STACK_NAME")).toBe("primary")
   })
 
+  test("getConfigFromEnvVar returns the default value when env var is not set", () => {
+    delete process.env.CDK_CONFIG_MISSING
+
+    expect(getConfigFromEnvVar("MISSING", "CDK_CONFIG_", "fallback")).toBe("fallback")
+  })
+
   test("getConfigFromEnvVar throws when value is missing", () => {
     delete process.env.CDK_CONFIG_MISSING
 
@@ -114,10 +120,29 @@ describe("config helpers", () => {
     expect(getBooleanConfigFromEnvVar("OTHER_FLAG")).toBe(false)
   })
 
+  test("getBooleanConfigFromEnvVar uses default value when env var is not set", () => {
+    delete process.env.CDK_CONFIG_BOOL_MISSING
+
+    expect(getBooleanConfigFromEnvVar("BOOL_MISSING", "CDK_CONFIG_", "true")).toBe(true)
+    expect(getBooleanConfigFromEnvVar("BOOL_MISSING", "CDK_CONFIG_", "false")).toBe(false)
+  })
+
   test("getNumberConfigFromEnvVar parses numeric strings", () => {
     process.env.CDK_CONFIG_TIMEOUT = "45"
 
     expect(getNumberConfigFromEnvVar("TIMEOUT")).toBe(45)
+  })
+
+  test("getNumberConfigFromEnvVar uses default value when env var is not set", () => {
+    delete process.env.CDK_CONFIG_NUM_MISSING
+
+    expect(getNumberConfigFromEnvVar("NUM_MISSING", "CDK_CONFIG_", "99")).toBe(99)
+  })
+
+  test("getConfigFromEnvVar ignores default value when env var is set", () => {
+    process.env.CDK_CONFIG_STACK_NAME = "primary"
+
+    expect(getConfigFromEnvVar("STACK_NAME", "CDK_CONFIG_", "ignored")).toBe("primary")
   })
 
   test("getTrustStoreVersion returns the version ID from S3", async () => {
