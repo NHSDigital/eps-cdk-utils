@@ -41,7 +41,7 @@ export class CatchAllErrorPass extends Construct {
           statusCode: 500,
           headers: {
             "Content-Type": "application/fhir+json",
-            "Cache-Control": "co-cache"
+            "Cache-Control": "no-cache"
           },
           body: severErrorOperationOutcome
         }
