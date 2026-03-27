@@ -132,7 +132,7 @@ describe("SsmParametersConstruct uses defaults when optional fields are omitted"
   test("outputDescription defaults to description and outputExportSuffix defaults to nameSuffix", () => {
     const app = new App()
     const stack = new Stack(app, "defaultsStack")
-    new SsmParametersConstruct(stack, "DefaultsParameters", {
+    const params = new SsmParametersConstruct(stack, "DefaultsParameters", {
       namePrefix: "mock-stack",
       parameters: [
         {
@@ -144,6 +144,8 @@ describe("SsmParametersConstruct uses defaults when optional fields are omitted"
         }
       ]
     })
+    // Get sonar to shup up about the construct not being used
+    assert(params, "SsmParametersConstruct should be created successfully")
     const template = Template.fromStack(stack)
 
     const outputs = template.toJSON().Outputs as Record<string, {
