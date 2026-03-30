@@ -24,7 +24,12 @@ import {accessLogFormat} from "./RestApiGateway/accessLogFormat.js"
 import {Certificate, CertificateValidation} from "aws-cdk-lib/aws-certificatemanager"
 import {Bucket} from "aws-cdk-lib/aws-s3"
 import {BucketDeployment, Source} from "aws-cdk-lib/aws-s3-deployment"
-import {ARecord, HostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
+import {
+  ARecord,
+  AaaaRecord,
+  HostedZone,
+  RecordTarget
+} from "aws-cdk-lib/aws-route53"
 import {ApiGateway as ApiGatewayTarget} from "aws-cdk-lib/aws-route53-targets"
 import {NagSuppressions} from "cdk-nag"
 import {ACCOUNT_RESOURCES, LAMBDA_RESOURCES} from "../constants"
@@ -240,6 +245,12 @@ export class RestApiGateway extends Construct {
     }).withoutPolicyUpdates()
 
     new ARecord(this, "ARecord", {
+      recordName: props.stackName,
+      target: RecordTarget.fromAlias(new ApiGatewayTarget(apiGateway)),
+      zone: hostedZone
+    })
+
+    new AaaaRecord(this, "AaaaRecord", {
       recordName: props.stackName,
       target: RecordTarget.fromAlias(new ApiGatewayTarget(apiGateway)),
       zone: hostedZone
