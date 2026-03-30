@@ -1,4 +1,3 @@
-import {CfnOutput} from "aws-cdk-lib"
 import {Effect, ManagedPolicy, PolicyStatement} from "aws-cdk-lib/aws-iam"
 import {StringParameter} from "aws-cdk-lib/aws-ssm"
 import {Construct} from "constructs"
@@ -34,16 +33,6 @@ export interface SsmParameterDefinition {
    * Value stored in the SSM parameter.
    */
   readonly value: string
-  /**
-   * Optional export suffix for the output containing the parameter name.
-   * @default nameSuffix value
-   */
-  readonly outputExportSuffix?: string
-  /**
-   * Optional output description.
-   * @default description value
-   */
-  readonly outputDescription?: string
 }
 
 /**
@@ -54,10 +43,6 @@ export interface SsmParameterDefinition {
  * @property parameters List of SSM parameters to create.
  * @property readPolicyDescription Description for the managed policy that grants
  * read access. Defaults to "Allows reading SSM parameters".
- * @property readPolicyOutputDescription Description for the output exporting the
- * managed policy ARN. Defaults to "Access to the parameters used by the integration".
- * @property readPolicyExportSuffix Export suffix for the output exporting the
- * managed policy ARN.
  */
 export interface SsmParametersConstructProps {
   /**
@@ -73,15 +58,6 @@ export interface SsmParametersConstructProps {
    * @default "Allows reading SSM parameters"
    */
   readonly readPolicyDescription?: string
-  /**
-   * Description for the output exporting the managed policy ARN.
-   * @default "Access to the parameters used by the integration"
-   */
-  readonly readPolicyOutputDescription?: string
-  /**
-   * Export suffix for the output exporting the managed policy ARN.
-   */
-  readonly readPolicyExportSuffix: string
 }
 
 /**
@@ -107,9 +83,7 @@ export class SsmParametersConstruct extends Construct {
     const {
       namePrefix,
       parameters,
-      readPolicyExportSuffix,
-      readPolicyDescription = "Allows reading SSM parameters",
-      readPolicyOutputDescription = "Access to the parameters used by the integration"
+      readPolicyDescription = "Allows reading SSM parameters"
     } = props
 
     if (parameters.length === 0) {
@@ -141,12 +115,6 @@ export class SsmParametersConstruct extends Construct {
       })
 
       createdParameters[parameter.id] = ssmParameter
-
-      new CfnOutput(this, `${parameter.id}ParameterNameOutput`, {
-        description: parameter.outputDescription ?? parameter.description,
-        value: ssmParameter.parameterName,
-        exportName: `${namePrefix}-${parameter.outputExportSuffix ?? parameter.nameSuffix}`
-      })
     }
 
     const readParametersPolicy = new ManagedPolicy(this, "GetParametersPolicy", {
@@ -158,12 +126,6 @@ export class SsmParametersConstruct extends Construct {
           resources: Object.values(createdParameters).map((parameter) => parameter.parameterArn)
         })
       ]
-    })
-
-    new CfnOutput(this, "ReadParametersPolicyOutput", {
-      description: readPolicyOutputDescription,
-      value: readParametersPolicy.managedPolicyArn,
-      exportName: `${namePrefix}-${readPolicyExportSuffix}`
     })
 
     this.parameters = createdParameters
