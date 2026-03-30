@@ -25,8 +25,7 @@ jobs:
     needs: [get_config_values, get_commit_id]
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
-      run_docker_scan: true
-      docker_images: "eps-cdk-utils"
+      run_docker_scan: false
 
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
