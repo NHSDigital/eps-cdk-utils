@@ -6,6 +6,13 @@ export const ACCOUNT_RESOURCES = {
   CloudwatchLogsKmsKeyArn: Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"),
   EpsDomainName: Fn.importValue("eps-route53-resources:EPS-domain"),
   EpsZoneId: Fn.importValue("eps-route53-resources:EPS-ZoneID"),
+  LambdaAccessSecretsPolicy: Fn.importValue("account-resources:LambdaAccessSecretsPolicy"),
+  LambdaDecryptSecretsKMSPolicy: Fn.importValue("account-resources:LambdaDecryptSecretsKMSPolicy"),
+  SpinePrivateKeyARN: Fn.importValue("account-resources:SpinePrivateKey"),
+  SpinePublicCertificateARN: Fn.importValue("account-resources:SpinePublicCertificate"),
+  SpineASIDARN: Fn.importValue("account-resources:SpineASID"),
+  SpinePartyKeyARN: Fn.importValue("account-resources:SpinePartyKey"),
+  SpineCAChainARN: Fn.importValue("account-resources:SpineCAChain"),
   TrustStoreBucket: Fn.importValue("account-resources:TrustStoreBucket"),
   TrustStoreBucketKMSKey: Fn.importValue("account-resources:TrustStoreBucketKMSKey"),
   TrustStoreDeploymentBucket: Fn.importValue("account-resources:TrustStoreDeploymentBucket")
