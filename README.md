@@ -2,9 +2,10 @@
 
 ![Build](https://github.com/NHSDigital/eps-cdk-utils/workflows/release/badge.svg?branch=main)
 
-This repository contains a docker image used to deploy CDK to our environments and a CDK constructs library for common EPS project patterns, plus shared deployment utilities.
+This repository contains 
+- a CDK constructs library for common EPS project patterns
+- a shared deployment utilities library.
 
-- `docker/` Contains Dockerfile used to build image used fo for CDK deployments
 - `packages/cdkConstructs/` Contains common CDK constructs and CDK helpers used in EPS projects
 - `packages/deploymentUtils/` Contains shared code for standardising OpenAPI specifications and performing Proxygen-based deployments
 - `scripts/` Utilities helpful to developers of this specification
@@ -14,8 +15,8 @@ This repository contains a docker image used to deploy CDK to our environments a
 A release of this code happens automatically every Wednesday, but can also be triggered manually by running the release workflow.   
 The release workflow does the following
  - creates a new tagged version
- - creates a new version of the cdk construct library and publishes it to github
- - pushes the cdk-utils docker image to dev and all other environments (subject to manual release approval in github actions)
+ - creates a new version of the eps-cdk-construct- library and publishes it to github
+ - creates a new version of the eps-deployment-utils library and publishes it to github
 
 ## CDK Constructs (`packages/cdkConstructs`)
 
