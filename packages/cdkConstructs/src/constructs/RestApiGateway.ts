@@ -42,7 +42,7 @@ export interface RestApiGatewayProps {
   readonly stackName: string
   /** Shared retention period for API and deployment-related log groups. */
   readonly logRetentionInDays: number
-  /** Truststore object key to enable mTLS; leave undefined to disable mTLS. */
+  /** Truststore object key to enable mTLS; leave undefined to disable mTLS or when enableServiceDomain is false. */
   readonly mutualTlsTrustStoreKey: string | undefined
   /** Enables creation of a second subscription filter to forward logs to CSOC. */
   readonly forwardCsocLogs: boolean
@@ -87,6 +87,10 @@ export class RestApiGateway extends Construct {
 
     if (props.forwardCsocLogs && props.csocApiGatewayDestination === "") {
       throw new Error("csocApiGatewayDestination must be provided when forwardCsocLogs is true")
+    }
+
+    if (!enableServiceDomain && props.mutualTlsTrustStoreKey) {
+      throw new Error("mutualTlsTrustStoreKey should not be provided when enableServiceDomain is false")
     }
 
     // Imports
