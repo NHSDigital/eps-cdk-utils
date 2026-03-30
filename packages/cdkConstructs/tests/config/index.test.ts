@@ -96,7 +96,7 @@ describe("config helpers", () => {
   test("getConfigFromEnvVar returns the default value when env var is not set", () => {
     delete process.env.CDK_CONFIG_MISSING
 
-    expect(getConfigFromEnvVar("MISSING", "CDK_CONFIG_", "fallback")).toBe("fallback")
+    expect(getConfigFromEnvVar("MISSING", "fallback")).toBe("fallback")
   })
 
   test("getConfigFromEnvVar throws when value is missing", () => {
@@ -109,7 +109,7 @@ describe("config helpers", () => {
   test("getConfigFromEnvVar supports alternate prefixes", () => {
     process.env.APP_CUSTOM_VALUE = "alt"
 
-    expect(getConfigFromEnvVar("CUSTOM_VALUE", "APP_")).toBe("alt")
+    expect(getConfigFromEnvVar("CUSTOM_VALUE", undefined, "APP_")).toBe("alt")
   })
 
   test("getBooleanConfigFromEnvVar maps string booleans", () => {
@@ -123,8 +123,8 @@ describe("config helpers", () => {
   test("getBooleanConfigFromEnvVar uses default value when env var is not set", () => {
     delete process.env.CDK_CONFIG_BOOL_MISSING
 
-    expect(getBooleanConfigFromEnvVar("BOOL_MISSING", "CDK_CONFIG_", "true")).toBe(true)
-    expect(getBooleanConfigFromEnvVar("BOOL_MISSING", "CDK_CONFIG_", "false")).toBe(false)
+    expect(getBooleanConfigFromEnvVar("BOOL_MISSING", "true")).toBe(true)
+    expect(getBooleanConfigFromEnvVar("BOOL_MISSING", "false")).toBe(false)
   })
 
   test("getNumberConfigFromEnvVar parses numeric strings", () => {
@@ -136,13 +136,13 @@ describe("config helpers", () => {
   test("getNumberConfigFromEnvVar uses default value when env var is not set", () => {
     delete process.env.CDK_CONFIG_NUM_MISSING
 
-    expect(getNumberConfigFromEnvVar("NUM_MISSING", "CDK_CONFIG_", "99")).toBe(99)
+    expect(getNumberConfigFromEnvVar("NUM_MISSING", "99")).toBe(99)
   })
 
   test("getConfigFromEnvVar ignores default value when env var is set", () => {
     process.env.CDK_CONFIG_STACK_NAME = "primary"
 
-    expect(getConfigFromEnvVar("STACK_NAME", "CDK_CONFIG_", "ignored")).toBe("primary")
+    expect(getConfigFromEnvVar("STACK_NAME", "ignored")).toBe("primary")
   })
 
   test("getTrustStoreVersion returns the version ID from S3", async () => {

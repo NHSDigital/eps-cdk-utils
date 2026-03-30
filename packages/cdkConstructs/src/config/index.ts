@@ -4,8 +4,8 @@ import {StandardStackProps} from "../apps/createApp"
 
 export function getConfigFromEnvVar(
   varName: string,
-  prefix: string = "CDK_CONFIG_",
-  defaultValue: string | undefined = undefined
+  defaultValue?: string,
+  prefix: string = "CDK_CONFIG_"
 ): string {
   const value = process.env[prefix + varName]
   if (!value) {
@@ -19,19 +19,19 @@ export function getConfigFromEnvVar(
 
 export function getBooleanConfigFromEnvVar(
   varName: string,
-  prefix: string = "CDK_CONFIG_",
-  defaultValue: string | undefined = undefined
+  defaultValue?: string,
+  prefix: string = "CDK_CONFIG_"
 ): boolean {
-  const value = getConfigFromEnvVar(varName, prefix, defaultValue)
+  const value = getConfigFromEnvVar(varName, defaultValue, prefix)
   return value.toLowerCase().trim() === "true"
 }
 
 export function getNumberConfigFromEnvVar(
   varName: string,
-  prefix: string = "CDK_CONFIG_",
-  defaultValue: string | undefined = undefined
+  defaultValue?: string,
+  prefix: string = "CDK_CONFIG_"
 ): number {
-  const value = getConfigFromEnvVar(varName, prefix, defaultValue)
+  const value = getConfigFromEnvVar(varName, defaultValue, prefix)
   return Number(value)
 }
 
