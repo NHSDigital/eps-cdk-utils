@@ -1,4 +1,3 @@
-import {CfnOutput} from "aws-cdk-lib"
 import {Effect, ManagedPolicy, PolicyStatement} from "aws-cdk-lib/aws-iam"
 import {StringParameter} from "aws-cdk-lib/aws-ssm"
 import {Construct} from "constructs"
@@ -107,9 +106,7 @@ export class SsmParametersConstruct extends Construct {
     const {
       namePrefix,
       parameters,
-      readPolicyExportSuffix,
-      readPolicyDescription = "Allows reading SSM parameters",
-      readPolicyOutputDescription = "Access to the parameters used by the integration"
+      readPolicyDescription = "Allows reading SSM parameters"
     } = props
 
     if (parameters.length === 0) {
@@ -141,12 +138,6 @@ export class SsmParametersConstruct extends Construct {
       })
 
       createdParameters[parameter.id] = ssmParameter
-
-      new CfnOutput(this, `${parameter.id}ParameterNameOutput`, {
-        description: parameter.outputDescription ?? parameter.description,
-        value: ssmParameter.parameterName,
-        exportName: `${namePrefix}-${parameter.outputExportSuffix ?? parameter.nameSuffix}`
-      })
     }
 
     const readParametersPolicy = new ManagedPolicy(this, "GetParametersPolicy", {
@@ -158,12 +149,6 @@ export class SsmParametersConstruct extends Construct {
           resources: Object.values(createdParameters).map((parameter) => parameter.parameterArn)
         })
       ]
-    })
-
-    new CfnOutput(this, "ReadParametersPolicyOutput", {
-      description: readPolicyOutputDescription,
-      value: readParametersPolicy.managedPolicyArn,
-      exportName: `${namePrefix}-${readPolicyExportSuffix}`
     })
 
     this.parameters = createdParameters
