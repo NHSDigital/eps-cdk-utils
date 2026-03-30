@@ -28,6 +28,7 @@ import {
   ARecord,
   AaaaRecord,
   HostedZone,
+  IHostedZone,
   RecordTarget
 } from "aws-cdk-lib/aws-route53"
 import {ApiGateway as ApiGatewayTarget} from "aws-cdk-lib/aws-route53-targets"
@@ -49,6 +50,10 @@ export interface RestApiGatewayProps {
   readonly csocApiGatewayDestination: string
   /** Managed policies attached to the API Gateway execution role. */
   readonly executionPolicies: Array<IManagedPolicy>
+  /**
+   * When true (default), creates the custom service domain, ACM certificate, and Route53 records.
+   */
+  readonly enableServiceDomain?: boolean
 }
 
 /** Creates a regional REST API with standard logging, DNS, and optional mTLS/CSOC integration. */
@@ -70,12 +75,15 @@ export class RestApiGateway extends Construct {
    *   forwardCsocLogs: true,
    *   csocApiGatewayDestination: "arn:aws:logs:eu-west-2:123456789012:destination:csoc",
    *   executionPolicies: [myLambdaInvokePolicy]
+   *   enableServiceDomain: true
    * })
    * api.api.root.addResource("patients")
    * ```
    */
   public constructor(scope: Construct, id: string, props: RestApiGatewayProps) {
     super(scope, id)
+
+    const enableServiceDomain = (props.enableServiceDomain ?? true)
 
     if (props.forwardCsocLogs && props.csocApiGatewayDestination === "") {
       throw new Error("csocApiGatewayDestination must be provided when forwardCsocLogs is true")
@@ -100,12 +108,17 @@ export class RestApiGateway extends Construct {
     const trustStoreBucketKmsKey = Key.fromKeyArn(
       this, "TrustStoreBucketKmsKey", ACCOUNT_RESOURCES.TrustStoreBucketKMSKey)
 
-    const epsDomainName: string = ACCOUNT_RESOURCES.EpsDomainName
-    const hostedZone = HostedZone.fromHostedZoneAttributes(this, "HostedZone", {
-      hostedZoneId: ACCOUNT_RESOURCES.EpsZoneId,
-      zoneName: epsDomainName
-    })
-    const serviceDomainName = `${props.stackName}.${epsDomainName}`
+    let hostedZone: IHostedZone | undefined
+    let serviceDomainName: string | undefined
+
+    if (enableServiceDomain) {
+      const epsDomainName: string = ACCOUNT_RESOURCES.EpsDomainName
+      hostedZone = HostedZone.fromHostedZoneAttributes(this, "HostedZone", {
+        hostedZoneId: ACCOUNT_RESOURCES.EpsZoneId,
+        zoneName: epsDomainName
+      })
+      serviceDomainName = `${props.stackName}.${epsDomainName}`
+    }
 
     // Resources
     const logGroup = new LogGroup(this, "ApiGatewayAccessLogGroup", {
@@ -131,14 +144,16 @@ export class RestApiGateway extends Construct {
       })
     }
 
-    const certificate = new Certificate(this, "Certificate", {
-      domainName: serviceDomainName,
-      validation: CertificateValidation.fromDns(hostedZone)
-    })
+    const certificate = enableServiceDomain && hostedZone && serviceDomainName
+      ? new Certificate(this, "Certificate", {
+        domainName: serviceDomainName,
+        validation: CertificateValidation.fromDns(hostedZone)
+      })
+      : undefined
 
     let mtlsConfig: MTLSConfig | undefined
 
-    if (props.mutualTlsTrustStoreKey) {
+    if (enableServiceDomain && props.mutualTlsTrustStoreKey) {
       const trustStoreKeyPrefix = `cpt-api/${props.stackName}-truststore`
       const logGroup = new LogGroup(this, "LambdaLogGroup", {
         encryptionKey: cloudWatchLogsKmsKey,
@@ -220,13 +235,16 @@ export class RestApiGateway extends Construct {
 
     const apiGateway = new RestApi(this, "ApiGateway", {
       restApiName: `${props.stackName}-apigw`,
-      domainName: {
-        domainName: serviceDomainName,
-        certificate: certificate,
-        securityPolicy: SecurityPolicy.TLS_1_2,
-        endpointType: EndpointType.REGIONAL,
-        mtls: mtlsConfig
-      },
+      ...(enableServiceDomain
+        ? {
+          domainName: {
+            domainName: serviceDomainName!,
+            certificate: certificate!,
+            securityPolicy: SecurityPolicy.TLS_1_2,
+            endpointType: EndpointType.REGIONAL,
+            mtls: mtlsConfig
+          }
+        } : {}),
       disableExecuteApiEndpoint: mtlsConfig ? true : false, // NOSONAR
       endpointConfiguration: {
         types: [EndpointType.REGIONAL]
@@ -245,17 +263,19 @@ export class RestApiGateway extends Construct {
       managedPolicies: props.executionPolicies
     }).withoutPolicyUpdates()
 
-    new ARecord(this, "ARecord", {
-      recordName: props.stackName,
-      target: RecordTarget.fromAlias(new ApiGatewayTarget(apiGateway)),
-      zone: hostedZone
-    })
+    if (enableServiceDomain && hostedZone) {
+      new ARecord(this, "ARecord", {
+        recordName: props.stackName,
+        target: RecordTarget.fromAlias(new ApiGatewayTarget(apiGateway)),
+        zone: hostedZone
+      })
 
-    new AaaaRecord(this, "AaaaRecord", {
-      recordName: props.stackName,
-      target: RecordTarget.fromAlias(new ApiGatewayTarget(apiGateway)),
-      zone: hostedZone
-    })
+      new AaaaRecord(this, "AaaaRecord", {
+        recordName: props.stackName,
+        target: RecordTarget.fromAlias(new ApiGatewayTarget(apiGateway)),
+        zone: hostedZone
+      })
+    }
 
     const cfnStage = apiGateway.deploymentStage.node.defaultChild as CfnStage
     addSuppressions([cfnStage], ["API_GW_CACHE_ENABLED_AND_ENCRYPTED"])
