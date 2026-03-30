@@ -156,6 +156,19 @@ describe("RestApiGateway without mTLS", () => {
     })
   })
 
+  test("creates Route53 AAAA record", () => {
+    template.hasResourceProperties("AWS::Route53::RecordSet", {
+      Name: {
+        "Fn::Join": ["", [
+          "test-stack.",
+          {"Fn::ImportValue": "eps-route53-resources:EPS-domain"},
+          "."
+        ]]
+      },
+      Type: "AAAA"
+    })
+  })
+
   test("sets guard metadata on stage", () => {
     const stages = template.findResources("AWS::ApiGateway::Stage")
     const stageKeys = Object.keys(stages)
