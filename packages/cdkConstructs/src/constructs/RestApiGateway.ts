@@ -33,6 +33,7 @@ import {
 import {ApiGateway as ApiGatewayTarget} from "aws-cdk-lib/aws-route53-targets"
 import {NagSuppressions} from "cdk-nag"
 import {ACCOUNT_RESOURCES, LAMBDA_RESOURCES} from "../constants"
+import {addSuppressions} from "../utils/helpers"
 
 /** Configuration for creating a REST API with optional mTLS and log forwarding integrations. */
 export interface RestApiGatewayProps {
@@ -257,13 +258,7 @@ export class RestApiGateway extends Construct {
     })
 
     const cfnStage = apiGateway.deploymentStage.node.defaultChild as CfnStage
-    cfnStage.cfnOptions.metadata = {
-      guard: {
-        SuppressedRules: [
-          "API_GW_CACHE_ENABLED_AND_ENCRYPTED"
-        ]
-      }
-    }
+    addSuppressions([cfnStage], ["API_GW_CACHE_ENABLED_AND_ENCRYPTED"])
 
     // Outputs
     this.api = apiGateway

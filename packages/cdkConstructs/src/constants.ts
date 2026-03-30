@@ -17,3 +17,8 @@ export const LAMBDA_RESOURCES = {
   SplunkDeliveryStream: Fn.importValue("lambda-resources:SplunkDeliveryStream"),
   SplunkSubscriptionFilterRole: Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole")
 }
+
+/** Shared cfn-guard rule identifiers used for metadata suppressions. */
+export const CFN_GUARD_RULES = {
+  LogGroupRetentionPeriodCheck: "CW_LOGGROUP_RETENTION_PERIOD_CHECK"
+} as const
