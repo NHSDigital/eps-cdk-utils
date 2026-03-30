@@ -24,30 +24,22 @@ describe("SsmParametersConstruct", () => {
           id: "MockParam1",
           nameSuffix: "MockParam1",
           description: "Description for mock parameter 1",
-          value: "mock-value-1",
-          outputExportSuffix: "MockParam1Parameter",
-          outputDescription: "Name of the SSM parameter holding MockParam1"
+          value: "mock-value-1"
         },
         {
           id: "MockParam2",
           nameSuffix: "MockParam2",
           description: "Description for mock parameter 2",
-          value: "mock-value-2",
-          outputExportSuffix: "MockParam2Parameter",
-          outputDescription: "Name of the SSM parameter holding MockParam2"
+          value: "mock-value-2"
         },
         {
           id: "MockParam3",
           nameSuffix: "MockParam3",
           description: "Description for mock parameter 3",
-          value: "mock-value-3",
-          outputExportSuffix: "MockParam3Parameter",
-          outputDescription: "Name of the SSM parameter holding MockParam3"
+          value: "mock-value-3"
         }
       ],
-      readPolicyDescription: "Mock policy description",
-      readPolicyOutputDescription: "Mock read policy output description",
-      readPolicyExportSuffix: "MockGetParametersPolicy"
+      readPolicyDescription: "Mock policy description"
     })
     // Sonarcloud complains that the construct is not used, so we add an assertion to sidestep that.
     assert(params, "SsmParametersConstruct should be created successfully")
@@ -114,8 +106,7 @@ describe("SsmParametersConstruct uses defaults when optional fields are omitted"
           description: "Mock SSM parameter description",
           value: "mock-value-1"
         }
-      ],
-      readPolicyExportSuffix: "MockGetParametersPolicy"
+      ]
     })
     // Get sonar to shup up about the construct not being used
     assert(params, "SsmParametersConstruct should be created successfully")

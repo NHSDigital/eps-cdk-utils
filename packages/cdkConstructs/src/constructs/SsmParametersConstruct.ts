@@ -33,16 +33,6 @@ export interface SsmParameterDefinition {
    * Value stored in the SSM parameter.
    */
   readonly value: string
-  /**
-   * Optional export suffix for the output containing the parameter name.
-   * @default nameSuffix value
-   */
-  readonly outputExportSuffix?: string
-  /**
-   * Optional output description.
-   * @default description value
-   */
-  readonly outputDescription?: string
 }
 
 /**
@@ -53,10 +43,6 @@ export interface SsmParameterDefinition {
  * @property parameters List of SSM parameters to create.
  * @property readPolicyDescription Description for the managed policy that grants
  * read access. Defaults to "Allows reading SSM parameters".
- * @property readPolicyOutputDescription Description for the output exporting the
- * managed policy ARN. Defaults to "Access to the parameters used by the integration".
- * @property readPolicyExportSuffix Export suffix for the output exporting the
- * managed policy ARN.
  */
 export interface SsmParametersConstructProps {
   /**
@@ -72,15 +58,6 @@ export interface SsmParametersConstructProps {
    * @default "Allows reading SSM parameters"
    */
   readonly readPolicyDescription?: string
-  /**
-   * Description for the output exporting the managed policy ARN.
-   * @default "Access to the parameters used by the integration"
-   */
-  readonly readPolicyOutputDescription?: string
-  /**
-   * Export suffix for the output exporting the managed policy ARN.
-   */
-  readonly readPolicyExportSuffix: string
 }
 
 /**
