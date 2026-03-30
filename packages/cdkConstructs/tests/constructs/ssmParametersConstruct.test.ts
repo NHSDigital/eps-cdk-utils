@@ -94,7 +94,7 @@ describe("SsmParametersConstruct", () => {
 })
 
 describe("SsmParametersConstruct uses defaults when optional fields are omitted", () => {
-  test("creates parameter and policy with default readPolicyDescription when optional fields are omitted", () => {
+  test("creates parameter and policy with default readPolicyDescription", () => {
     const app = new App()
     const stack = new Stack(app, "defaultsStack")
     const params = new SsmParametersConstruct(stack, "DefaultsParameters", {
