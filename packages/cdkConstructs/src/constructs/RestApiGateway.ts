@@ -74,7 +74,7 @@ export class RestApiGateway extends Construct {
    *   mutualTlsTrustStoreKey: "truststore.pem",
    *   forwardCsocLogs: true,
    *   csocApiGatewayDestination: "arn:aws:logs:eu-west-2:123456789012:destination:csoc",
-   *   executionPolicies: [myLambdaInvokePolicy]
+   *   executionPolicies: [myLambdaInvokePolicy],
    *   enableServiceDomain: true
    * })
    * api.api.root.addResource("patients")
