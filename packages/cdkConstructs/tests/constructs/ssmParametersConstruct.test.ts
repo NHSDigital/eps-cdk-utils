@@ -24,30 +24,22 @@ describe("SsmParametersConstruct", () => {
           id: "MockParam1",
           nameSuffix: "MockParam1",
           description: "Description for mock parameter 1",
-          value: "mock-value-1",
-          outputExportSuffix: "MockParam1Parameter",
-          outputDescription: "Name of the SSM parameter holding MockParam1"
+          value: "mock-value-1"
         },
         {
           id: "MockParam2",
           nameSuffix: "MockParam2",
           description: "Description for mock parameter 2",
-          value: "mock-value-2",
-          outputExportSuffix: "MockParam2Parameter",
-          outputDescription: "Name of the SSM parameter holding MockParam2"
+          value: "mock-value-2"
         },
         {
           id: "MockParam3",
           nameSuffix: "MockParam3",
           description: "Description for mock parameter 3",
-          value: "mock-value-3",
-          outputExportSuffix: "MockParam3Parameter",
-          outputDescription: "Name of the SSM parameter holding MockParam3"
+          value: "mock-value-3"
         }
       ],
-      readPolicyDescription: "Mock policy description",
-      readPolicyOutputDescription: "Mock read policy output description",
-      readPolicyExportSuffix: "MockGetParametersPolicy"
+      readPolicyDescription: "Mock policy description"
     })
     // Sonarcloud complains that the construct is not used, so we add an assertion to sidestep that.
     assert(params, "SsmParametersConstruct should be created successfully")
@@ -99,37 +91,10 @@ describe("SsmParametersConstruct", () => {
     expect(statement.Action).toEqual(["ssm:GetParameter", "ssm:GetParameters"])
     expect(statement.Resource).toHaveLength(3)
   })
-
-  test("exports parameter names and policy ARN", () => {
-    const outputs = template.toJSON().Outputs as Record<string, {
-      Description?: string
-      Export?: {
-        Name?: string
-      }
-    }>
-
-    const exportedNames = Object.values(outputs)
-      .map((output) => output.Export?.Name)
-      .filter((name): name is string => name !== undefined)
-
-    const descriptions = Object.values(outputs)
-      .map((output) => output.Description)
-      .filter((description): description is string => description !== undefined)
-
-    expect(exportedNames).toContain("mock-stack-MockParam1Parameter")
-    expect(exportedNames).toContain("mock-stack-MockParam2Parameter")
-    expect(exportedNames).toContain("mock-stack-MockParam3Parameter")
-    expect(exportedNames).toContain("mock-stack-MockGetParametersPolicy")
-
-    expect(descriptions).toContain("Name of the SSM parameter holding MockParam1")
-    expect(descriptions).toContain("Name of the SSM parameter holding MockParam2")
-    expect(descriptions).toContain("Name of the SSM parameter holding MockParam3")
-    expect(descriptions).toContain("Mock read policy output description")
-  })
 })
 
 describe("SsmParametersConstruct uses defaults when optional fields are omitted", () => {
-  test("outputDescription defaults to description and outputExportSuffix defaults to nameSuffix", () => {
+  test("creates parameter and policy with default readPolicyDescription", () => {
     const app = new App()
     const stack = new Stack(app, "defaultsStack")
     const params = new SsmParametersConstruct(stack, "DefaultsParameters", {
@@ -140,7 +105,6 @@ describe("SsmParametersConstruct uses defaults when optional fields are omitted"
           nameSuffix: "MockParam1Suffix",
           description: "Mock SSM parameter description",
           value: "mock-value-1"
-          // outputDescription and outputExportSuffix intentionally omitted
         }
       ]
     })
@@ -148,14 +112,16 @@ describe("SsmParametersConstruct uses defaults when optional fields are omitted"
     assert(params, "SsmParametersConstruct should be created successfully")
     const template = Template.fromStack(stack)
 
-    const outputs = template.toJSON().Outputs as Record<string, {
-      Description?: string
-      Export?: {Name?: string}
-    }>
+    template.hasResourceProperties("AWS::SSM::Parameter", {
+      Name: "mock-stack-MockParam1Suffix",
+      Type: "String",
+      Value: "mock-value-1",
+      Description: "Mock SSM parameter description"
+    })
 
-    const outputValues = Object.values(outputs)
-    expect(outputValues.some((o) => o.Description === "Mock SSM parameter description")).toBe(true)
-    expect(outputValues.some((o) => o.Export?.Name === "mock-stack-MockParam1Suffix")).toBe(true)
+    template.hasResourceProperties("AWS::IAM::ManagedPolicy", {
+      Description: "Allows reading SSM parameters"
+    })
   })
 })
 
