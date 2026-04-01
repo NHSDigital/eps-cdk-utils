@@ -20,7 +20,8 @@ import {
 } from "aws-cdk-lib/aws-stepfunctions"
 import {Construct} from "constructs"
 import {CfnDeliveryStream} from "aws-cdk-lib/aws-kinesisfirehose"
-import {ACCOUNT_RESOURCES, LAMBDA_RESOURCES} from "../constants"
+import {ACCOUNT_RESOURCES, CFN_GUARD_RULES, LAMBDA_RESOURCES} from "../constants"
+import {addSuppressions} from "../utils/helpers"
 
 /**
  * Configuration for provisioning an Express Step Functions state machine
@@ -109,13 +110,7 @@ export class ExpressStateMachine extends Construct {
     })
 
     const cfnLogGroup = logGroup.node.defaultChild as CfnLogGroup
-    cfnLogGroup.cfnOptions.metadata = {
-      guard: {
-        SuppressedRules: [
-          "CW_LOGGROUP_RETENTION_PERIOD_CHECK"
-        ]
-      }
-    }
+    addSuppressions([cfnLogGroup], [CFN_GUARD_RULES.LogGroupRetentionPeriodCheck])
 
     if (addSplunkSubscriptionFilter) {
       if (splunkDeliveryStream) {

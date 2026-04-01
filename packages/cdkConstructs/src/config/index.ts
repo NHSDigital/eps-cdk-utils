@@ -1,10 +1,11 @@
 import {CloudFormationClient, DescribeStacksCommand} from "@aws-sdk/client-cloudformation"
 import {S3Client, HeadObjectCommand} from "@aws-sdk/client-s3"
 import {StandardStackProps} from "../apps/createApp"
+import {CDK_ENV_PREFIX} from "../constants"
 
 export function getConfigFromEnvVar(
   varName: string,
-  prefix: string = "CDK_CONFIG_",
+  prefix: string = CDK_ENV_PREFIX,
   defaultValue: string | undefined = undefined
 ): string {
   const value = process.env[prefix + varName]
@@ -19,7 +20,7 @@ export function getConfigFromEnvVar(
 
 export function getBooleanConfigFromEnvVar(
   varName: string,
-  prefix: string = "CDK_CONFIG_",
+  prefix: string = CDK_ENV_PREFIX,
   defaultValue: string | undefined = undefined
 ): boolean {
   const value = getConfigFromEnvVar(varName, prefix, defaultValue)
@@ -28,7 +29,7 @@ export function getBooleanConfigFromEnvVar(
 
 export function getNumberConfigFromEnvVar(
   varName: string,
-  prefix: string = "CDK_CONFIG_",
+  prefix: string = CDK_ENV_PREFIX,
   defaultValue: string | undefined = undefined
 ): number {
   const value = getConfigFromEnvVar(varName, prefix, defaultValue)
