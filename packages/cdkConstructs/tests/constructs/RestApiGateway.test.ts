@@ -35,7 +35,8 @@ describe("RestApiGateway without mTLS", () => {
       mutualTlsTrustStoreKey: undefined,
       forwardCsocLogs: false,
       csocApiGatewayDestination: "",
-      executionPolicies: [testPolicy]
+      executionPolicies: [testPolicy],
+      enableServiceDomain: true
     })
 
     // Add a dummy method to satisfy API Gateway validation
@@ -155,6 +156,19 @@ describe("RestApiGateway without mTLS", () => {
     })
   })
 
+  test("creates Route53 AAAA record", () => {
+    template.hasResourceProperties("AWS::Route53::RecordSet", {
+      Name: {
+        "Fn::Join": ["", [
+          "test-stack.",
+          {"Fn::ImportValue": "eps-route53-resources:EPS-domain"},
+          "."
+        ]]
+      },
+      Type: "AAAA"
+    })
+  })
+
   test("sets guard metadata on stage", () => {
     const stages = template.findResources("AWS::ApiGateway::Stage")
     const stageKeys = Object.keys(stages)
@@ -192,7 +206,8 @@ describe("RestApiGateway with CSOC logs", () => {
       mutualTlsTrustStoreKey: undefined,
       forwardCsocLogs: true,
       csocApiGatewayDestination: "arn:aws:logs:eu-west-2:123456789012:destination:csoc-destination",
-      executionPolicies: [testPolicy]
+      executionPolicies: [testPolicy],
+      enableServiceDomain: true
     })
 
     // Add a dummy method to satisfy API Gateway validation
@@ -240,7 +255,8 @@ describe("RestApiGateway with mTLS", () => {
       mutualTlsTrustStoreKey: "truststore.pem",
       forwardCsocLogs: false,
       csocApiGatewayDestination: "",
-      executionPolicies: [testPolicy]
+      executionPolicies: [testPolicy],
+      enableServiceDomain: true
     })
 
     // Add a dummy method to satisfy API Gateway validation
@@ -350,5 +366,94 @@ describe("RestApiGateway validation errors", () => {
       csocApiGatewayDestination: "",
       executionPolicies: [testPolicy]
     })).toThrow("csocApiGatewayDestination must be provided when forwardCsocLogs is true")
+  })
+
+  test("throws when enableServiceDomain is false and mutualTlsTrustStoreKey is provided", () => {
+    const app = new App()
+    const stack = new Stack(app, "ValidationStack2")
+    const testPolicy = new ManagedPolicy(stack, "TestPolicy", {
+      description: "test execution policy",
+      statements: [
+        new PolicyStatement({
+          actions: ["lambda:InvokeFunction"],
+          resources: ["arn:aws:lambda:eu-west-2:123456789012:function:test-function"]
+        })
+      ]
+    })
+
+    expect(() => new RestApiGateway(stack, "TestApiGateway", {
+      stackName: "test-stack",
+      logRetentionInDays: 30,
+      mutualTlsTrustStoreKey: "truststore.pem",
+      forwardCsocLogs: false,
+      csocApiGatewayDestination: "",
+      executionPolicies: [testPolicy],
+      enableServiceDomain: false
+    })).toThrow("mutualTlsTrustStoreKey should not be provided when enableServiceDomain is false")
+  })
+})
+
+describe("RestApiGateway enableServiceDomain default behaviour", () => {
+  test("creates custom domain resources when enableServiceDomain is omitted", () => {
+    const app = new App()
+    const stack = new Stack(app, "EnableServiceDomainDefaultStack")
+    const testPolicy = new ManagedPolicy(stack, "TestPolicy", {
+      description: "test execution policy",
+      statements: [
+        new PolicyStatement({
+          actions: ["lambda:InvokeFunction"],
+          resources: ["arn:aws:lambda:eu-west-2:123456789012:function:test-function"]
+        })
+      ]
+    })
+
+    const apiGateway = new RestApiGateway(stack, "TestApiGateway", {
+      stackName: "test-stack",
+      logRetentionInDays: 30,
+      mutualTlsTrustStoreKey: undefined,
+      forwardCsocLogs: false,
+      csocApiGatewayDestination: "",
+      executionPolicies: [testPolicy]
+    })
+
+    apiGateway.api.root.addMethod("GET")
+
+    const template = Template.fromStack(stack)
+    template.resourceCountIs("AWS::CertificateManager::Certificate", 1)
+    template.resourceCountIs("AWS::ApiGateway::DomainName", 1)
+    template.resourceCountIs("AWS::Route53::RecordSet", 2)
+  })
+})
+
+describe("RestApiGateway with enableServiceDomain false", () => {
+  test("does not create custom domain resources when enableServiceDomain is false", () => {
+    const app = new App()
+    const stack = new Stack(app, "DisableServiceDomainStack")
+    const testPolicy = new ManagedPolicy(stack, "TestPolicy", {
+      description: "test execution policy",
+      statements: [
+        new PolicyStatement({
+          actions: ["lambda:InvokeFunction"],
+          resources: ["arn:aws:lambda:eu-west-2:123456789012:function:test-function"]
+        })
+      ]
+    })
+
+    const apiGateway = new RestApiGateway(stack, "TestApiGateway", {
+      stackName: "test-stack",
+      logRetentionInDays: 30,
+      mutualTlsTrustStoreKey: undefined,
+      forwardCsocLogs: false,
+      csocApiGatewayDestination: "",
+      executionPolicies: [testPolicy],
+      enableServiceDomain: false
+    })
+
+    apiGateway.api.root.addMethod("GET")
+
+    const template = Template.fromStack(stack)
+    template.resourceCountIs("AWS::CertificateManager::Certificate", 0)
+    template.resourceCountIs("AWS::ApiGateway::DomainName", 0)
+    template.resourceCountIs("AWS::Route53::RecordSet", 0)
   })
 })

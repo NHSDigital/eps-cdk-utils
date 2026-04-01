@@ -24,6 +24,7 @@ import {
 } from "vitest"
 import {createApp, type CreateAppParams} from "../../src/apps/createApp"
 import {AwsSolutionsChecks} from "cdk-nag"
+import {CDK_ENV_PREFIX} from "../../src/constants"
 
 describe("createApp", () => {
   const originalEnv = process.env
@@ -51,10 +52,10 @@ describe("createApp", () => {
 
   describe("when all environment variables are set", () => {
     beforeEach(() => {
-      process.env.CDK_CONFIG_versionNumber = "1.2.3"
-      process.env.CDK_CONFIG_commitId = "abc123def456"
-      process.env.CDK_CONFIG_isPullRequest = "false"
-      process.env.CDK_CONFIG_environment = "test-environment"
+      process.env[`${CDK_ENV_PREFIX}versionNumber`] = "1.2.3"
+      process.env[`${CDK_ENV_PREFIX}commitId`] = "abc123def456"
+      process.env[`${CDK_ENV_PREFIX}isPullRequest`] = "false"
+      process.env[`${CDK_ENV_PREFIX}environment`] = "test-environment"
     })
 
     test("creates an App with correct configuration", () => {
@@ -124,10 +125,10 @@ describe("createApp", () => {
 
   describe("when isPullRequest is true", () => {
     beforeEach(() => {
-      process.env.CDK_CONFIG_versionNumber = "0.0.1-pr"
-      process.env.CDK_CONFIG_commitId = "pr123"
-      process.env.CDK_CONFIG_isPullRequest = "true"
-      process.env.CDK_CONFIG_environment = "test-environment"
+      process.env[`${CDK_ENV_PREFIX}versionNumber`] = "0.0.1-pr"
+      process.env[`${CDK_ENV_PREFIX}commitId`] = "pr123"
+      process.env[`${CDK_ENV_PREFIX}isPullRequest`] = "true"
+      process.env[`${CDK_ENV_PREFIX}environment`] = "test-environment"
     })
 
     test("correctly modifies props", () => {
@@ -159,41 +160,41 @@ describe("createApp", () => {
   describe("when environment variables are missing", () => {
 
     test("throws error when versionNumber is not set", () => {
-      process.env.CDK_CONFIG_commitId = "abc123"
-      process.env.CDK_CONFIG_isPullRequest = "false"
-      process.env.CDK_CONFIG_environment = "test-environment"
+      process.env[`${CDK_ENV_PREFIX}commitId`] = "abc123"
+      process.env[`${CDK_ENV_PREFIX}isPullRequest`] = "false"
+      process.env[`${CDK_ENV_PREFIX}environment`] = "test-environment"
 
       expect(() => {
         createApp(buildParams())
-      }).toThrow("Environment variable CDK_CONFIG_versionNumber is not set")
+      }).toThrow(`Environment variable ${CDK_ENV_PREFIX}versionNumber is not set`)
     })
 
     test("throws error when commitId is not set", () => {
-      process.env.CDK_CONFIG_versionNumber = "1.0.0"
-      process.env.CDK_CONFIG_isPullRequest = "false"
-      process.env.CDK_CONFIG_environment = "test-environment"
+      process.env[`${CDK_ENV_PREFIX}versionNumber`] = "1.0.0"
+      process.env[`${CDK_ENV_PREFIX}isPullRequest`] = "false"
+      process.env[`${CDK_ENV_PREFIX}environment`] = "test-environment"
 
       expect(() => {
         createApp(buildParams())
-      }).toThrow("Environment variable CDK_CONFIG_commitId is not set")
+      }).toThrow(`Environment variable ${CDK_ENV_PREFIX}commitId is not set`)
     })
 
     test("throws error when isPullRequest is not set", () => {
-      process.env.CDK_CONFIG_versionNumber = "1.0.0"
-      process.env.CDK_CONFIG_commitId = "abc123"
-      process.env.CDK_CONFIG_environment = "test-environment"
+      process.env[`${CDK_ENV_PREFIX}versionNumber`] = "1.0.0"
+      process.env[`${CDK_ENV_PREFIX}commitId`] = "abc123"
+      process.env[`${CDK_ENV_PREFIX}environment`] = "test-environment"
       expect(() => {
         createApp(buildParams())
-      }).toThrow("Environment variable CDK_CONFIG_isPullRequest is not set")
+      }).toThrow(`Environment variable ${CDK_ENV_PREFIX}isPullRequest is not set`)
     })
 
     test("throws error when environment is not set", () => {
-      process.env.CDK_CONFIG_versionNumber = "1.0.0"
-      process.env.CDK_CONFIG_commitId = "abc123"
-      process.env.CDK_CONFIG_isPullRequest = "false"
+      process.env[`${CDK_ENV_PREFIX}versionNumber`] = "1.0.0"
+      process.env[`${CDK_ENV_PREFIX}commitId`] = "abc123"
+      process.env[`${CDK_ENV_PREFIX}isPullRequest`] = "false"
       expect(() => {
         createApp(buildParams())
-      }).toThrow("Environment variable CDK_CONFIG_environment is not set")
+      }).toThrow(`Environment variable ${CDK_ENV_PREFIX}environment is not set`)
     })
 
   })

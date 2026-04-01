@@ -12,6 +12,7 @@ import {
   getNumberConfigFromEnvVar,
   getTrustStoreVersion
 } from "../../src/config/index"
+import {CDK_ENV_PREFIX} from "../../src/constants"
 
 const mockCloudFormationSend = vi.fn()
 const mockS3Send = vi.fn()
@@ -88,22 +89,22 @@ describe("config helpers", () => {
   })
 
   test("getConfigFromEnvVar returns the configured value", () => {
-    process.env.CDK_CONFIG_STACK_NAME = "primary"
+    process.env[`${CDK_ENV_PREFIX}STACK_NAME`] = "primary"
 
     expect(getConfigFromEnvVar("STACK_NAME")).toBe("primary")
   })
 
   test("getConfigFromEnvVar returns the default value when env var is not set", () => {
-    delete process.env.CDK_CONFIG_MISSING
+    delete process.env[`${CDK_ENV_PREFIX}MISSING`]
 
-    expect(getConfigFromEnvVar("MISSING", "CDK_CONFIG_", "fallback")).toBe("fallback")
+    expect(getConfigFromEnvVar("MISSING", CDK_ENV_PREFIX, "fallback")).toBe("fallback")
   })
 
   test("getConfigFromEnvVar throws when value is missing", () => {
-    delete process.env.CDK_CONFIG_MISSING
+    delete process.env[`${CDK_ENV_PREFIX}MISSING`]
 
     expect(() => getConfigFromEnvVar("MISSING"))
-      .toThrow("Environment variable CDK_CONFIG_MISSING is not set")
+      .toThrow(`Environment variable ${CDK_ENV_PREFIX}MISSING is not set`)
   })
 
   test("getConfigFromEnvVar supports alternate prefixes", () => {
@@ -113,36 +114,36 @@ describe("config helpers", () => {
   })
 
   test("getBooleanConfigFromEnvVar maps string booleans", () => {
-    process.env.CDK_CONFIG_FEATURE_FLAG = "true "
-    process.env.CDK_CONFIG_OTHER_FLAG = " false"
+    process.env[`${CDK_ENV_PREFIX}FEATURE_FLAG`] = "true "
+    process.env[`${CDK_ENV_PREFIX}OTHER_FLAG`] = " false"
 
     expect(getBooleanConfigFromEnvVar("FEATURE_FLAG")).toBe(true)
     expect(getBooleanConfigFromEnvVar("OTHER_FLAG")).toBe(false)
   })
 
   test("getBooleanConfigFromEnvVar uses default value when env var is not set", () => {
-    delete process.env.CDK_CONFIG_BOOL_MISSING
+    delete process.env[`${CDK_ENV_PREFIX}BOOL_MISSING`]
 
-    expect(getBooleanConfigFromEnvVar("BOOL_MISSING", "CDK_CONFIG_", "true")).toBe(true)
-    expect(getBooleanConfigFromEnvVar("BOOL_MISSING", "CDK_CONFIG_", "false")).toBe(false)
+    expect(getBooleanConfigFromEnvVar("BOOL_MISSING", CDK_ENV_PREFIX, "true")).toBe(true)
+    expect(getBooleanConfigFromEnvVar("BOOL_MISSING", CDK_ENV_PREFIX, "false")).toBe(false)
   })
 
   test("getNumberConfigFromEnvVar parses numeric strings", () => {
-    process.env.CDK_CONFIG_TIMEOUT = "45"
+    process.env[`${CDK_ENV_PREFIX}TIMEOUT`] = "45"
 
     expect(getNumberConfigFromEnvVar("TIMEOUT")).toBe(45)
   })
 
   test("getNumberConfigFromEnvVar uses default value when env var is not set", () => {
-    delete process.env.CDK_CONFIG_NUM_MISSING
+    delete process.env[`${CDK_ENV_PREFIX}NUM_MISSING`]
 
-    expect(getNumberConfigFromEnvVar("NUM_MISSING", "CDK_CONFIG_", "99")).toBe(99)
+    expect(getNumberConfigFromEnvVar("NUM_MISSING", CDK_ENV_PREFIX, "99")).toBe(99)
   })
 
   test("getConfigFromEnvVar ignores default value when env var is set", () => {
-    process.env.CDK_CONFIG_STACK_NAME = "primary"
+    process.env[`${CDK_ENV_PREFIX}STACK_NAME`] = "primary"
 
-    expect(getConfigFromEnvVar("STACK_NAME", "CDK_CONFIG_", "ignored")).toBe("primary")
+    expect(getConfigFromEnvVar("STACK_NAME", CDK_ENV_PREFIX, "ignored")).toBe("primary")
   })
 
   test("getTrustStoreVersion returns the version ID from S3", async () => {
