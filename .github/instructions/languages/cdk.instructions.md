@@ -3,6 +3,8 @@ description: 'Guidelines for writing, reviewing, and maintaining AWS CDK (TypeSc
 applyTo: 'packages/cdk/**/*.ts'
 ---
 
+This file is mastered in https://github.com/NHSDigital/eps-copilot-instructions and is automatically synced to all EPS repositories. To suggest changes, please open an issue or pull request in the eps-copilot-instructions repository.
+
 # AWS CDK TypeScript Development
 
 This file provides instructions for generating, reviewing, and maintaining AWS CDK code in the `packages/cdk` folder. It covers best practices, code standards, architecture, and validation for infrastructure-as-code using AWS CDK in TypeScript.
@@ -90,7 +92,7 @@ export class CptsApiAppStack extends Stack {
 ## Validation and Verification
 
 - Build: `make cdk-synth`
-- Lint: `npm run lint --workspace packges/cdk`
+- Lint: `npm run lint --workspace packages/cdk`
 
 ## Maintenance
 
