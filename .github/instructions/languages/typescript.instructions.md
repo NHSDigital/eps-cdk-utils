@@ -1,7 +1,9 @@
 ---
 description: 'Guidelines for writing high-quality, maintainable TypeScript code with best practices for logging, error handling, code organization, naming, formatting, and style.'
-applyTo: '**/*.ts, **/*.tsx'
+applyTo: '**/*.{ts,tsx}'
 ---
+
+This file is mastered in https://github.com/NHSDigital/eps-copilot-instructions and is automatically synced to all EPS repositories. To suggest changes, please open an issue or pull request in the eps-copilot-instructions repository.
 
 # TypeScript Development Guidelines
 

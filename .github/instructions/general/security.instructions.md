@@ -1,7 +1,10 @@
 ---
-applyTo: '*'
+applyTo: '**/*'
 description: "Comprehensive secure coding instructions for all languages and frameworks, based on OWASP Top 10 and industry best practices."
 ---
+
+This file is mastered in https://github.com/NHSDigital/eps-copilot-instructions and is automatically synced to all EPS repositories. To suggest changes, please open an issue or pull request in the eps-copilot-instructions repository.
+
 # Secure Coding and OWASP Guidelines
 
 ## Instructions
