@@ -1,5 +1,8 @@
 import {Fn} from "aws-cdk-lib"
 
+/** Default prefix used for CDK config environment variables. */
+export const CDK_ENV_PREFIX = "CDK_CONFIG_"
+
 /** Imported cross-stack account resource values used by constructs in this package. */
 export const ACCOUNT_RESOURCES = {
   CloudwatchEncryptionKMSPolicyArn: Fn.importValue("account-resources:CloudwatchEncryptionKMSPolicyArn"),
