@@ -5,16 +5,14 @@ on:
   schedule:
     - cron: "0 8 * * 3"
 
-env:
-  BRANCH_NAME: ${{ github.ref_name }}
-
+permissions: {}
 jobs:
   get_config_values:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@b0172dbdb3af4ae232873106553c316d79d784fc
+    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@f747b664d45e3a554d5ab72af509ab8e14fe84aa
     with:
       verify_published_from_main_image: true
   quality_checks:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@352f15f692c23b18f67215ad858f27b06a878717
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@f747b664d45e3a554d5ab72af509ab8e14fe84aa
     needs: [get_config_values]
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
@@ -24,11 +22,10 @@ jobs:
 
   tag_release:
     needs: [quality_checks, get_config_values]
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@352f15f692c23b18f67215ad858f27b06a878717
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@f747b664d45e3a554d5ab72af509ab8e14fe84aa
     with:
       dry_run: false
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       branch_name: main
       publish_packages: packages/cdkConstructs,packages/deploymentUtils
       tag_format: ${{ needs.get_config_values.outputs.tag_format }}
-    secrets: inherit

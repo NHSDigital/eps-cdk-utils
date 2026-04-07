@@ -4,24 +4,22 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
-
+permissions: {}
 jobs:
   get_config_values:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@b0172dbdb3af4ae232873106553c316d79d784fc
+    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@f747b664d45e3a554d5ab72af509ab8e14fe84aa
     with:
       verify_published_from_main_image: false
   dependabot-auto-approve-and-merge:
     needs: quality_checks
-    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@352f15f692c23b18f67215ad858f27b06a878717
+    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@f747b664d45e3a554d5ab72af509ab8e14fe84aa
     secrets:
       AUTOMERGE_APP_ID: ${{ secrets.AUTOMERGE_APP_ID }}
       AUTOMERGE_PEM: ${{ secrets.AUTOMERGE_PEM }}
   pr_title_format_check:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@b0172dbdb3af4ae232873106553c316d79d784fc
+    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@f747b664d45e3a554d5ab72af509ab8e14fe84aa
   quality_checks:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@352f15f692c23b18f67215ad858f27b06a878717
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@f747b664d45e3a554d5ab72af509ab8e14fe84aa
     needs: [get_config_values]
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
@@ -56,7 +54,6 @@ jobs:
             }
           result-encoding: string
 
-
   package_npm_code:
     needs: [quality_checks, get_config_values]
     uses: ./.github/workflows/package_npm_code.yml
@@ -65,11 +62,10 @@ jobs:
 
   tag_release:
     needs: [get_config_values]
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@352f15f692c23b18f67215ad858f27b06a878717
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@f747b664d45e3a554d5ab72af509ab8e14fe84aa
     with:
       dry_run: true
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       branch_name: ${{ github.event.pull_request.head.ref }}
       publish_packages: packages/cdkConstructs,packages/deploymentUtils
       tag_format: ${{ needs.get_config_values.outputs.tag_format }}
-    secrets: inherit
