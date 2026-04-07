@@ -40,33 +40,6 @@ jobs:
 
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  get_issue_number:
-    runs-on: ubuntu-22.04
-    outputs:
-      issue_number: ${{steps.get_issue_number.outputs.result}}
-
-    steps:
-      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
-        name: get issue number
-        id: get_issue_number
-        with:
-          script: |
-            if (context.issue.number) {
-              // Return issue number if present
-              return context.issue.number;
-            } else {
-              // Otherwise return issue number from commit
-              return (
-                await github.rest.repos.listPullRequestsAssociatedWithCommit({
-                  commit_sha: context.sha,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                })
-              ).data[0].number;
-            }
-          result-encoding: string
-
   package_npm_code:
     needs: [quality_checks, get_config_values]
     uses: ./.github/workflows/package_npm_code.yml
