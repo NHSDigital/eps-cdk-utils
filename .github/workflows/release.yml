@@ -31,6 +31,10 @@ jobs:
   tag_release:
     needs: [quality_checks, get_config_values]
     uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@f747b664d45e3a554d5ab72af509ab8e14fe84aa
+    permissions:
+      contents: write
+      id-token: write
+      packages: write
     with:
       dry_run: false
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
