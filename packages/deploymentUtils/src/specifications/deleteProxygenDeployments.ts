@@ -1,6 +1,6 @@
 import {LambdaClient} from "@aws-sdk/client-lambda"
-import {getCFConfigValue, getCloudFormationExports} from "../config"
-import {invokeLambda} from "./invokeLambda"
+import {getCFConfigValue, getCloudFormationExports} from "../config/index.js"
+import {invokeLambda} from "./invokeLambda.js"
 
 interface ProxygenInstance {
   name: string
