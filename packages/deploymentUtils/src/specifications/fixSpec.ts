@@ -1,4 +1,4 @@
-import {calculateVersionedStackName} from "../config/index"
+import {calculateVersionedStackName} from "../config/index.js"
 
 type SpecConfig = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

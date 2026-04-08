@@ -1,7 +1,7 @@
 import {LambdaClient} from "@aws-sdk/client-lambda"
-import {getCFConfigValue, getCloudFormationExports} from "../config/index"
-import {fixSpec} from "./fixSpec"
-import {invokeLambda} from "./invokeLambda"
+import {getCFConfigValue, getCloudFormationExports} from "../config/index.js"
+import {fixSpec} from "./fixSpec.js"
+import {invokeLambda} from "./invokeLambda.js"
 
 export type ApiConfig = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
