@@ -4,59 +4,42 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
-
+permissions: {}
 jobs:
   get_config_values:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@b0172dbdb3af4ae232873106553c316d79d784fc
+    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@c8f899f30a6a726859b0277faa73cd9ff7f4de20
     with:
       verify_published_from_main_image: false
+    permissions:
+      attestations: read
+      contents: read
+      packages: read
   dependabot-auto-approve-and-merge:
     needs: quality_checks
-    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@352f15f692c23b18f67215ad858f27b06a878717
+    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@c8f899f30a6a726859b0277faa73cd9ff7f4de20
+    permissions:
+      contents: write
+      pull-requests: write
     secrets:
       AUTOMERGE_APP_ID: ${{ secrets.AUTOMERGE_APP_ID }}
       AUTOMERGE_PEM: ${{ secrets.AUTOMERGE_PEM }}
   pr_title_format_check:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@b0172dbdb3af4ae232873106553c316d79d784fc
+    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@c8f899f30a6a726859b0277faa73cd9ff7f4de20
+    permissions:
+      pull-requests: write
   quality_checks:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@352f15f692c23b18f67215ad858f27b06a878717
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@c8f899f30a6a726859b0277faa73cd9ff7f4de20
     needs: [get_config_values]
+    permissions:
+      contents: read
+      id-token: write
+      packages: read
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       run_docker_scan: false
 
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  get_issue_number:
-    runs-on: ubuntu-22.04
-    outputs:
-      issue_number: ${{steps.get_issue_number.outputs.result}}
-
-    steps:
-      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
-        name: get issue number
-        id: get_issue_number
-        with:
-          script: |
-            if (context.issue.number) {
-              // Return issue number if present
-              return context.issue.number;
-            } else {
-              // Otherwise return issue number from commit
-              return (
-                await github.rest.repos.listPullRequestsAssociatedWithCommit({
-                  commit_sha: context.sha,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                })
-              ).data[0].number;
-            }
-          result-encoding: string
-
-
   package_npm_code:
     needs: [quality_checks, get_config_values]
     uses: ./.github/workflows/package_npm_code.yml
@@ -65,11 +48,14 @@ jobs:
 
   tag_release:
     needs: [get_config_values]
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@352f15f692c23b18f67215ad858f27b06a878717
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@c8f899f30a6a726859b0277faa73cd9ff7f4de20
+    permissions:
+      contents: write
+      id-token: write
+      packages: write
     with:
       dry_run: true
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       branch_name: ${{ github.event.pull_request.head.ref }}
       publish_packages: packages/cdkConstructs,packages/deploymentUtils
       tag_format: ${{ needs.get_config_values.outputs.tag_format }}
-    secrets: inherit
