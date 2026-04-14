@@ -61,13 +61,7 @@ export class StateMachineEndpoint extends Construct {
           }
         }
       ]
-    }), {
-      methodResponses: [
-        {statusCode: "200"},
-        {statusCode: "400"},
-        {statusCode: "500"}
-      ]
-    })
+    }))
 
     this.resource = resource
   }
