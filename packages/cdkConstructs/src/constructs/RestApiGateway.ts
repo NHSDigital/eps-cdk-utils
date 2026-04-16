@@ -58,11 +58,11 @@ export interface RestApiGatewayProps {
   readonly enableServiceDomain?: boolean
 }
 
-const function getTrustStoreKeyPrefix(stackName: string, stackUUID?: string) {
+const getTrustStoreKeyPrefix = (stackName: string, stackUUID?: string) => {
   if (stackUUID) {
     return `cpt-api/${stackName}-${stackUUID}-truststore`
   } else {
-    return `cpt-api/${props.stackName}-truststore`
+    return `cpt-api/${stackName}-truststore`
   }
 }
 
