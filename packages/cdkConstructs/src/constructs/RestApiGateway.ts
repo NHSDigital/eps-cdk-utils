@@ -40,6 +40,8 @@ import {addSuppressions} from "../utils/helpers"
 export interface RestApiGatewayProps {
   /** Stack name, used as prefix for resource naming and DNS records. */
   readonly stackName: string
+  /** Stack UUID, used as a unique identifier for the stack. Optional */
+  readonly stackUUID?: string
   /** Shared retention period for API and deployment-related log groups. */
   readonly logRetentionInDays: number
   /** Truststore object key to enable mTLS; leave undefined to disable mTLS or when enableServiceDomain is false. */
@@ -54,6 +56,14 @@ export interface RestApiGatewayProps {
    * When true (default), creates the custom service domain, ACM certificate, and Route53 records.
    */
   readonly enableServiceDomain?: boolean
+}
+
+const function getTrustStoreKeyPrefix(stackName: string, stackUUID?: string) {
+  if (stackUUID) {
+    return `cpt-api/${stackName}-${stackUUID}-truststore`
+  } else {
+    return `cpt-api/${props.stackName}-truststore`
+  }
 }
 
 /** Creates a regional REST API with standard logging, DNS, and optional mTLS/CSOC integration. */
@@ -158,7 +168,7 @@ export class RestApiGateway extends Construct {
     let mtlsConfig: MTLSConfig | undefined
 
     if (enableServiceDomain && props.mutualTlsTrustStoreKey) {
-      const trustStoreKeyPrefix = `cpt-api/${props.stackName}-truststore`
+      const trustStoreKeyPrefix = getTrustStoreKeyPrefix(props.stackName, props.stackUUID)
       const logGroup = new LogGroup(this, "LambdaLogGroup", {
         encryptionKey: cloudWatchLogsKmsKey,
         logGroupName: `/aws/lambda/${props.stackName}-truststore-deployment`,
