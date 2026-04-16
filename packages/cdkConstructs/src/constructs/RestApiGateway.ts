@@ -48,7 +48,7 @@ export interface RestApiGatewayProps {
   readonly serviceName?: string | undefined
   /** Optional stack UUID. If set, included in the mTLS trust store key prefix to prevent collisions
    * when deploying multiple stacks with the same name, avoiding AWS API Gateway mTLS key caching issues. */
-  readonly trustStoreUuuid?: string | undefined
+  readonly trustStoreUuuid: string | undefined
   /** Enables creation of a second subscription filter to forward logs to CSOC. */
   readonly forwardCsocLogs: boolean
   /** Destination ARN used by the optional CSOC subscription filter. */
