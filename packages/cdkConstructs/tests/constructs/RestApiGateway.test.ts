@@ -351,7 +351,7 @@ describe("RestApiGateway with mTLS and stackUUID", () => {
         PolicyDocument?: {
           Statement?: Array<{
             Action?: Array<string>
-            Resource?: string | Array<string>
+            Resource?: unknown | Array<unknown>
           }>
         }
       }
@@ -372,7 +372,7 @@ describe("RestApiGateway with mTLS and stackUUID", () => {
 
     const apiGateway = new RestApiGateway(stack, "TestApiGateway", {
       stackName: "test-stack",
-      stackUUID: "f47ac10b",
+      stackUUID: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
       logRetentionInDays: 30,
       mutualTlsTrustStoreKey: "truststore.pem",
       forwardCsocLogs: false,
@@ -385,7 +385,7 @@ describe("RestApiGateway with mTLS and stackUUID", () => {
 
     const template = Template.fromStack(stack)
     template.hasResourceProperties("Custom::CDKBucketDeployment", {
-      DestinationKeyPrefix: "cpt-api/test-stack-f47ac10b-truststore"
+      DestinationBucketKeyPrefix: "cpt-api/test-stack-f47ac10b-58cc-4372-a567-0e02b2c3d479-truststore"
     })
 
     const policies = template.findResources("AWS::IAM::ManagedPolicy")
@@ -403,7 +403,13 @@ describe("RestApiGateway with mTLS and stackUUID", () => {
           ? statement.Resource
           : (statement.Resource ? [statement.Resource] : [])
 
-        return resources.some((resource) => resource.includes(expectedTrustStoreObjectPath))
+        return resources.some((resource) => {
+          if (typeof resource === "string") {
+            return resource.includes(expectedTrustStoreObjectPath)
+          }
+
+          return JSON.stringify(resource).includes(expectedTrustStoreObjectPath)
+        })
       })
     })
 

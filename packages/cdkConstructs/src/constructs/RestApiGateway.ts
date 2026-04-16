@@ -41,7 +41,7 @@ export interface RestApiGatewayProps {
   /** Stack name, used as prefix for resource naming and DNS records. */
   readonly stackName: string
   /** Stack UUID, used as a unique identifier for the stack. Optional */
-  readonly stackUUID?: string
+  readonly stackUuid?: string
   /** Shared retention period for API and deployment-related log groups. */
   readonly logRetentionInDays: number
   /** Truststore object key to enable mTLS; leave undefined to disable mTLS or when enableServiceDomain is false. */
@@ -58,9 +58,9 @@ export interface RestApiGatewayProps {
   readonly enableServiceDomain?: boolean
 }
 
-const getTrustStoreKeyPrefix = (stackName: string, stackUUID?: string) => {
-  if (stackUUID) {
-    return `cpt-api/${stackName}-${stackUUID}-truststore`
+const getTrustStoreKeyPrefix = (stackName: string, stackUuid?: string) => {
+  if (stackUuid) {
+    return `cpt-api/${stackName}-${stackUuid}-truststore`
   } else {
     return `cpt-api/${stackName}-truststore`
   }
