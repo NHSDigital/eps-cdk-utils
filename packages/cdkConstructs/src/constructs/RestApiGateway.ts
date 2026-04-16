@@ -40,7 +40,8 @@ import {addSuppressions} from "../utils/helpers"
 export interface RestApiGatewayProps {
   /** Stack name, used as prefix for resource naming and DNS records. */
   readonly stackName: string
-  /** Stack UUID, used as a unique identifier for the stack. Optional */
+  /** Optional stack UUID. If set, included in the mTLS trust store key prefix to prevent collisions
+   * when deploying multiple stacks with the same name, avoiding AWS API Gateway mTLS key caching issues. */
   readonly stackUuid?: string
   /** Shared retention period for API and deployment-related log groups. */
   readonly logRetentionInDays: number
