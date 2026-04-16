@@ -45,7 +45,7 @@ export interface RestApiGatewayProps {
   /** Truststore object key to enable mTLS; leave undefined to disable mTLS or when enableServiceDomain is false. */
   readonly mutualTlsTrustStoreKey: string | undefined
   /** Required with mutualTlsTrustStoreKey. Service name, used as prefix for trust store key */
-  readonly serviceName?: string | undefined
+  readonly serviceName: string | undefined
   /** Optional stack UUID. If set, included in the mTLS trust store key prefix to prevent collisions
    * when deploying multiple stacks with the same name, avoiding AWS API Gateway mTLS key caching issues. */
   readonly trustStoreUuuid: string | undefined
