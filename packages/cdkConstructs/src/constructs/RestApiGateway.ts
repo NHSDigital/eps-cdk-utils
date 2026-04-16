@@ -61,7 +61,9 @@ export interface RestApiGatewayProps {
   readonly enableServiceDomain?: boolean
 }
 
-const getTrustStoreKeyPrefix = (serviceName: string, stackName: string, trustStoreUuuid?: string) => {
+const getTrustStoreKeyPrefix = (stackName: string,
+  serviceName: string | undefined,
+  trustStoreUuuid: string | undefined) => {
   if (trustStoreUuuid) {
     return `${serviceName}/${stackName}-${trustStoreUuuid}-truststore`
   } else {
@@ -177,7 +179,11 @@ export class RestApiGateway extends Construct {
     let mtlsConfig: MTLSConfig | undefined
 
     if (enableServiceDomain && props.mutualTlsTrustStoreKey) {
-      const trustStoreKeyPrefix = getTrustStoreKeyPrefix(props.serviceName, props.stackName, props.trustStoreUuuid)
+      const trustStoreKeyPrefix = getTrustStoreKeyPrefix(
+        props.stackName,
+        props.serviceName,
+        props.trustStoreUuuid
+      )
       const logGroup = new LogGroup(this, "LambdaLogGroup", {
         encryptionKey: cloudWatchLogsKmsKey,
         logGroupName: `/aws/lambda/${props.stackName}-truststore-deployment`,
