@@ -253,6 +253,7 @@ describe("RestApiGateway with mTLS", () => {
       stackName: "test-stack",
       logRetentionInDays: 30,
       mutualTlsTrustStoreKey: "truststore.pem",
+      serviceName: "cpt-api",
       forwardCsocLogs: false,
       csocApiGatewayDestination: "",
       executionPolicies: [testPolicy],
@@ -321,6 +322,12 @@ describe("RestApiGateway with mTLS", () => {
     expect(Object.keys(customResources).length).toBeGreaterThan(0)
   })
 
+  test("uses serviceName in trust store deployment key prefix", () => {
+    template.hasResourceProperties("Custom::CDKBucketDeployment", {
+      DestinationBucketKeyPrefix: "cpt-api/test-stack-truststore"
+    })
+  })
+
   test("disables execute-api endpoint when mTLS is enabled", () => {
     template.hasResourceProperties("AWS::ApiGateway::RestApi", {
       Name: "test-stack-apigw",
@@ -344,8 +351,8 @@ describe("RestApiGateway with mTLS", () => {
   })
 })
 
-describe("RestApiGateway with mTLS and stackUUID", () => {
-  test("uses stackUUID in trust store deployment key prefix", () => {
+describe("RestApiGateway with mTLS and trustStoreUuuid", () => {
+  test("uses trustStoreUuuid in trust store deployment key prefix", () => {
     interface ManagedPolicyResource {
       Properties?: {
         PolicyDocument?: {
@@ -372,9 +379,10 @@ describe("RestApiGateway with mTLS and stackUUID", () => {
 
     const apiGateway = new RestApiGateway(stack, "TestApiGateway", {
       stackName: "test-stack",
-      stackUUID: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
       logRetentionInDays: 30,
       mutualTlsTrustStoreKey: "truststore.pem",
+      serviceName: "cpt-api",
+      trustStoreUuuid: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
       forwardCsocLogs: false,
       csocApiGatewayDestination: "",
       executionPolicies: [testPolicy],
@@ -458,11 +466,36 @@ describe("RestApiGateway validation errors", () => {
       stackName: "test-stack",
       logRetentionInDays: 30,
       mutualTlsTrustStoreKey: "truststore.pem",
+      serviceName: "cpt-api",
       forwardCsocLogs: false,
       csocApiGatewayDestination: "",
       executionPolicies: [testPolicy],
       enableServiceDomain: false
     })).toThrow("mutualTlsTrustStoreKey should not be provided when enableServiceDomain is false")
+  })
+
+  test("throws when mutualTlsTrustStoreKey is set and serviceName is missing", () => {
+    const app = new App()
+    const stack = new Stack(app, "ValidationStack3")
+    const testPolicy = new ManagedPolicy(stack, "TestPolicy", {
+      description: "test execution policy",
+      statements: [
+        new PolicyStatement({
+          actions: ["lambda:InvokeFunction"],
+          resources: ["arn:aws:lambda:eu-west-2:123456789012:function:test-function"]
+        })
+      ]
+    })
+
+    expect(() => new RestApiGateway(stack, "TestApiGateway", {
+      stackName: "test-stack",
+      logRetentionInDays: 30,
+      mutualTlsTrustStoreKey: "truststore.pem",
+      forwardCsocLogs: false,
+      csocApiGatewayDestination: "",
+      executionPolicies: [testPolicy],
+      enableServiceDomain: true
+    })).toThrow("serviceName must be provided when mTLS is set")
   })
 })
 

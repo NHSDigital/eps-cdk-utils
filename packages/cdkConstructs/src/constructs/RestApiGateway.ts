@@ -40,13 +40,15 @@ import {addSuppressions} from "../utils/helpers"
 export interface RestApiGatewayProps {
   /** Stack name, used as prefix for resource naming and DNS records. */
   readonly stackName: string
-  /** Optional stack UUID. If set, included in the mTLS trust store key prefix to prevent collisions
-   * when deploying multiple stacks with the same name, avoiding AWS API Gateway mTLS key caching issues. */
-  readonly stackUuid?: string
   /** Shared retention period for API and deployment-related log groups. */
   readonly logRetentionInDays: number
   /** Truststore object key to enable mTLS; leave undefined to disable mTLS or when enableServiceDomain is false. */
   readonly mutualTlsTrustStoreKey: string | undefined
+  /** Required with mutualTlsTrustStoreKey. Service name, used as prefix for trust store key */
+  readonly serviceName?: string | undefined
+  /** Optional stack UUID. If set, included in the mTLS trust store key prefix to prevent collisions
+   * when deploying multiple stacks with the same name, avoiding AWS API Gateway mTLS key caching issues. */
+  readonly trustStoreUuuid?: string | undefined
   /** Enables creation of a second subscription filter to forward logs to CSOC. */
   readonly forwardCsocLogs: boolean
   /** Destination ARN used by the optional CSOC subscription filter. */
@@ -59,11 +61,11 @@ export interface RestApiGatewayProps {
   readonly enableServiceDomain?: boolean
 }
 
-const getTrustStoreKeyPrefix = (stackName: string, stackUuid?: string) => {
-  if (stackUuid) {
-    return `cpt-api/${stackName}-${stackUuid}-truststore`
+const getTrustStoreKeyPrefix = (serviceName: string, stackName: string, trustStoreUuuid?: string) => {
+  if (trustStoreUuuid) {
+    return `${serviceName}/${stackName}-${trustStoreUuuid}-truststore`
   } else {
-    return `cpt-api/${stackName}-truststore`
+    return `${serviceName}/${stackName}-truststore`
   }
 }
 
@@ -80,9 +82,11 @@ export class RestApiGateway extends Construct {
    * @example
    * ```ts
    * const api = new RestApiGateway(this, "MyApi", {
-   *   stackName: "my-service",
+   *   stackName: "v1.3",
    *   logRetentionInDays: 30,
    *   mutualTlsTrustStoreKey: "truststore.pem",
+   *   serviceName: "my-service",
+   *   trustStoreUuuid: "abc123",
    *   forwardCsocLogs: true,
    *   csocApiGatewayDestination: "arn:aws:logs:eu-west-2:123456789012:destination:csoc",
    *   executionPolicies: [myLambdaInvokePolicy],
@@ -102,6 +106,10 @@ export class RestApiGateway extends Construct {
 
     if (!enableServiceDomain && props.mutualTlsTrustStoreKey) {
       throw new Error("mutualTlsTrustStoreKey should not be provided when enableServiceDomain is false")
+    }
+
+    if (props.mutualTlsTrustStoreKey && !props.serviceName) {
+      throw new Error("serviceName must be provided when mTLS is set")
     }
 
     // Imports
@@ -169,7 +177,7 @@ export class RestApiGateway extends Construct {
     let mtlsConfig: MTLSConfig | undefined
 
     if (enableServiceDomain && props.mutualTlsTrustStoreKey) {
-      const trustStoreKeyPrefix = getTrustStoreKeyPrefix(props.stackName, props.stackUUID)
+      const trustStoreKeyPrefix = getTrustStoreKeyPrefix(props.serviceName, props.stackName, props.trustStoreUuuid)
       const logGroup = new LogGroup(this, "LambdaLogGroup", {
         encryptionKey: cloudWatchLogsKmsKey,
         logGroupName: `/aws/lambda/${props.stackName}-truststore-deployment`,
