@@ -346,6 +346,17 @@ describe("RestApiGateway with mTLS", () => {
 
 describe("RestApiGateway with mTLS and stackUUID", () => {
   test("uses stackUUID in trust store deployment key prefix", () => {
+    interface ManagedPolicyResource {
+      Properties?: {
+        PolicyDocument?: {
+          Statement?: Array<{
+            Action?: Array<string>
+            Resource?: string | Array<string>
+          }>
+        }
+      }
+    }
+
     const app = new App()
     const stack = new Stack(app, "RestApiGatewayStackWithUuid")
 
@@ -376,6 +387,27 @@ describe("RestApiGateway with mTLS and stackUUID", () => {
     template.hasResourceProperties("Custom::CDKBucketDeployment", {
       DestinationKeyPrefix: "cpt-api/test-stack-f47ac10b-truststore"
     })
+
+    const policies = template.findResources("AWS::IAM::ManagedPolicy")
+    const expectedTrustStoreObjectPath =
+      "cpt-api/test-stack-f47ac10b-58cc-4372-a567-0e02b2c3d479-truststore/truststore.pem"
+
+    const hasExpectedTrustStorePath = Object.values(policies).some((policy) => {
+      const statements = (policy as ManagedPolicyResource).Properties?.PolicyDocument?.Statement ?? []
+      return statements.some((statement) => {
+        if (!statement.Action?.includes("s3:PutObject")) {
+          return false
+        }
+
+        const resources = Array.isArray(statement.Resource)
+          ? statement.Resource
+          : (statement.Resource ? [statement.Resource] : [])
+
+        return resources.some((resource) => resource.includes(expectedTrustStoreObjectPath))
+      })
+    })
+
+    expect(hasExpectedTrustStorePath).toBe(true)
   })
 })
 
