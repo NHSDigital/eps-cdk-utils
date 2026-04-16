@@ -344,6 +344,41 @@ describe("RestApiGateway with mTLS", () => {
   })
 })
 
+describe("RestApiGateway with mTLS and stackUUID", () => {
+  test("uses stackUUID in trust store deployment key prefix", () => {
+    const app = new App()
+    const stack = new Stack(app, "RestApiGatewayStackWithUuid")
+
+    const testPolicy = new ManagedPolicy(stack, "TestPolicy", {
+      description: "test execution policy",
+      statements: [
+        new PolicyStatement({
+          actions: ["lambda:InvokeFunction"],
+          resources: ["arn:aws:lambda:eu-west-2:123456789012:function:test-function"]
+        })
+      ]
+    })
+
+    const apiGateway = new RestApiGateway(stack, "TestApiGateway", {
+      stackName: "test-stack",
+      stackUUID: "f47ac10b",
+      logRetentionInDays: 30,
+      mutualTlsTrustStoreKey: "truststore.pem",
+      forwardCsocLogs: false,
+      csocApiGatewayDestination: "",
+      executionPolicies: [testPolicy],
+      enableServiceDomain: true
+    })
+
+    apiGateway.api.root.addMethod("GET")
+
+    const template = Template.fromStack(stack)
+    template.hasResourceProperties("Custom::CDKBucketDeployment", {
+      DestinationKeyPrefix: "cpt-api/test-stack-f47ac10b-truststore"
+    })
+  })
+})
+
 describe("RestApiGateway validation errors", () => {
   test("throws when forwardCsocLogs is true and csocApiGatewayDestination is empty string", () => {
     const app = new App()
