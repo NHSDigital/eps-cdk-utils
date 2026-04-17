@@ -7,7 +7,7 @@ on:
 permissions: {}
 jobs:
   get_config_values:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@c8f899f30a6a726859b0277faa73cd9ff7f4de20
+    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@9564a673928c4ed2157e0a26ee0d68304d429e87
     with:
       verify_published_from_main_image: true
     permissions:
@@ -29,7 +29,7 @@ jobs:
 
   tag_release:
     needs: [quality_checks, get_config_values]
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@c8f899f30a6a726859b0277faa73cd9ff7f4de20
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@8399c1f015c1304e40771cbd8ccc24c7ed48fdbc
     permissions:
       contents: write
       id-token: write
