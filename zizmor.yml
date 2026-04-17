@@ -2,4 +2,4 @@ rules:
   unpinned-images:
     # these workflows use unpinned images because they are using a full image passed in that contains the tag
     ignore:
-      - package_npm_code.yml:14:13
+      - package_npm_code.yml:14:24
