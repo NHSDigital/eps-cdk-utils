@@ -13,7 +13,7 @@ jobs:
       contents: read
       packages: read
   pr_title_format_check:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@9564a673928c4ed2157e0a26ee0d68304d429e87
+    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@8b259f4f2d2b8ff1345fb0d2f9b9f0fbb9d19845
     permissions:
       pull-requests: write
   quality_checks:
