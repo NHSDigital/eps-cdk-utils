@@ -24,7 +24,7 @@ describe("SnsAlarm construct", () => {
         namespace: "LambdaLogFilterMetrics",
         metricName: "ErrorCount"
       },
-      slackAlertTopic
+      snsTopic: slackAlertTopic
     })
 
     expect(metricAlarm.alarm).toBeDefined()
@@ -77,7 +77,7 @@ describe("SnsAlarm construct", () => {
         period: Duration.minutes(1),
         statistic: "Sum"
       },
-      slackAlertTopic
+      snsTopic: slackAlertTopic
     })
 
     expect(metricAlarm.alarm).toBeDefined()

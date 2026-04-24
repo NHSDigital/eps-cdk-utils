@@ -96,8 +96,8 @@ export interface SnsAlarmProps {
   readonly alarmDefinition: SnsAlarmDefinition
   /** Defines the metric configuration to be monitored by the alarm. */
   readonly metricStatConfig: SnsMetricStatConfig
-  /** SNS topic that receives alarm, OK, and insufficient data notifications. */
-  readonly slackAlertTopic: ITopic
+  /** SNS topic that receives alarm, OK, and insufficient data notifications. Common example is for Slack alerts. */
+  readonly snsTopic: ITopic
 }
 
 /**
@@ -153,7 +153,7 @@ export class SnsAlarm extends Construct {
       actionsEnabled: props.enableAlerts
     })
 
-    const snsAction = new SnsAction(props.slackAlertTopic)
+    const snsAction = new SnsAction(props.snsTopic)
     alarm.addAlarmAction(snsAction)
     alarm.addOkAction(snsAction)
     alarm.addInsufficientDataAction(snsAction)
