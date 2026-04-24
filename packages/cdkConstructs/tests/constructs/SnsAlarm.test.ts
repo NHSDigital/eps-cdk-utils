@@ -44,6 +44,9 @@ describe("SnsAlarm construct", () => {
       EvaluationPeriods: 1,
       TreatMissingData: "notBreaching",
       AlarmDescription: "An alarm for any breach (threshold 1) in a single period",
+      AlarmActions: [importedSlackTopicArn],
+      OKActions: [importedSlackTopicArn],
+      InsufficientDataActions: [importedSlackTopicArn],
       ActionsEnabled: true
     })
   })
@@ -99,6 +102,9 @@ describe("SnsAlarm construct", () => {
         }
       ],
       AlarmDescription: "Override alarm",
+      AlarmActions: [importedSlackTopicArn],
+      OKActions: [importedSlackTopicArn],
+      InsufficientDataActions: [importedSlackTopicArn],
       ActionsEnabled: false
     })
   })
