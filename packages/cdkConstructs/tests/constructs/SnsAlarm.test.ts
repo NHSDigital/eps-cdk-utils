@@ -61,7 +61,8 @@ describe("SnsAlarm construct", () => {
         alarmDescription: "Override alarm",
         threshold: 250,
         comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
-        evaluationPeriods: 1
+        evaluationPeriods: 3,
+        datapointsToAlarm: 2
       },
       metricStatConfig: {
         namespace: "CustomNamespace",
@@ -89,6 +90,7 @@ describe("SnsAlarm construct", () => {
       MetricName: "Latency",
       Threshold: 250,
       ComparisonOperator: "GreaterThanThreshold",
+      DatapointsToAlarm: 2,
       Unit: "Milliseconds",
       Dimensions: [
         {

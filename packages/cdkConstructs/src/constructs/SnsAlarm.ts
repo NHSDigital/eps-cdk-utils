@@ -129,8 +129,16 @@ export class SnsAlarm extends Construct {
     super(scope, id)
 
     const generatedAlarmName = props.alarmDefinition.alarmName ?? id
+    const {
+      threshold,
+      evaluationPeriods,
+      comparisonOperator,
+      treatMissingData,
+      ...supportedAlarmDefinitionProps
+    } = props.alarmDefinition
 
     const alarm = new Alarm(this, `${generatedAlarmName}Alarm`, {
+      ...supportedAlarmDefinitionProps,
       alarmName: `${props.stackName}-${generatedAlarmName}`,
       metric: metricFromStatConfig({
         ...props.metricStatConfig,
@@ -138,12 +146,10 @@ export class SnsAlarm extends Construct {
         statistic: props.metricStatConfig.statistic ?? "Sum",
         period: props.metricStatConfig.period ?? Duration.minutes(1)
       }),
-      threshold: props.alarmDefinition.threshold ?? 1,
-      evaluationPeriods: props.alarmDefinition.evaluationPeriods ?? 1,
-      comparisonOperator:
-        props.alarmDefinition.comparisonOperator ?? ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-      treatMissingData: props.alarmDefinition.treatMissingData ?? TreatMissingData.NOT_BREACHING,
-      alarmDescription: props.alarmDefinition.alarmDescription,
+      threshold: threshold ?? 1,
+      evaluationPeriods: evaluationPeriods ?? 1,
+      comparisonOperator: comparisonOperator ?? ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      treatMissingData: treatMissingData ?? TreatMissingData.NOT_BREACHING,
       actionsEnabled: props.enableAlerts
     })
 
