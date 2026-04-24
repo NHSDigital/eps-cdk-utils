@@ -104,7 +104,7 @@ export interface SnsAlarmProps {
  * Creates a single CloudWatch alarm and wires all alarm state changes to an SNS topic.
  */
 export class SnsAlarm extends Construct {
-  alarm: Alarm
+  public readonly alarm: Alarm
 
   /**
    * Creates a CloudWatch alarm and publishes alarm state changes to the provided SNS topic.
