@@ -122,7 +122,7 @@ export class SnsAlarm extends Construct {
    *     namespace: 'LambdaLogFilterMetrics',
    *     metricName: 'ErrorCount'
    *   },
-   *   slackAlertTopic
+   *   snsTopic: slackAlertTopic
    * })
    */
   public constructor(scope: Construct, id: string, props: SnsAlarmProps) {
