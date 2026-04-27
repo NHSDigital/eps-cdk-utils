@@ -66,7 +66,7 @@ describe("pythonFunctionConstruct works correctly", () => {
   test("it has the correct log group", () => {
     template.hasResourceProperties("AWS::Logs::LogGroup", {
       LogGroupName: "/aws/lambda/testPythonLambda",
-      KmsKeyId: {"Fn::ImportValue": "account-resources:CloudwatchLogsKmsKeyArn"},
+      KmsKeyId: {"Fn::ImportValue": "account-resources-cdk-uk:KMS:CloudwatchLogsKmsKey:Arn"},
       RetentionInDays: 30
     })
   })
@@ -92,8 +92,8 @@ describe("pythonFunctionConstruct works correctly", () => {
     template.hasResourceProperties("AWS::Logs::SubscriptionFilter", {
       LogGroupName: {"Ref": lambdaLogGroupResource.Ref},
       FilterPattern: "",
-      RoleArn: {"Fn::ImportValue": "lambda-resources:SplunkSubscriptionFilterRole"},
-      DestinationArn: {"Fn::ImportValue": "lambda-resources:SplunkDeliveryStream"}
+      RoleArn: {"Fn::ImportValue": "account-resources-cdk-uk:IAM:SplunkSubscriptionFilterRole:Arn"},
+      DestinationArn: {"Fn::ImportValue": "account-resources-cdk-uk:Firehose:SplunkDeliveryStream:Arn"}
     })
   })
 
@@ -108,8 +108,8 @@ describe("pythonFunctionConstruct works correctly", () => {
         }]
       },
       ManagedPolicyArns: Match.arrayWith([
-        {"Fn::ImportValue": "lambda-resources:LambdaInsightsLogGroupPolicy"},
-        {"Fn::ImportValue": "account-resources:CloudwatchEncryptionKMSPolicyArn"}
+        {"Fn::ImportValue": "account-resources-cdk-uk:IAM:LambdaInsightsLogGroupPolicy:Arn"},
+        {"Fn::ImportValue": "account-resources-cdk-uk:IAM:CloudwatchEncryptionKMSPolicy:Arn"}
       ])
     })
   })
@@ -215,8 +215,8 @@ describe("pythonFunctionConstruct works correctly with additional policies", () 
   test("it has the correct policies in the role", () => {
     template.hasResourceProperties("AWS::IAM::Role", {
       ManagedPolicyArns: Match.arrayWith([
-        {"Fn::ImportValue": "lambda-resources:LambdaInsightsLogGroupPolicy"},
-        {"Fn::ImportValue": "account-resources:CloudwatchEncryptionKMSPolicyArn"},
+        {"Fn::ImportValue": "account-resources-cdk-uk:IAM:LambdaInsightsLogGroupPolicy:Arn"},
+        {"Fn::ImportValue": "account-resources-cdk-uk:IAM:CloudwatchEncryptionKMSPolicy:Arn"},
         {Ref: testPolicyResource.Ref}
       ])
     })
