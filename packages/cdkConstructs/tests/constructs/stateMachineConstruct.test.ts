@@ -36,7 +36,7 @@ describe("ExpressStateMachine construct", () => {
   test("creates CloudWatch log group with correct name and KMS key", () => {
     template.hasResourceProperties("AWS::Logs::LogGroup", {
       LogGroupName: "/aws/stepfunctions/test-state-machine",
-      KmsKeyId: {"Fn::ImportValue": "account-resources:CloudwatchLogsKmsKeyArn"},
+      KmsKeyId: {"Fn::ImportValue": "account-resources-cdk-uk:KMS:CloudwatchLogsKmsKey:Arn"},
       RetentionInDays: 30
     })
   })
@@ -44,7 +44,7 @@ describe("ExpressStateMachine construct", () => {
   test("creates Splunk subscription filter by default", () => {
     template.hasResourceProperties("AWS::Logs::SubscriptionFilter", {
       FilterPattern: "",
-      RoleArn: {"Fn::ImportValue": "lambda-resources:SplunkSubscriptionFilterRole"}
+      RoleArn: {"Fn::ImportValue": "account-resources-cdk-uk:IAM:SplunkSubscriptionFilterRole:Arn"}
     })
   })
 
