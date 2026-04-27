@@ -1,5 +1,6 @@
 import {
   CloudFormationClient,
+  DescribeStacksCommand,
   DescribeChangeSetCommand,
   DescribeChangeSetCommandOutput,
   Change as CloudFormationChange
@@ -128,6 +129,18 @@ export async function checkDestructiveChangeSet(
   }
 
   const client = new CloudFormationClient({region})
+
+  try {
+    await client.send(new DescribeStacksCommand({StackName: stackName}))
+  } catch (error) {
+    if (error instanceof Error && error.name === "ValidationError" && error.message.includes("does not exist")) {
+      console.log(`Stack ${stackName} does not exist. Skipping destructive change check.`)
+      return
+    }
+
+    throw error
+  }
+
   const command = new DescribeChangeSetCommand({
     ChangeSetName: changeSetName,
     StackName: stackName

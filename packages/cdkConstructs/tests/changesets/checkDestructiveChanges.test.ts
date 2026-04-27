@@ -40,7 +40,16 @@ vi.mock("@aws-sdk/client-cloudformation", () => {
     }
   }
 
-  return {CloudFormationClient, DescribeChangeSetCommand}
+  class DescribeStacksCommand {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    input: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(input: any) {
+      this.input = input
+    }
+  }
+
+  return {CloudFormationClient, DescribeChangeSetCommand, DescribeStacksCommand}
 })
 
 const __filename = fileURLToPath(import.meta.url)
@@ -190,30 +199,42 @@ describe("checkDestructiveChanges", () => {
 describe("checkDestructiveChangeSet", () => {
   const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined)
   const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined)
+  const mockStackExists = () => {
+    mockCloudFormationSend.mockResolvedValueOnce({
+      Stacks: [
+        {
+          StackName: "stack"
+        }
+      ]
+    })
+  }
+
   afterEach(() => {
     logSpy.mockReset()
     errorSpy.mockReset()
   })
 
   test("logs success when no destructive changes are present", async () => {
+    mockStackExists()
     mockCloudFormationSend.mockResolvedValueOnce(safeChangeSet)
 
     await expect(checkDestructiveChangeSet("cs", "stack", "eu-west-2")).resolves.toBeUndefined()
 
-    expect(mockCloudFormationSend).toHaveBeenCalledTimes(1)
-    const command = mockCloudFormationSend.mock.calls[0][0] as { input: { ChangeSetName: string; StackName: string } }
+    expect(mockCloudFormationSend).toHaveBeenCalledTimes(2)
+    const command = mockCloudFormationSend.mock.calls[1][0] as { input: { ChangeSetName: string; StackName: string } }
     expect(command.input).toEqual({ChangeSetName: "cs", StackName: "stack"})
     expect(logSpy).toHaveBeenCalledWith("Change set cs for stack stack has no destructive changes that are not waived.")
     expect(errorSpy).not.toHaveBeenCalled()
   })
 
   test("logs details and throws when destructive changes exist", async () => {
+    mockStackExists()
     mockCloudFormationSend.mockResolvedValueOnce(destructiveChangeSet)
 
     await expect(checkDestructiveChangeSet("cs", "stack", "eu-west-2"))
       .rejects.toThrow("Change set cs contains destructive changes")
 
-    expect(mockCloudFormationSend).toHaveBeenCalledTimes(1)
+    expect(mockCloudFormationSend).toHaveBeenCalledTimes(2)
     expect(logSpy).not.toHaveBeenCalled()
     expect(errorSpy).toHaveBeenCalledWith("Resources that require attention:")
   })
@@ -234,6 +255,7 @@ describe("checkDestructiveChangeSet", () => {
         }
       ]
     }
+    mockStackExists()
     mockCloudFormationSend.mockResolvedValueOnce(changeSet)
 
     const allowedChanges: Array<AllowedDestructiveChange> = [
@@ -253,7 +275,7 @@ describe("checkDestructiveChangeSet", () => {
     await expect(checkDestructiveChangeSet("cs", "stack", "eu-west-2", allowedChanges))
       .resolves.toBeUndefined()
 
-    expect(mockCloudFormationSend).toHaveBeenCalledTimes(1)
+    expect(mockCloudFormationSend).toHaveBeenCalledTimes(2)
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Allowing destructive change ResourceToRemove"))
     expect(logSpy).toHaveBeenCalledWith("Change set cs for stack stack has no destructive changes that are not waived.")
     expect(errorSpy).not.toHaveBeenCalled()
@@ -275,6 +297,7 @@ describe("checkDestructiveChangeSet", () => {
         }
       ]
     }
+    mockStackExists()
     mockCloudFormationSend.mockResolvedValueOnce(changeSet)
 
     const allowedChanges: Array<AllowedDestructiveChange> = [
@@ -315,6 +338,7 @@ describe("checkDestructiveChangeSet", () => {
         }
       ]
     }
+    mockStackExists()
     mockCloudFormationSend.mockResolvedValueOnce(changeSet)
 
     const allowedChanges: Array<AllowedDestructiveChange> = [
@@ -335,5 +359,18 @@ describe("checkDestructiveChangeSet", () => {
       .rejects.toThrow("Change set cs contains destructive changes")
 
     expect(errorSpy).toHaveBeenCalledWith("Resources that require attention:")
+  })
+
+  test("logs and exits without error when the stack does not exist", async () => {
+    const stackMissingError = new Error("Stack with id stack does not exist")
+    stackMissingError.name = "ValidationError"
+
+    mockCloudFormationSend.mockRejectedValueOnce(stackMissingError)
+
+    await expect(checkDestructiveChangeSet("cs", "stack", "eu-west-2")).resolves.toBeUndefined()
+
+    expect(mockCloudFormationSend).toHaveBeenCalledTimes(1)
+    expect(logSpy).toHaveBeenCalledWith("Stack stack does not exist. Skipping destructive change check.")
+    expect(errorSpy).not.toHaveBeenCalled()
   })
 })
