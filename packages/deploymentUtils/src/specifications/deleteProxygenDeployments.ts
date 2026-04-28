@@ -47,7 +47,7 @@ async function deleteEnvProxygenDeployments(
   const lambda = new LambdaClient({})
 
   const exports = await getCloudFormationExports()
-  const proxygenPrivateKeyArn = getCFConfigValue(exports, `account-resources:${proxygenPrivateKeyName}`)
+  const proxygenPrivateKeyArn = getCFConfigValue(exports, `secrets-cdk:Secrets:${proxygenPrivateKeyName}:Arn`)
 
   console.log(`Checking Apigee deployments of ${apigeeApi} on ${apigeeEnvironment}`)
   const instances = JSON.parse(await invokeLambda(

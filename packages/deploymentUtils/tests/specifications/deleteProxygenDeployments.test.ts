@@ -39,7 +39,7 @@ function createFetchResponse(state: string, ok = true, status = 200, textBody = 
 describe("deleteProxygenDeployments", () => {
   beforeEach(() => {
     getCloudFormationExportsMock.mockReset().mockResolvedValue({
-      "account-resources:proxygenKey": "arn:proxygen-key"
+      "secrets-cdk:Secrets:proxygenKey:Arn": "arn:proxygen-key"
     })
     invokeLambdaMock.mockReset()
 
