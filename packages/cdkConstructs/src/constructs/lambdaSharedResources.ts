@@ -13,7 +13,7 @@ import {
 } from "aws-cdk-lib/aws-iam"
 import {NagSuppressions} from "cdk-nag"
 import {LAMBDA_INSIGHTS_LAYER_ARNS} from "../config"
-import {ACCOUNT_RESOURCES, CFN_GUARD_RULES, LAMBDA_RESOURCES} from "../constants"
+import {ACCOUNT_RESOURCES, CFN_GUARD_RULES} from "../constants"
 import {addSuppressions} from "../utils/helpers"
 import {CfnDeliveryStream} from "aws-cdk-lib/aws-kinesisfirehose"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
@@ -55,9 +55,9 @@ export const createSharedLambdaResources = (
     ),
     splunkDeliveryStream,
     splunkSubscriptionFilterRole = Role.fromRoleArn(
-      scope, "splunkSubscriptionFilterRole", LAMBDA_RESOURCES.SplunkSubscriptionFilterRole),
+      scope, "splunkSubscriptionFilterRole", ACCOUNT_RESOURCES.SplunkSubscriptionFilterRoleArn),
     lambdaInsightsLogGroupPolicy = ManagedPolicy.fromManagedPolicyArn(
-      scope, "lambdaInsightsLogGroupPolicy", LAMBDA_RESOURCES.LambdaInsightsLogGroupPolicy),
+      scope, "lambdaInsightsLogGroupPolicy", ACCOUNT_RESOURCES.LambdaInsightsLogGroupPolicyArn),
     addSplunkSubscriptionFilter = true
   } = props
   const insightsLambdaLayerArn = architecture === Architecture.ARM_64
@@ -88,7 +88,7 @@ export const createSharedLambdaResources = (
       })
     } else {
       const splunkDeliveryStreamImport = Stream.fromStreamArn(
-        scope, "SplunkDeliveryStream", LAMBDA_RESOURCES.SplunkDeliveryStream)
+        scope, "SplunkDeliveryStream", ACCOUNT_RESOURCES.SplunkDeliveryStreamArn)
       new CfnSubscriptionFilter(scope, "LambdaLogsSplunkSubscriptionFilter", {
         destinationArn: splunkDeliveryStreamImport.streamArn,
         filterPattern: "",

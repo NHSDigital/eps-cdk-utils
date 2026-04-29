@@ -48,7 +48,7 @@ describe("RestApiGateway without mTLS", () => {
   test("creates CloudWatch log group with correct properties", () => {
     template.hasResourceProperties("AWS::Logs::LogGroup", {
       LogGroupName: "/aws/apigateway/test-stack-apigw",
-      KmsKeyId: {"Fn::ImportValue": "account-resources:CloudwatchLogsKmsKeyArn"},
+      KmsKeyId: {"Fn::ImportValue": "account-resources-cdk-uk:KMS:CloudwatchLogsKmsKey:Arn"},
       RetentionInDays: 30
     })
   })
@@ -56,8 +56,8 @@ describe("RestApiGateway without mTLS", () => {
   test("creates Splunk subscription filter", () => {
     template.hasResourceProperties("AWS::Logs::SubscriptionFilter", {
       FilterPattern: "",
-      RoleArn: {"Fn::ImportValue": "lambda-resources:SplunkSubscriptionFilterRole"},
-      DestinationArn: {"Fn::ImportValue": "lambda-resources:SplunkDeliveryStream"}
+      RoleArn: {"Fn::ImportValue": "account-resources-cdk-uk:IAM:SplunkSubscriptionFilterRole:Arn"},
+      DestinationArn: {"Fn::ImportValue": "account-resources-cdk-uk:Firehose:SplunkDeliveryStream:Arn"}
     })
   })
 
@@ -269,7 +269,7 @@ describe("RestApiGateway with mTLS", () => {
   test("creates trust store deployment log group", () => {
     template.hasResourceProperties("AWS::Logs::LogGroup", {
       LogGroupName: "/aws/lambda/test-stack-truststore-deployment",
-      KmsKeyId: {"Fn::ImportValue": "account-resources:CloudwatchLogsKmsKeyArn"},
+      KmsKeyId: {"Fn::ImportValue": "account-resources-cdk-uk:KMS:CloudwatchLogsKmsKey:Arn"},
       RetentionInDays: 30
     })
   })

@@ -53,7 +53,7 @@ export async function deployApi(
   })
 
   const exports = await getCloudFormationExports()
-  const proxygenPrivateKeyArn = getCFConfigValue(exports, `account-resources:${proxygenPrivateKeyExportName}`)
+  const proxygenPrivateKeyArn = getCFConfigValue(exports, `secrets-cdk:Secrets:${proxygenPrivateKeyExportName}:Arn`)
 
   let put_secret_lambda = "lambda-resources-ProxygenPTLMTLSSecretPut"
   let instance_put_lambda = "lambda-resources-ProxygenPTLInstancePut"

@@ -20,7 +20,7 @@ import {
 } from "aws-cdk-lib/aws-stepfunctions"
 import {Construct} from "constructs"
 import {CfnDeliveryStream} from "aws-cdk-lib/aws-kinesisfirehose"
-import {ACCOUNT_RESOURCES, CFN_GUARD_RULES, LAMBDA_RESOURCES} from "../constants"
+import {ACCOUNT_RESOURCES, CFN_GUARD_RULES} from "../constants"
 import {addSuppressions} from "../utils/helpers"
 
 /**
@@ -98,7 +98,7 @@ export class ExpressStateMachine extends Construct {
         this, "cloudwatchEncryptionKMSPolicy", ACCOUNT_RESOURCES.CloudwatchEncryptionKMSPolicyArn),
       splunkDeliveryStream,
       splunkSubscriptionFilterRole = Role.fromRoleArn(
-        this, "splunkSubscriptionFilterRole", LAMBDA_RESOURCES.SplunkSubscriptionFilterRole),
+        this, "splunkSubscriptionFilterRole", ACCOUNT_RESOURCES.SplunkSubscriptionFilterRoleArn),
       addSplunkSubscriptionFilter = true
     } = props
 
@@ -122,7 +122,7 @@ export class ExpressStateMachine extends Construct {
         })
       } else {
         const splunkDeliveryStreamImport = Stream.fromStreamArn(
-          this, "SplunkDeliveryStream", LAMBDA_RESOURCES.SplunkDeliveryStream)
+          this, "SplunkDeliveryStream", ACCOUNT_RESOURCES.SplunkDeliveryStreamArn)
         new CfnSubscriptionFilter(this, "StateMachineLogsSplunkSubscriptionFilter", {
           destinationArn: splunkDeliveryStreamImport.streamArn,
           filterPattern: "",

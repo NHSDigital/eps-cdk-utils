@@ -172,7 +172,7 @@ In the project you want to test in, run the following as appropriate:
 npm install --save nhsdigital-eps-cdk-constructs-1.0.0.tgz --workspace packages/cdk/
 
 # Install the deploymentUtils library
-npm install --save nhsdigital-eps-deployment-utils-1.0.0.tgz --workspace packages/specifications/
+npm install --save nhsdigital-eps-deployment-utils-1.0.0.tgz --workspace packages/specification/
 ```
 
 You will then be able to use them - for example:

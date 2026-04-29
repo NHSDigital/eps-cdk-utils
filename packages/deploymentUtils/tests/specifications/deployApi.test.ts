@@ -65,7 +65,7 @@ function createSpec(overrides: SpecOverrides = {}) {
 }
 
 const defaultExportsMap = {
-  "account-resources:proxygenKey": "arn:proxygen-key"
+  "secrets-cdk:Secrets:proxygenKey:Arn": "arn:proxygen-key"
 }
 
 function buildConfig(overrides: Partial<ApiConfig> = {}): ApiConfig {

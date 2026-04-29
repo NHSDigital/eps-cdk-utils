@@ -33,7 +33,7 @@ import {
 } from "aws-cdk-lib/aws-route53"
 import {ApiGateway as ApiGatewayTarget} from "aws-cdk-lib/aws-route53-targets"
 import {NagSuppressions} from "cdk-nag"
-import {ACCOUNT_RESOURCES, LAMBDA_RESOURCES} from "../constants"
+import {ACCOUNT_RESOURCES, ROUTE53_RESOURCES} from "../constants"
 import {addSuppressions} from "../utils/helpers"
 
 /** Configuration for creating a REST API with optional mTLS and log forwarding integrations. */
@@ -119,27 +119,27 @@ export class RestApiGateway extends Construct {
       this, "cloudWatchLogsKmsKey", ACCOUNT_RESOURCES.CloudwatchLogsKmsKeyArn)
 
     const splunkDeliveryStream = Stream.fromStreamArn(
-      this, "SplunkDeliveryStream", LAMBDA_RESOURCES.SplunkDeliveryStream)
+      this, "SplunkDeliveryStream", ACCOUNT_RESOURCES.SplunkDeliveryStreamArn)
 
     const splunkSubscriptionFilterRole = Role.fromRoleArn(
-      this, "splunkSubscriptionFilterRole", LAMBDA_RESOURCES.SplunkSubscriptionFilterRole)
+      this, "splunkSubscriptionFilterRole", ACCOUNT_RESOURCES.SplunkSubscriptionFilterRoleArn)
 
     const trustStoreBucket = Bucket.fromBucketArn(
-      this, "TrustStoreBucket", ACCOUNT_RESOURCES.TrustStoreBucket)
+      this, "TrustStoreBucket", ACCOUNT_RESOURCES.TrustStoreBucketArn)
 
     const trustStoreDeploymentBucket = Bucket.fromBucketArn(
-      this, "TrustStoreDeploymentBucket", ACCOUNT_RESOURCES.TrustStoreDeploymentBucket)
+      this, "TrustStoreDeploymentBucket", ACCOUNT_RESOURCES.TrustStoreDeploymentBucketArn)
 
     const trustStoreBucketKmsKey = Key.fromKeyArn(
-      this, "TrustStoreBucketKmsKey", ACCOUNT_RESOURCES.TrustStoreBucketKMSKey)
+      this, "TrustStoreBucketKmsKey", ACCOUNT_RESOURCES.TrustStoreBucketKMSKeyArn)
 
     let hostedZone: IHostedZone | undefined
     let serviceDomainName: string | undefined
 
     if (enableServiceDomain) {
-      const epsDomainName: string = ACCOUNT_RESOURCES.EpsDomainName
+      const epsDomainName: string = ROUTE53_RESOURCES.EpsDomainName
       hostedZone = HostedZone.fromHostedZoneAttributes(this, "HostedZone", {
-        hostedZoneId: ACCOUNT_RESOURCES.EpsZoneId,
+        hostedZoneId: ROUTE53_RESOURCES.EpsZoneId,
         zoneName: epsDomainName
       })
       serviceDomainName = `${props.stackName}.${epsDomainName}`
