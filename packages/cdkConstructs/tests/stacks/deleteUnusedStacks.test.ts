@@ -893,11 +893,14 @@ describe("stack deletion", () => {
       await vi.runAllTimersAsync()
       await promise
 
-      // One delete stack call for the PR stack
+      // One delete stack call per PR stack
       expect(mockDeleteStackSend).toHaveBeenCalledTimes(3)
       expect(mockDeleteStackSend).toHaveBeenCalledWith({StackName: `${baseStackName}-pr-123-sandbox`})
       expect(mockDeleteStackSend).toHaveBeenCalledWith({StackName: `${baseStackName}-pr-123-front-door`})
       expect(mockDeleteStackSend).toHaveBeenCalledWith({StackName: `${baseStackName}-pr-123-stateful`})
+
+      // PR state should only be fetched once per PR, not once per stack
+      expect(mockGetPRState).toHaveBeenCalledTimes(1)
     })
 
     test("does not delete open PR stacks", async () => {
