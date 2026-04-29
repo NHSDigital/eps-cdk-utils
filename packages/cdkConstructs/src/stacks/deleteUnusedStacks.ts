@@ -189,7 +189,7 @@ async function getHostedZoneInfo(
 }
 
 async function isClosedPullRequest(stackName: string, baseStackName: string, repoName: string): Promise<boolean> {
-  const match = new RegExp(String.raw`^${baseStackName}-pr-(?<pullRequestId>\d+)(-sandbox)?$`).exec(stackName)
+  const match = new RegExp(String.raw`^${baseStackName}-pr-(?<pullRequestId>\d+)(-[\w-]+)?$`).exec(stackName)
   if (!match?.groups?.pullRequestId) {
     return false
   }

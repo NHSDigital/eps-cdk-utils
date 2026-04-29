@@ -858,6 +858,48 @@ describe("stack deletion", () => {
       })
     })
 
+    test("deletes PR stacks with multiple suffixes", async () => {
+      const now = new Date()
+      const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
+
+      mockListStacksSend.mockReturnValue({
+        StackSummaries: [
+          {
+            StackName: `${baseStackName}-pr-123-sandbox`,
+            StackStatus: "CREATE_COMPLETE",
+            CreationTime: twoDaysAgo
+          },
+          {
+            StackName: `${baseStackName}-pr-123-front-door`,
+            StackStatus: "CREATE_COMPLETE",
+            CreationTime: twoDaysAgo
+          },
+          {
+            StackName: `${baseStackName}-pr-123-stateful`,
+            StackStatus: "CREATE_COMPLETE",
+            CreationTime: twoDaysAgo
+          }
+        ]
+      })
+
+      mockGetPRState.mockImplementation((url: string) => {
+        if (url.endsWith("/repos/NHSDigital/eps-cdk-utils/pulls/123")) {
+          return "closed"
+        }
+        throw new Error(`Unexpected URL: ${url}`)
+      })
+
+      const promise = deleteUnusedPrStacks(baseStackName, repoName, hostedZoneName)
+      await vi.runAllTimersAsync()
+      await promise
+
+      // One delete stack call for the PR stack
+      expect(mockDeleteStackSend).toHaveBeenCalledTimes(3)
+      expect(mockDeleteStackSend).toHaveBeenCalledWith({StackName: `${baseStackName}-pr-123-sandbox`})
+      expect(mockDeleteStackSend).toHaveBeenCalledWith({StackName: `${baseStackName}-pr-123-front-door`})
+      expect(mockDeleteStackSend).toHaveBeenCalledWith({StackName: `${baseStackName}-pr-123-stateful`})
+    })
+
     test("does not delete open PR stacks", async () => {
       const now = new Date()
       const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
