@@ -7,25 +7,27 @@ export const CDK_ENV_PREFIX = "CDK_CONFIG_"
 export const ACCOUNT_RESOURCES = {
   CloudwatchEncryptionKMSPolicyArn: Fn.importValue("account-resources-cdk-uk:IAM:CloudwatchEncryptionKMSPolicy:Arn"),
   CloudwatchLogsKmsKeyArn: Fn.importValue("account-resources-cdk-uk:KMS:CloudwatchLogsKmsKey:Arn"),
-  EpsDomainName: Fn.importValue("eps-route53-resources:EPS-domain"),
-  EpsZoneId: Fn.importValue("eps-route53-resources:EPS-ZoneID"),
-  LambdaAccessSecretsPolicy: Fn.importValue("secrets-cdk:IAM:LambdaAccessSecretsPolicy:Arn"),
-  LambdaDecryptSecretsKMSPolicy: Fn.importValue("secrets-cdk:IAM:LambdaDecryptSecretsKMSPolicy:Arn"),
-  SpinePrivateKeyARN: Fn.importValue("secrets-cdk:Secrets:SpinePrivateKey:Arn"),
-  SpinePublicCertificateARN: Fn.importValue("secrets-cdk:Secrets:SpinePublicCertificate:Arn"),
-  SpineASIDARN: Fn.importValue("secrets-cdk:Secrets:SpineASID:Arn"),
-  SpinePartyKeyARN: Fn.importValue("secrets-cdk:Secrets:SpinePartyKey:Arn"),
-  SpineCAChainARN: Fn.importValue("secrets-cdk:Secrets:SpineCAChain:Arn"),
-  TrustStoreBucket: Fn.importValue("account-resources-cdk-uk:Bucket:TrustStoreBucket:Arn"),
-  TrustStoreBucketKMSKey: Fn.importValue("account-resources-cdk-uk:KMS:TrustStoreBucketKMSKey:Arn"),
-  TrustStoreDeploymentBucket: Fn.importValue("account-resources-cdk-uk:Bucket:TrustStoreDeploymentBucket:Arn")
+  TrustStoreBucketArn: Fn.importValue("account-resources-cdk-uk:Bucket:TrustStoreBucket:Arn"),
+  TrustStoreBucketKMSKeyArn: Fn.importValue("account-resources-cdk-uk:KMS:TrustStoreBucketKMSKey:Arn"),
+  TrustStoreDeploymentBucketArn: Fn.importValue("account-resources-cdk-uk:Bucket:TrustStoreDeploymentBucket:Arn"),
+  LambdaInsightsLogGroupPolicyArn: Fn.importValue("account-resources-cdk-uk:IAM:LambdaInsightsLogGroupPolicy:Arn"),
+  SplunkDeliveryStreamArn: Fn.importValue("account-resources-cdk-uk:Firehose:SplunkDeliveryStream:Arn"),
+  SplunkSubscriptionFilterRoleArn: Fn.importValue("account-resources-cdk-uk:IAM:SplunkSubscriptionFilterRole:Arn")
 }
 
-/** Imported shared Lambda resource values used by Lambda and API Gateway constructs. */
-export const LAMBDA_RESOURCES = {
-  LambdaInsightsLogGroupPolicy: Fn.importValue("account-resources-cdk-uk:IAM:LambdaInsightsLogGroupPolicy:Arn"),
-  SplunkDeliveryStream: Fn.importValue("account-resources-cdk-uk:Firehose:SplunkDeliveryStream:Arn"),
-  SplunkSubscriptionFilterRole: Fn.importValue("account-resources-cdk-uk:IAM:SplunkSubscriptionFilterRole:Arn")
+export const ROUTE53_RESOURCES = {
+  EpsDomainName: Fn.importValue("eps-route53-resources:EPS-domain"),
+  EpsZoneId: Fn.importValue("eps-route53-resources:EPS-ZoneID")
+}
+
+export const SECRETS_RESOURCES = {
+  LambdaAccessSecretsPolicyArn: Fn.importValue("secrets-cdk:IAM:LambdaAccessSecretsPolicy:Arn"),
+  LambdaDecryptSecretsKMSPolicyArn: Fn.importValue("secrets-cdk:IAM:LambdaDecryptSecretsKMSPolicy:Arn"),
+  SpinePrivateKeyArn: Fn.importValue("secrets-cdk:Secrets:SpinePrivateKey:Arn"),
+  SpinePublicCertificateArn: Fn.importValue("secrets-cdk:Secrets:SpinePublicCertificate:Arn"),
+  SpineASIDArn: Fn.importValue("secrets-cdk:Secrets:SpineASID:Arn"),
+  SpinePartyKeyArn: Fn.importValue("secrets-cdk:Secrets:SpinePartyKey:Arn"),
+  SpineCAChainArn: Fn.importValue("secrets-cdk:Secrets:SpineCAChain:Arn")
 }
 
 /** Shared cfn-guard rule identifiers used for metadata suppressions. */
