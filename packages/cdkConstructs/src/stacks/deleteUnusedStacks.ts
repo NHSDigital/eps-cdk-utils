@@ -216,7 +216,7 @@ async function isClosedPullRequest(
     if (!response.ok) {
       console.log(`Failed to fetch PR ${pullRequestId}: ${response.status} ${await response.text()}`)
       // To avoid accidentally deleting stacks due to transient API failures, we treat errors as non-closed state
-      // but do not cache the result to allow for retries on subsequent runs
+      // and do not cache the result, allowing another fetch attempt later in this run if needed.
       return false
     }
 
