@@ -27,7 +27,8 @@ export const SECRETS_RESOURCES = {
   SpinePublicCertificateArn: Fn.importValue("secrets-cdk:Secrets:SpinePublicCertificate:Arn"),
   SpineASIDArn: Fn.importValue("secrets-cdk:Secrets:SpineASID:Arn"),
   SpinePartyKeyArn: Fn.importValue("secrets-cdk:Secrets:SpinePartyKey:Arn"),
-  SpineCAChainArn: Fn.importValue("secrets-cdk:Secrets:SpineCAChain:Arn")
+  SpineCAChainArn: Fn.importValue("secrets-cdk:Secrets:SpineCAChain:Arn"),
+  ServiceSearch3ApiKeyArn: Fn.importValue("secrets-cdk:Secrets:ServiceSearch3ApiKey:Arn")
 }
 
 /** Shared cfn-guard rule identifiers used for metadata suppressions. */
