@@ -17,7 +17,7 @@ jobs:
     permissions:
       pull-requests: write
   quality_checks:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@8b259f4f2d2b8ff1345fb0d2f9b9f0fbb9d19845
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@889349f9d93e4846a642f7973b7c26b180bec5aa
     needs: [get_config_values]
     permissions:
       contents: read
