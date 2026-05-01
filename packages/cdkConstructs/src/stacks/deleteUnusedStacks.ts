@@ -83,6 +83,7 @@ export async function deleteUnusedPrStacks(
   const cloudFormationClient = new CloudFormationClient({})
   const route53Client = new Route53Client({})
   const {hostedZoneId, cnameRecords} = await getHostedZoneInfo(route53Client, hostedZoneName)
+  const pullRequestStateCache = new Map<string, string>()
 
   console.log("checking cloudformation stacks")
 
@@ -94,7 +95,7 @@ export async function deleteUnusedPrStacks(
     }
 
     const stackName = stack.StackName
-    if (!(await isClosedPullRequest(stackName, baseStackName, repoName))) {
+    if (!(await isClosedPullRequest(stackName, baseStackName, repoName, pullRequestStateCache))) {
       continue
     }
 
@@ -188,34 +189,50 @@ async function getHostedZoneInfo(
   return {hostedZoneId, cnameRecords}
 }
 
-async function isClosedPullRequest(stackName: string, baseStackName: string, repoName: string): Promise<boolean> {
-  const match = new RegExp(String.raw`^${baseStackName}-pr-(?<pullRequestId>\d+)(-sandbox)?$`).exec(stackName)
+async function isClosedPullRequest(
+  stackName: string,
+  baseStackName: string,
+  repoName: string,
+  pullRequestStateCache: Map<string, string>
+): Promise<boolean> {
+  const match = new RegExp(String.raw`^${baseStackName}-pr-(?<pullRequestId>\d+)(-[\w-]+)?$`).exec(stackName)
   if (!match?.groups?.pullRequestId) {
     return false
   }
 
   const pullRequestId = match.groups.pullRequestId
-  console.log(`Checking pull request id ${pullRequestId}`)
-  const url = `https://api.github.com/repos/NHSDigital/${repoName}/pulls/${pullRequestId}`
+  let pullRequestState = pullRequestStateCache.get(pullRequestId)
+  if (pullRequestState === undefined) {
 
-  const headers: Record<string, string> = {
-    Accept: "application/vnd.github+json",
-    Authorization: `Bearer ${process.env.GITHUB_TOKEN}`
+    console.log(`Checking pull request id ${pullRequestId}`)
+    const url = `https://api.github.com/repos/NHSDigital/${repoName}/pulls/${pullRequestId}`
+
+    const headers: Record<string, string> = {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${process.env.GITHUB_TOKEN}`
+    }
+
+    const response = await fetch(url, {headers})
+    if (!response.ok) {
+      console.log(`Failed to fetch PR ${pullRequestId}: ${response.status} ${await response.text()}`)
+      // To avoid accidentally deleting stacks due to transient API failures, we treat errors as non-closed state
+      // and do not cache the result, allowing another fetch attempt later in this run if needed.
+      return false
+    }
+
+    const data = (await response.json()) as {state?: string}
+    pullRequestState = data.state
+    if (pullRequestState) {
+      pullRequestStateCache.set(pullRequestId, pullRequestState)
+    }
   }
 
-  const response = await fetch(url, {headers})
-  if (!response.ok) {
-    console.log(`Failed to fetch PR ${pullRequestId}: ${response.status} ${await response.text()}`)
+  if (pullRequestState !== "closed") {
+    console.log(`not going to delete stack ${stackName} as PR state is ${pullRequestState}`)
     return false
   }
 
-  const data = (await response.json()) as {state?: string}
-  if (data.state !== "closed") {
-    console.log(`not going to delete stack ${stackName} as PR state is ${data.state}`)
-    return false
-  }
-
-  console.log(`** going to delete stack ${stackName} as PR state is ${data.state} **`)
+  console.log(`** going to delete stack ${stackName} as PR state is ${pullRequestState} **`)
   return true
 }
 
